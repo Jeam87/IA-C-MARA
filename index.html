@@ -1,46 +1,69 @@
-import cv2
-import numpy as np
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>App de Cámara con IA</title>
+</head>
+<body>
+<h1>Mejorador de Fotos con IA</h1>
 
-# Paso 1: Capturar la imagen desde la cámara
-cap = cv2.VideoCapture(0)
-ret, frame = cap.read()
-if ret:
-    cv2.imwrite('foto_actual.jpg', frame)
-    print("Foto capturada y guardada como 'foto_actual.jpg'")
-else:
-    print("No se pudo tomar la foto")
-cap.release()
+<!-- Subir imagen -->
+<input type="file" id="upload" accept="image/*" />
+<br><br>
 
-# Paso 2: Mejorar resolución usando Super-Resolution
-sr = cv2.dnn_superres.DnnSuperResImpl_create()
-# Asegúrate de descargar el modelo EDSR_x3.pb y colocar en la misma carpeta
-path = "EDSR_x3.pb"
-sr.readModel(path)
-sr.setModel("edsr", 3)
-img = cv2.imread('foto_actual.jpg')
-result = sr.upsample(img)
-cv2.imwrite('foto_mejorada.jpg', result)
-print("Resolución mejorada y guardada como 'foto_mejorada.jpg'")
+<!-- Botón para procesar la imagen -->
+<button onclick="procesarImagen()">Mejorar Imagen</button>
 
-# Paso 3: Ajustar color y contraste
-img = cv2.imread('foto_mejorada.jpg')
-img_yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
-img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
-img_eq = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
-cv2.imwrite('foto_color_ajustado.jpg', img_eq)
-print("Color ajustado y guardado como 'foto_color_ajustado.jpg'")
+<!-- Mostrar la imagen original -->
+<h2>Imagen Original</h2>
+<img id="originalImage" src="" alt="Imagen subido" width="300" />
 
-# Paso 4: Eliminación de ruido
-img = cv2.imread('foto_color_ajustado.jpg')
-denoised = cv2.fastNlMeansDenoisingColored(img, None, h=10, hColor=10, templateWindowSize=7, searchWindowSize=21)
-cv2.imwrite('foto_final.jpg', denoised)
-print("Ruido eliminado. Foto final guardada como 'foto_final.jpg'")
+<!-- Mostrar la imagen final procesada -->
+<h2>Imagen Mejorada</h2>
+<img id="resultImage" src="" alt="Imagen mejorada" width="300" />
 
+<script>
+let imagenSubida = null;
 
-ret, frame = cap.read()
+// Cuando se sube la imagen
+document.getElementById('upload').addEventListener('change', function(event) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('originalImage').src = e.target.result;
+        imagenSubida = e.target.result;
+    }
+    reader.readAsDataURL(event.target.files[0]);
+});
 
-    cv2.imwrite(
-cap.release()
+// Función para procesar la imagen
+function procesarImagen() {
+    if (!imagenSubida) {
+        alert('Por favor, sube una imagen primero.');
+        return;
+    }
 
+    // Aquí deberías enviar la imagen a tu backend que ejecuta el código Python
+    // Por ejemplo, usando fetch para enviar la imagen y recibir la imagen mejorada
+    // Como este es un ejemplo, vamos a simularlo mostrando la misma imagen
 
-sr = cv2.dnn_superres.DnnSuperResImpl_create()
+    // Simulación: simplemente muestra la misma imagen
+    document.getElementById('resultImage').src = imagenSubida;
+
+    // En un caso real, aquí usarías fetch() para enviar la imagen al backend
+    /*
+    fetch('/procesar-imagen', {
+        method: 'POST',
+        body: data // la imagen en formato adecuado
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = URL.createObjectURL(blob);
+        document.getElementById('resultImage').src = url;
+    });
+    */
+}
+</script>
+
+</body>
+</html>
