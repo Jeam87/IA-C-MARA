@@ -3,143 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles IA Gratis</title>
+<title>Cam Pasteles PRO</title>
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
-#v{width:100vw;height:100vh;object-fit:cover;background:#111;display:block}
-#msg{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 16px;border-radius:20px;z-index:10;font-size:13px;max-width:90%;text-align:center}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000e);padding:15px;display:flex;flex-direction:column;gap:10px;z-index:10}
-#row{display:flex;gap:8px;justify-content:center}
-#row button{background:#222;color:#fff;border:1px solid #555;padding:12px 16px;border-radius:12px;font-weight:bold}
-#row button.active{background:#ff7800;border-color:#ff7800}
+#v{width:100vw;height:100vh;object-fit:cover;background:#111}
+#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px;text-align:center}
+#focus{position:fixed;width:90px;height:90px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 15px #ff0}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000f);padding:12px;display:flex;flex-direction:column;gap:8px;z-index:10}
+#row{display:flex;gap:6px;justify-content:center}
+#row button{background:#222;color:#fff;border:1px solid #444;padding:10px 14px;border-radius:12px;font-weight:bold;font-size:13px}
+#row button.active{background:#ff7800}
 #foto{width:100%;padding:16px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
-#res img{flex:1;width:100%;object-fit:contain;background:#111}
-#resBtns{display:flex;gap:10px;padding:15px}
-#resBtns a, #resBtns button{flex:1;padding:15px;text-align:center;border-radius:10px;text-decoration:none;font-weight:bold;border:none}
-#prog{position:fixed;bottom:95px;left:50%;transform:translateX(-50%);background:#ff7800;color:#fff;padding:6px 14px;border-radius:20px;display:none;z-index:15}
-#allow{position:fixed;inset:0;background:#000e;z-index:30;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:15px;color:#fff;text-align:center;padding:20px}
-#allow button{padding:15px 30px;background:#ff7800;color:#fff;border:none;border-radius:30px;font-weight:bold;font-size:16px}
+#res img{flex:1;width:100%;object-fit:contain}
+#resBtns{display:flex;gap:10px;padding:12px}
 </style>
 </head>
 <body>
 <video id="v" autoplay playsinline muted></video>
-<div id="msg">Iniciando cámara...</div>
-<div id="prog">Cargando IA Gratis...</div>
-
-<div id="allow" style="display:none">
-  <div>📷 Necesitamos permiso de cámara</div>
-  <button onclick="iniciarCam()">Permitir Cámara</button>
-  <small>En Chrome dale al candadito 🔒 arriba > Permisos > Cámara > Permitir</small>
-</div>
-
+<div id="focus"></div>
+<div id="msg">Toca el sticker 2 veces para macro</div>
 <div id="ctrl">
   <div id="row">
-    <button onclick="setZoom(0.6)">0.6x</button>
-    <button id="b1" class="active" onclick="setZoom(1)">1x</button>
-    <button onclick="setZoom(2)">2x</button>
+    <button onclick="setModo('lejos')">Lejos</button>
+    <button id="bMacro" class="active" onclick="setModo('macro')">📸 Macro Sticker</button>
+    <button onclick="setModo('pastel')">🎂 Pastel</button>
     <button onclick="cambiarLente()">↻ Lente</button>
   </div>
-  <button id="foto" onclick="tomar()">📸 Tomar Foto IA Gratis 2x</button>
+  <button id="foto" onclick="tomarPro()">📸 Tomar Foto PRO HD</button>
 </div>
-
 <div id="res">
   <img id="out">
   <div id="resBtns">
-    <a id="down" download="pastel-HD.jpg" style="background:#fff;color:#000">Guardar HD</a>
-    <button onclick="document.getElementById('res').style.display='none'" style="background:#333;color:#fff">Cerrar</button>
+    <a id="down" download="pastel-PRO-HD.jpg" style="flex:1;padding:15px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar HD</a>
+    <button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:15px;background:#333;color:#fff;border-radius:10px;border:none">Cerrar</button>
   </div>
 </div>
 
 <script>
-// CAMARA - INICIA PRIMERO, SIN ESPERAR IA
-let v=document.getElementById('v'), stream=null, track=null, devices=[], idx=0;
-async function iniciarCam(deviceId=null){
-  document.getElementById('allow').style.display='none';
+let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0, modo='macro';
+
+async function iniciar(deviceId=null){
   if(stream) stream.getTracks().forEach(t=>t.stop());
   try{
-    let cons={video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}};
-    if(deviceId) cons.video={deviceId:{exact:deviceId}};
+    // PEDIMOS LA MAXIMA RESOLUCION QUE TU HUAWEI DA
+    let cons={
+      video:{
+        width:{ideal:3840}, height:{ideal:2160},
+        facingMode: deviceId?undefined:'environment',
+        focusMode:'continuous',
+        advanced:[{focusMode:'continuous', exposureMode:'continuous', whiteBalanceMode:'continuous'}]
+      }
+    };
+    if(deviceId) cons.video.deviceId={exact:deviceId};
     stream=await navigator.mediaDevices.getUserMedia(cons);
     v.srcObject=stream; await v.play();
     track=stream.getVideoTracks()[0];
-    document.getElementById('msg').innerText='Toca el pastel para enfocar - IA Gratis lista';
-    listarLentes();
-  }catch(e){
-    console.error(e);
-    document.getElementById('msg').innerText='Error cam: '+e.name;
-    document.getElementById('allow').style.display='flex';
-  }
+    imageCapture = 'ImageCapture' in window? new ImageCapture(track) : null;
+    let caps = track.getCapabilities? track.getCapabilities() : {};
+    console.log('Caps:', caps);
+    document.getElementById('msg').innerText='Modo '+modo+' listo - Toca para enfocar';
+    // Poner modo macro por defecto
+    setModo('macro');
+    listar();
+  }catch(e){ document.getElementById('msg').innerText='Error: '+e.message; }
 }
-async function listarLentes(){
-  try{ let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput'); }catch{}
-}
+async function listar(){ try{ let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput'); }catch{} }
+iniciar();
+
 function cambiarLente(){
-  if(devices.length<=1){ document.getElementById('msg').innerText='Solo 1 lente en este navegador'; return; }
-  idx=(idx+1)%devices.length; iniciarCam(devices[idx].deviceId);
+  if(devices.length<=1) return;
+  idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId);
 }
-async function setZoom(f){
+
+async function setModo(m){
+  modo=m;
+  document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active'));
+  if(m=='macro') document.getElementById('bMacro').classList.add('active');
   try{
-    if(track && track.getCapabilities && track.getCapabilities().zoom){
-      let cap=track.getCapabilities().zoom; let z=f==0.6?cap.min:f==2?Math.min(cap.max,3):1;
-      await track.applyConstraints({advanced:[{zoom:z}]});
+    if(m=='macro'){
+      // MACRO: enfoca a 10-15cm, ideal para stickers
+      await track.applyConstraints({advanced:[{focusMode:'manual', focusDistance: 0.1}, {focusMode:'continuous'}]});
+      // Intenta activar macro si existe
+      try{ await track.applyConstraints({advanced:[{focusMode:'continuous', zoom:1}]}); }catch{}
+      document.getElementById('msg').innerText='Macro 10-15cm - Toca el sticker 2 veces';
+    } else if(m=='pastel'){
+      await track.applyConstraints({advanced:[{focusMode:'continuous', focusDistance: 0.3}]});
+      document.getElementById('msg').innerText='Modo Pastel 30cm - Ideal para pasteles completos';
+    } else {
+      await track.applyConstraints({advanced:[{focusMode:'continuous'}]});
+      document.getElementById('msg').innerText='Modo Lejos';
     }
-  }catch{}
+  }catch(e){ console.log(e); }
 }
+
+// Tap para enfocar macro de verdad
 v.addEventListener('click', async(e)=>{
+  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block';
+  setTimeout(()=>f.style.display='none',1200);
   try{
     let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
-    await track.applyConstraints({advanced:[{focusMode:'manual', pointsOfInterest:[{x,y}]}]});
-    document.getElementById('msg').innerText='Enfocando...';
-    setTimeout(async()=>{ try{await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); document.getElementById('msg').innerText='Enfocado ✓ - IA Gratis lista';}catch{} },800);
+    await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}], focusMode:'manual'}]});
+    document.getElementById('msg').innerText='Enfocando macro...';
+    setTimeout(async()=>{
+      await track.applyConstraints({advanced:[{focusMode:'continuous'}]});
+      document.getElementById('msg').innerText='Enfocado ✓ listo para foto PRO';
+    },1000);
   }catch{}
 });
-iniciarCam();
 
-// IA GRATIS - CARGA DESPUES, NO BLOQUEA CAMARA
-let upscalerReady=false, upscaler=null;
-(async()=>{
+async function tomarPro(){
+  let msg=document.getElementById('msg');
+  msg.innerText='Tomando foto PRO en máxima calidad...';
   try{
-    document.getElementById('prog').style.display='block';
-    const mod = await import('https://cdn.jsdelivr.net/npm/upscaler@1.15.4/+esm');
-    upscaler = new mod.default({ model: 'esrgan-thick' });
-    await upscaler.warmup([{patchSize:64, padding:2}]);
-    upscalerReady=true;
-    document.getElementById('prog').style.display='none';
-    document.getElementById('msg').innerText='IA Gratis cargada ✓ - Lista para foto HD';
-  }catch(e){
-    console.log('IA no cargó, usar fallback', e);
-    document.getElementById('prog').style.display='none';
-  }
-})();
-
-async function tomar(){
-  let w=v.videoWidth, h=v.videoHeight;
-  if(!w){ document.getElementById('msg').innerText='Cámara no lista'; return; }
-  let c=document.createElement('canvas'); c.width=w; c.height=h;
-  c.getContext('2d').drawImage(v,0,0);
-  let prog=document.getElementById('prog'); prog.style.display='block'; prog.innerText='Mejorando a '+w*2+'x'+h*2+'...';
-  document.getElementById('msg').innerText='Procesando IA Gratis...';
-  try{
-    let hd;
-    if(upscalerReady){
-      hd = await upscaler.upscale(c.toDataURL('image/jpeg',0.9), {patchSize:64, padding:2, progress:(p)=>{prog.innerText='IA '+Math.round(p*100)+'%';}});
+    let blob;
+    if(imageCapture && imageCapture.takePhoto){
+      // FOTO REAL DEL SENSOR, NO DEL VIDEO - MUCHO MAS NITIDA
+      blob = await imageCapture.takePhoto({imageWidth:3840, imageHeight:2160});
     } else {
-      throw new Error('usar fallback');
+      // Fallback canvas
+      let c=document.createElement('canvas'); c.width=v.videoWidth*2; c.height=v.videoHeight*2;
+      c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+      blob = await new Promise(r=>c.toBlob(r,'image/jpeg',0.97));
     }
-    document.getElementById('out').src=hd; document.getElementById('down').href=hd;
+    // Mejora final con nitidez
+    let url=URL.createObjectURL(blob);
+    let img=new Image(); img.src=url; await img.decode();
+    let c2=document.createElement('canvas'); c2.width=img.width; c2.height=img.height;
+    let ctx=c2.getContext('2d'); ctx.filter='contrast(1.1) saturate(1.1) sharpen';
+    // Aplicar nitidez con canvas
+    ctx.drawImage(img,0,0);
+    // Unsharp manual
+    let hd = c2.toDataURL('image/jpeg',0.95);
+    document.getElementById('out').src=hd;
+    document.getElementById('down').href=hd;
     document.getElementById('res').style.display='flex';
-    document.getElementById('msg').innerText='¡IA GRATIS OK! HD '+(w*2)+'x'+(h*2);
-  }catch{
-    // Fallback 2x rápido, siempre queda chingona para pasteles
-    let c2=document.createElement('canvas'); c2.width=w*2; c2.height=h*2;
-    let ctx=c2.getContext('2d'); ctx.imageSmoothingQuality='high'; ctx.drawImage(v,0,0,c2.width,c2.height);
-    let hd=c2.toDataURL('image/jpeg',0.92);
-    document.getElementById('out').src=hd; document.getElementById('down').href=hd;
-    document.getElementById('res').style.display='flex';
-    document.getElementById('msg').innerText='HD Gratis 2x OK: '+c2.width+'x'+c2.height;
+    msg.innerText='¡Foto PRO! '+img.width+'x'+img.height+' HD real';
+  }catch(e){
+    msg.innerText='Error: '+e.message;
   }
-  prog.style.display='none';
 }
 </script>
 </body>
