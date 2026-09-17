@@ -2,17 +2,18 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-<title>Tap Focus Pro - P30</title>
+<title>Pro Cam - Focus Suave</title>
 <style>
  body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
  #out{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
  #topBar{position:fixed;top:0;left:0;right:0;z-index:99;padding:8px 5px 18px;background:linear-gradient(#000f,#0000)}
-.bar{display:flex;gap:6px;overflow-x:auto} .bar::-webkit-scrollbar{display:none}
-.btn{min-width:70px;height:34px;border-radius:17px;border:1px solid #fff4;background:#222;color:#fff;font-size:10px;font-weight:bold;white-space:nowrap}
-.btn.active{background:#fff;color:#000}.btn.sony.active{background:#ff7800;color:#fff}.btn.leica.active{background:#e30613;color:#fff}
- #focusBox{display:none;position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:50%;z-index:100;pointer-events:none;box-shadow:0 0 0 1px #000}
- #ui{position:fixed;bottom:0;left:0;right:0;z-index:99;display:flex;justify-content:space-around;padding:15px;background:linear-gradient(transparent,#000e)}
+ .bar{display:flex;gap:6px;overflow-x:auto;align-items:center;margin-top:6px} .bar::-webkit-scrollbar{display:none}
+ .btn{min-width:70px;height:34px;border-radius:17px;border:1px solid #fff4;background:#222;color:#fff;font-size:10px;font-weight:bold}
+ .btn.active{background:#fff;color:#000} .btn.sony.active{background:#ff7800;color:#fff}
+ #focusBox{display:none;position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:50%;z-index:100;pointer-events:none}
+ #ui{position:fixed;bottom:0;left:0;right:0;z-index:99;display:flex;justify-content:space-around;align-items:center;padding:15px;background:linear-gradient(transparent,#000e)}
  #shutter{width:80px;height:80px;border-radius:50%;background:#fff;border:4px solid #fff8}
+ #blurCtrl{color:#fff;font-size:10px;background:#000a;padding:4px 8px;border-radius:10px}
 </style>
 </head>
 <body>
@@ -24,9 +25,10 @@
     <button class="btn active" data-c="normal">NORMAL</button>
     <button class="btn sony" data-c="sony_scine">SONY S-CINE</button>
     <button class="btn sony" data-c="sony_std">SONY STD</button>
-    <button class="btn leica" data-c="leica_vivid">LEICA VIVID</button>
+    <button class="btn" data-c="leica_vivid">LEICA VIVID</button>
   </div>
   <div class="bar" id="lensBar"></div>
+  <div class="bar" id="blurCtrl">Desenfoque: <input type="range" id="blurRange" min="0" max="10" value="3" step="0.5" style="width:120px"> <span id="blurVal">3px</span> | Doble toque = quitar</div>
 </div>
 <div id="ui"><div style="width:50px"></div><button id="shutter"></button><button id="flip" style="width:48px;height:48px;border-radius:50%;background:#222;color:#fff;border:2px solid #fff">↻</button></div>
 
@@ -55,37 +57,91 @@ async function start(id,idx){
   requestAnimationFrame(loop);
 }
 function getFilter(){
-  if(color==='sony_scine') return 'contrast(1.08) saturate(0.95) brightness(1.04) sepia(0.03)';
+  if(color==='sony_scine') return 'contrast(1.08) saturate(0.95) brightness(1.04)';
   if(color==='sony_std') return 'contrast(1.12) saturate(1.08)';
-  if(color==='leica_vivid') return 'contrast(1.35) saturate(1.65) brightness(1.08)';
-  return 'contrast(1.05) saturate(1.05)';
+  if(color==='leica_vivid') return 'contrast(1.35) saturate(1.65)';
+  return 'contrast(1.05)';
 }
+
 function loop(){
-  if(focusPoint.active){
-    ctx.filter=getFilter()+' blur(14px)'; ctx.drawImage(video,0,0,canvas.width,canvas.height);
-    ctx.filter=getFilter(); ctx.save();
-    ctx.beginPath(); ctx.arc(focusPoint.x*canvas.width, focusPoint.y*canvas.height, Math.min(canvas.width,canvas.height)*0.28, 0, Math.PI*2);
-    ctx.clip(); ctx.drawImage(video,0,0,canvas.width,canvas.height); ctx.restore();
+  const blurAmount = parseFloat(document.getElementById('blurRange').value);
+  document.getElementById('blurVal').textContent=blurAmount+'px';
+
+  if(focusPoint.active && blurAmount>0){
+    const cx=focusPoint.x*canvas.width, cy=focusPoint.y*canvas.height;
+    const radius=Math.min(canvas.width,canvas.height)*0.40;
+    const feather=120;
+
+    // Fondo borroso
+    const blurred=document.createElement('canvas'); blurred.width=canvas.width; blurred.height=canvas.height;
+    const bctx=blurred.getContext('2d'); bctx.filter=getFilter()+` blur(${blurAmount}px)`; bctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+    // Frente nítido
+    const sharp=document.createElement('canvas'); sharp.width=canvas.width; sharp.height=canvas.height;
+    const sctx=sharp.getContext('2d'); sctx.filter=getFilter(); sctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+    // Mascara suave
+    const mask=document.createElement('canvas'); mask.width=canvas.width; mask.height=canvas.height;
+    const mctx=mask.getContext('2d');
+    const grad=mctx.createRadialGradient(cx,cy,radius-feather,cx,cy,radius+feather);
+    grad.addColorStop(0,'rgba(0,0,0,1)'); grad.addColorStop(0.6,'rgba(0,0,0,1)'); grad.addColorStop(1,'rgba(0,0,0,0)');
+    mctx.fillStyle=grad; mctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Combina
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(blurred,0,0);
+    ctx.save();
+    ctx.globalCompositeOperation='destination-out';
+    ctx.drawImage(mask,0,0);
+    ctx.restore();
+    ctx.save();
+    ctx.globalCompositeOperation='destination-over';
+    ctx.drawImage(sharp,0,0);
+    // recorte suave del sharp usando la mascara invertida
+    ctx.globalCompositeOperation='source-over';
+    ctx.globalAlpha=1;
+    ctx.drawImage(blurred,0,0);
+    ctx.globalCompositeOperation='destination-in';
+    ctx.drawImage(mask,0,0);
+    ctx.restore();
+    // Final: dibuja todo bien - truco simple para efecto natural
+    ctx.globalCompositeOperation='source-over';
+    ctx.filter=getFilter()+` blur(${blurAmount}px)`; ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    ctx.save();
+    ctx.beginPath();
+    const radial=ctx.createRadialGradient(cx,cy,radius-20,cx,cy,radius+feather);
+    radial.addColorStop(0,'rgba(255,255,255,1)'); radial.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=radial;
+    ctx.globalCompositeOperation='destination-in';
+    ctx.arc(cx,cy,radius+feather,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Re-dibuja centro nitido encima
+    ctx.save();
+    ctx.filter=getFilter();
+    ctx.beginPath(); ctx.arc(cx,cy,radius,0,Math.PI*2); ctx.clip();
+    // clip con feather manual usando globalAlpha
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    ctx.restore();
+
   }else{
-    ctx.filter=getFilter(); ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    ctx.filter=getFilter();
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
   }
   requestAnimationFrame(loop);
 }
+
 document.querySelectorAll('#colorBar .btn').forEach(b=>{
   b.addEventListener('click', ()=>{ document.querySelectorAll('#colorBar .btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); color=b.dataset.c; });
 });
 document.getElementById('flip').onclick=()=>{ curIdx=(curIdx+1)%devices.length; start(devices[curIdx].deviceId,curIdx); document.querySelectorAll('#lensBar .btn').forEach((x,i)=>x.classList.toggle('active',i==curIdx)); };
 
-// TOQUE PARA ENFOCAR LA CUCHARA Y DESENFOCAR LO DEMÁS
 canvas.addEventListener('click', async(e)=>{
   const r=canvas.getBoundingClientRect(); const x=(e.clientX-r.left)/r.width; const y=(e.clientY-r.top)/r.height;
   focusPoint={x,y,active:true};
   focusBox.style.left=(e.clientX-35)+'px'; focusBox.style.top=(e.clientY-35)+'px'; focusBox.style.display='block';
-  setTimeout(()=>focusBox.style.display='none',1500);
+  setTimeout(()=>focusBox.style.display='none',1000);
   try{ await track.applyConstraints({advanced:[{focusMode:'continuous', pointsOfInterest:[{x,y}]}]}); }catch{}
 });
-
-// doble toque quita el enfoque
 canvas.addEventListener('dblclick', ()=>{ focusPoint.active=false; });
 
 document.getElementById('shutter').onclick=()=>{
