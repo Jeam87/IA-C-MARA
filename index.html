@@ -1,86 +1,101 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI Camara - Detecta Escena</title>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Camara Leica Edition</title>
 <style>
  body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
  #out{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
- #tag{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#ffffffeb;color:#000;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:bold;z-index:10;display:none}
- #lensBar{display:flex;gap:8px;justify-content:center;position:fixed;top:55px;left:0;right:0;z-index:10}
-.lens{padding:6px 12px;border-radius:20px;background:#222c;color:#fff;border:1px solid #555;font-size:11px}
+ #topBar{position:fixed;top:10px;left:0;right:0;display:flex;flex-direction:column;gap:6px;align-items:center;z-index:10}
+ #leicaBar{display:flex;gap:6px;background:#000a;padding:6px 10px;border-radius:20px;border:1px solid #333}
+.leicaBtn{padding:6px 12px;border-radius:15px;border:none;font-size:11px;font-weight:bold;background:#222;color:#fff}
+.leicaBtn.active{background:#ff0000;color:#fff}
+ #lensBar{display:flex;gap:6px}
+.lens{padding:5px 10px;border-radius:15px;background:#000a;color:#fff;border:1px solid #555;font-size:10px}
 .lens.active{background:#fff;color:#000}
- #ui{position:fixed;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,#000d);z-index:10}
- #controls{display:flex;align-items:center;justify-content:space-around}
- #shutter{width:78px;height:78px;border-radius:50%;background:#fff;border:4px solid #fff8}
+ #tag{position:fixed;top:90px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:4px 12px;border-radius:15px;font-size:12px;z-index:10;display:none}
+ #ui{position:fixed;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,#000e);z-index:10}
+ #controls{display:flex;justify-content:space-around;align-items:center}
+ #shutter{width:80px;height:80px;border-radius:50%;background:#fff;border:4px solid #fff8}
 </style>
 </head>
 <body>
 <video id="cam" autoplay playsinline muted style="display:none"></video>
 <canvas id="out"></canvas>
-<div id="tag">Detectando...</div>
-<div id="lensBar"></div>
+<div id="topBar">
+  <div id="leicaBar">
+    <button class="leicaBtn active" data-mode="normal">NORMAL</button>
+    <button class="leicaBtn" data-mode="vivid">LEICA VIVID</button>
+    <button class="leicaBtn" data-mode="auth">LEICA AUTH</button>
+  </div>
+  <div id="lensBar"></div>
+</div>
+<div id="tag"></div>
 <div id="ui">
-  <div style="display:flex;gap:8px"><label style="color:#fff;font-size:11px;flex:1">Belleza <span id="bVal">50</span>%<input type="range" id="beauty" min="0" max="100" value="50"></label><label style="color:#fff;font-size:11px;flex:1">Zoom <span id="zVal">1x</span><input type="range" id="zoom" min="1" max="10" value="1"></label></div>
+  <div style="display:flex;gap:10px"><label style="color:#fff;font-size:11px;flex:1">Belleza <span id="bVal">50</span>%<input type="range" id="beauty" min="0" max="100" value="50"></label><label style="color:#fff;font-size:11px;flex:1">Zoom <span id="zVal">1x</span><input type="range" id="zoom" min="1" max="8" value="1"></label></div>
   <div id="controls"><div style="width:50px"></div><button id="shutter"></button><button id="flip" style="width:50px;height:50px;border-radius:50%;background:#222;color:#fff;border:2px solid #fff">↻</button></div>
+  <p style="color:#aaa;font-size:10px;text-align:center;margin:4px 0 0">Modo Leica inspirado en Huawei x Leica</p>
 </div>
 <script>
 const video=document.getElementById('cam'), canvas=document.getElementById('out'), ctx=canvas.getContext('2d'), tag=document.getElementById('tag');
-let stream, track, devices=[], model=null, scene='normal', lastScene='';
+let stream, track, devices=[], leicaMode='normal';
 
 async function init(){
-  tag.style.display='block'; tag.textContent='Cargando IA de escena...';
-  model = await cocoSsd.load({base:'lite_mobilenet_v2'}); // modelo liviano
-  tag.textContent='IA lista!';
-  setTimeout(()=>tag.style.display='none',1000);
   await navigator.mediaDevices.getUserMedia({video:true});
-  devices = (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-  const bar=document.getElementById('lensBar'); devices.forEach((d,i)=>{ const b=document.createElement('button'); b.className='lens'; b.textContent=d.label.includes('front')?'FRONTAL':`LENTE ${i}`; b.onclick=()=>start(d.deviceId); bar.appendChild(b); });
-  start(devices[0]?.deviceId);
+  devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+  const bar=document.getElementById('lensBar');
+  devices.forEach((d,i)=>{ const b=document.createElement('button'); b.className='lens'+(i==0?' active':''); b.textContent=d.label.toLowerCase().includes('front')?'FRONTAL':`LENTE ${i+1}`; b.onclick=()=>start(d.deviceId,i); bar.appendChild(b); });
+  start(devices[0]?.deviceId,0);
 }
-async function start(id){
+async function start(id, idx){
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:id?{exact:id}:undefined}});
+  stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:id?{exact:id}:undefined}});
   video.srcObject=stream; track=stream.getVideoTracks()[0];
-  await video.play(); canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-  requestAnimationFrame(loop);
+  document.querySelectorAll('.lens').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  await video.play(); canvas.width=video.videoWidth; canvas.height=video.videoHeight; requestAnimationFrame(draw);
 }
-let frame=0;
-async function loop(){
-  frame++;
-  // Dibuja con filtro segun escena
-  let f=''; const lv=beauty.value/100;
-  if(scene==='flor' || scene==='potted plant') f=`contrast(1.2) saturate(1.8) brightness(1.1) hue-rotate(-10deg)`;
-  else if(scene==='comida' || scene==='pizza' || scene==='cake' || scene==='sandwich') f=`contrast(1.25) saturate(1.6) brightness(1.12) sepia(0.15)`;
-  else if(scene==='pelota' || scene==='sports ball') f=`contrast(1.3) saturate(1.7) brightness(1.15)`;
-  else if(scene==='persona' || scene==='person') f=`contrast(${1+lv*0.1}) saturate(${1+lv*0.2}) brightness(${1+lv*0.1})`;
-  else f=`contrast(1.15) saturate(1.3) brightness(1.05)`;
-  ctx.filter=f; ctx.drawImage(video,0,0,canvas.width,canvas.height); ctx.filter='none';
-
-  // Detecta cada 30 frames para no trabarse
-  if(frame%30===0 && model){
-    const preds = await model.detect(video);
-    if(preds[0]){
-      let obj = preds[0].class; // en ingles: person, potted plant, cake...
-      // Traduccion rapida
-      const mapa={ 'potted plant':'flor 🌸', 'person':'persona 👤', 'cat':'gato 🐱', 'dog':'perro 🐶', 'pizza':'comida 🍕', 'cake':'comida 🍰', 'sandwich':'comida 🥪', 'sports ball':'pelota ⚽', 'apple':'comida 🍎' };
-      scene=obj; let nombre = mapa[obj] || obj;
-      if(scene!==lastScene){ tag.style.display='block'; tag.textContent=`Detectado: ${nombre} - optimizando`; setTimeout(()=>tag.style.display='none',1500); lastScene=scene; }
-    }
+function getLeicaFilter(){
+  const b=beauty.value/100;
+  if(leicaMode==='vivid'){
+    // Rojo Leica profundo, contraste alto, viñeteo
+    return `contrast(1.38) saturate(1.65) brightness(1.08) sepia(0.04) hue-rotate(-4deg)`;
+  }else if(leicaMode==='auth'){
+    // Leica Authentic: colores reales, piel no amarilla, sombras con detalle
+    return `contrast(1.22) saturate(0.92) brightness(1.02) sepia(0.06)`;
+  }else{
+    return `contrast(${1+b*0.1}) saturate(${1+b*0.25}) brightness(${1+b*0.08})`;
   }
-  requestAnimationFrame(loop);
 }
+function draw(){
+  ctx.filter=getLeicaFilter();
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  // Viñeteo Leica caracteristico
+  if(leicaMode!=='normal'){
+    const grad=ctx.createRadialGradient(canvas.width/2,canvas.height/2,canvas.width*0.4,canvas.width/2,canvas.height/2,canvas.width);
+    grad.addColorStop(0,'transparent'); grad.addColorStop(1, leicaMode==='vivid'?'rgba(0,0,0,0.35)':'rgba(0,0,0,0.25)');
+    ctx.filter='none'; ctx.fillStyle=grad; ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  requestAnimationFrame(draw);
+}
+// Cambio de modo Leica
+document.querySelectorAll('.leicaBtn').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.leicaBtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); leicaMode=btn.dataset.mode;
+    tag.style.display='block'; tag.textContent= leicaMode==='vivid'?'LEICA VIVID: Colores intensos':'LEICA AUTHENTIC: Tonos reales';
+    if(leicaMode==='normal') tag.textContent='MODO NORMAL';
+    setTimeout(()=>tag.style.display='none',1500);
+  };
+});
 beauty.oninput=e=>bVal.textContent=e.target.value;
-zoom.oninput=async e=>{ zVal.textContent=e.target.value+'x'; try{await track.applyConstraints({advanced:[{zoom:parseFloat(e.target.value)}]})}catch{}};
-flip.onclick=()=>{
-  const idx=devices.findIndex(d=>d.deviceId===stream.getVideoTracks()[0].getSettings().deviceId);
-  start(devices[(idx+1)%devices.length].deviceId);
-};
+zoom.oninput=async e=>{ zVal.textContent=e.target.value+'x'; try{await track.applyConstraints({advanced:[{zoom:parseFloat(e.target.value)}]})}catch{} };
+flip.onclick=()=>{ const cur=stream.getVideoTracks()[0].getSettings().deviceId; let i=devices.findIndex(d=>d.deviceId===cur); start(devices[(i+1)%devices.length].deviceId,(i+1)%devices.length); };
 shutter.onclick=()=>{
-  const c=document.createElement('canvas'); c.width=canvas.width; c.height=canvas.height; const f=c.getContext('2d'); f.filter=ctx.filter+' contrast(1.15)'; f.drawImage(canvas,0,0);
-  const a=document.createElement('a'); a.download=`AI-${scene}-${Date.now()}.jpg`; a.href=c.toDataURL('image/jpeg',0.96); a.click();
+  const c=document.createElement('canvas'); c.width=canvas.width; c.height=canvas.height; const f=c.getContext('2d');
+  f.filter=getLeicaFilter()+' contrast(1.1)'; f.drawImage(canvas,0,0);
+  // Marca de agua estilo Leica
+  if(leicaMode!=='normal'){ f.filter='none'; f.fillStyle='#fff'; f.font=`bold ${c.width*0.03}px monospace`; f.fillText(`LEICA ${leicaMode.toUpperCase()} | ${new Date().toLocaleTimeString()}`,20,c.height-20); }
+  const a=document.createElement('a'); a.download=`LEICA-${leicaMode}-${Date.now()}.jpg`; a.href=c.toDataURL('image/jpeg',0.97); a.click();
 };
 init();
 </script>
