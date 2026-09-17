@@ -1,25 +1,31 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Cam Pro</title>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Cam Pasteles Pro IA</title>
 <style>
-body{margin:0;background:#000;overflow:hidden}
+body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
 #v{width:100vw;height:100vh;object-fit:cover;background:#111}
-#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:10px;display:none;pointer-events:none;z-index:5;transform:translate(-50%,-50%)}
+#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:10px;display:none;pointer-events:none;z-index:5;transform:translate(-50%,-50%);box-shadow:0 0 10px #ff0}
 #focus::after{content:'';position:absolute;top:50%;left:50%;width:10px;height:10px;background:#ff0;border-radius:50%;transform:translate(-50%,-50%)}
-#msg{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 16px;border-radius:20px;z-index:10;font-family:sans-serif;font-size:13px}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000c);padding:15px;display:flex;flex-direction:column;gap:10px;z-index:10}
-#row{display:flex;gap:8px;justify-content:center}
-#row button{background:#222;color:#fff;border:1px solid #555;padding:12px 16px;border-radius:12px;font-weight:bold}
-#row button.active{background:#ff7800;border-color:#ff7800}
+#msg{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 16px;border-radius:20px;z-index:10;font-size:13px;text-align:center;max-width:90%}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.9));padding:15px;display:flex;flex-direction:column;gap:10px;z-index:10}
+#row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#row button{background:#222;color:#fff;border:1px solid #555;padding:12px 16px;border-radius:12px;font-weight:bold;font-size:13px}
+#row button.active{background:#ff7800;border-color:#ff7800;color:#fff}
 #foto{width:100%;padding:16px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
-#res img{flex:1;width:100%;object-fit:contain}
+#res img{flex:1;width:100%;object-fit:contain;background:#111}
+#resBtns{display:flex;gap:10px;padding:15px}
+#resBtns a, #resBtns button{flex:1;padding:15px;text-align:center;border-radius:10px;text-decoration:none;font-weight:bold;border:none}
 </style>
 </head>
 <body>
 <video id="v" autoplay playsinline muted></video>
 <div id="focus"></div>
-<div id="msg">Toca la pantalla para enfocar el pastel</div>
+<div id="msg">Toca el pastel en la pantalla para enfocar</div>
+
 <div id="ctrl">
   <div id="row">
     <button onclick="setZoom(0.6)">0.6x*</button>
@@ -28,12 +34,20 @@ body{margin:0;background:#000;overflow:hidden}
     <button onclick="cambiarLente()">↻ Lente</button>
   </div>
   <button id="foto" onclick="tomar()">📸 Tomar Foto IA 2x</button>
-  <small style="color:#aaa;text-align:center;font-family:sans-serif">*0.6x no disponible en web en Huawei, aléjate físicamente</small>
+  <small style="color:#aaa;text-align:center;font-size:11px">*0.6x no disponible en web en Huawei, aléjate físicamente 40cm</small>
 </div>
-<div id="res"><img id="out"><a id="down" download="pastel-HD.jpg" style="margin:10px;padding:15px;background:#fff;color:#000;text-align:center;border-radius:10px;text-decoration:none;font-family:sans-serif;font-weight:bold">Guardar HD</a><button onclick="this.parentElement.style.display='none'" style="margin:10px;padding:15px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button></div>
+
+<div id="res">
+  <img id="out" alt="Foto HD">
+  <div id="resBtns">
+    <a id="down" download="pastel-HD.jpg" style="background:#fff;color:#000">Guardar HD</a>
+    <button onclick="document.getElementById('res').style.display='none'" style="background:#333;color:#fff">Cerrar</button>
+  </div>
+</div>
 
 <script>
 let video=document.getElementById('v'), stream, track, devices=[], idx=0;
+
 async function iniciar(deviceId=null){
   if(stream) stream.getTracks().forEach(t=>t.stop());
   let cons={video:{width:{ideal:1920},height:{ideal:1080},focusMode:{ideal:'continuous'}}};
@@ -41,66 +55,91 @@ async function iniciar(deviceId=null){
   try{
     stream=await navigator.mediaDevices.getUserMedia(cons);
     video.srcObject=stream; await video.play(); track=stream.getVideoTracks()[0];
-    // intenta auto-focus continuo para no borroso
-    try{await track.applyConstraints({advanced:[{focusMode:'continuous', exposureMode:'continuous', whiteBalanceMode:'continuous'}]});}catch{}
+    try{ await track.applyConstraints({advanced:[{focusMode:'continuous', exposureMode:'continuous', whiteBalanceMode:'continuous'}]}); }catch{}
     document.getElementById('msg').innerText='Lista - Toca el pastel para enfocar';
-  }catch(e){ document.getElementById('msg').innerText='Error: '+e.message; }
+  }catch(e){
+    document.getElementById('msg').innerText='Error: '+e.message;
+  }
 }
+
 async function listar(){
   try{
     let all=await navigator.mediaDevices.enumerateDevices();
     devices=all.filter(d=>d.kind=='videoinput');
-    console.log(devices); // ver cuantos detecta
   }catch{}
   iniciar();
 }
 listar();
+
 function cambiarLente(){
-  if(devices.length<2){document.getElementById('msg').innerText='Huawei solo expone 1 lente en web'; return;}
+  if(devices.length<2){ document.getElementById('msg').innerText='Huawei solo expone 1 lente en web - usa app nativa para 0.6x'; return; }
   idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId);
-  document.getElementById('msg').innerText='Lente '+(idx+1)+': '+(devices[idx].label||'cam');
+  document.getElementById('msg').innerText='Lente '+(idx+1)+' de '+devices.length+': '+(devices[idx].label||'cam');
 }
+
 async function setZoom(f){
   document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active'));
   if(f==1) document.getElementById('b1').classList.add('active');
   try{
     if(track && track.getCapabilities && track.getCapabilities().zoom){
       let c=track.getCapabilities().zoom;
-      let z=f==0.6?c.min:f==2?Math.min(c.max,2):1;
+      let z=f==0.6?c.min:f==2?Math.min(c.max,2.5):1;
       await track.applyConstraints({advanced:[{zoom:z}]});
       document.getElementById('msg').innerText='Zoom '+z.toFixed(1)+'x';
     } else {
-      // no hay zoom real, aviso
-      document.getElementById('msg').innerText=f==0.6?'0.6x no disponible en web, aléjate 30cm más':'Zoom digital '+f+'x';
+      document.getElementById('msg').innerText=f==0.6?'0.6x no disponible en web, aléjate físicamente':'Zoom digital '+f+'x';
     }
-  }catch(e){ document.getElementById('msg').innerText='Zoom no soportado en este lente'; }
+  }catch(e){
+    document.getElementById('msg').innerText='Zoom no soportado en este lente';
+  }
 }
-// CUADRITO DE ENFOQUE
+
 video.addEventListener('click', async(e)=>{
   let box=document.getElementById('focus');
   box.style.left=e.clientX+'px'; box.style.top=e.clientY+'px'; box.style.display='block';
   setTimeout(()=>box.style.display='none',1500);
-  document.getElementById('msg').innerText='Enfocando pastel...';
+  document.getElementById('msg').innerText='Enfocando...';
   try{
     const x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
-    await track.applyConstraints({advanced:[{focusMode:'manual', pointsOfInterest:[{x,y}], exposureMode:'manual', pointsOfInterest:[{x,y}]}]});
+    await track.applyConstraints({advanced:[{focusMode:'manual', pointsOfInterest:[{x,y}]}]});
     setTimeout(async()=>{
-      try{await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
-      document.getElementById('msg').innerText='Enfocado ✓';
+      try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch{}
+      document.getElementById('msg').innerText='Enfocado ✓ - listo para foto';
     },800);
-  }catch{ document.getElementById('msg').innerText='Enfoque fijo en Huawei'; }
+  }catch{
+    document.getElementById('msg').innerText='Enfoque fijo - Huawei';
+  }
 });
+
 async function tomar(){
-  let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
-  c.getContext('2d').drawImage(video,0,0);
+  let c=document.createElement('canvas');
+  c.width=video.videoWidth; c.height=video.videoHeight;
+  c.getContext('2d').drawImage(video,0,0,c.width,c.height);
   let base64=c.toDataURL('image/jpeg',0.95);
-  document.getElementById('msg').innerText='Mejorando a 2x con Real-ESRGAN...';
+  let w=c.width, h=c.height;
+  document.getElementById('msg').innerText='Foto '+w+'x'+h+' -> Enviando a Real-ESRGAN IA...';
   try{
-    let r=await fetch('/api/upscale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
+    let r=await fetch('/api/upscale',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({image:base64})
+    });
     let d=await r.json();
-    if(d.url){ document.getElementById('out').src=d.url; document.getElementById('down').href=d.url; document.getElementById('res').style.display='flex'; document.getElementById('msg').innerText='¡HD 2x lista!'; return; }
-    throw 0;
-  }catch{ let a=document.createElement('a'); a.href=base64; a.download='pastel.jpg'; a.click(); document.getElementById('msg').innerText='Guardada (IA falló, revisa FAL_KEY)'; }
+    console.log('RESPUESTA IA:', d);
+    if(d.error){ alert('Error IA: '+d.error); throw new Error(d.error); }
+    if(d.url && d.url.includes('fal.media')){
+      document.getElementById('out').src=d.url;
+      document.getElementById('down').href=d.url;
+      document.getElementById('res').style.display='flex';
+      document.getElementById('msg').innerText='¡IA OK! Antes '+w+'x'+h+' -> HD '+(w*2)+'x'+(h*2);
+    } else {
+      throw new Error('No vino URL de fal.ai');
+    }
+  }catch(e){
+    alert('IA falló: '+e.message+' - Revisa FAL_KEY en Vercel > Settings > Env Variables > Redeploy');
+    let a=document.createElement('a'); a.href=base64; a.download='pastel-sin-IA.jpg'; a.click();
+    document.getElementById('msg').innerText='Sin IA - guardada normal '+w+'x'+h;
+  }
 }
 </script>
 </body>
