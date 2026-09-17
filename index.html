@@ -1,29 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Camara Mejorada con IA</title>
+<title>Camara Profesional IA</title>
 <style>
-  body { margin: 0; background: #000; font-family: sans-serif; }
-  #v { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-  #focus-box { position: fixed; width: 60px; height: 60px; border: 2px solid yellow; display: none; z-index: 99; pointer-events: none; }
-  #status { position: fixed; top: 10px; left: 10px; color: white; background: #0008; padding: 5px 10px; border-radius: 10px; z-index: 99; }
-  #controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 99; }
-  button { padding: 10px; border: none; border-radius: 5px; background: #fff; cursor: pointer; }
+  body { margin: 0; background: #000; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+  #videoContainer { position: relative; width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; }
+  #v { width: 100%; height: auto; object-fit: cover; }
+  #focus-box { position: absolute; width: 80px; height: 80px; border: 3px solid #00FF00; border-radius: 50%; display: none; z-index: 10; pointer-events: none; }
+  #topBar { position: fixed; top: 10px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 100; }
+  #controls { position: fixed; bottom: 20px; display: flex; gap: 15px; z-index: 100; }
+  button { padding: 12px 20px; border: none; border-radius: 8px; background: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+  #status { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #0008; padding: 8px 15px; border-radius: 15px; color: #fff; font-weight: bold; z-index: 101; }
 </style>
 </head>
 <body>
 
-<video id="v" autoplay playsinline></video>
-<div id="focus-box"></div>
-<div id="status">Cargando cámara...</div>
-<div id="controls">
-  <button id="switchCam">Cambiar cámara</button>
+<div id="topBar">
+  <button id="switchCam">Cambiar Cámara</button>
   <button id="zoomIn">Acercar</button>
   <button id="zoomOut">Alejar</button>
-  <button id="takePhoto">Tomar foto</button>
+  <button id="takePhoto">Tomar Foto</button>
 </div>
+
+<div id="videoContainer">
+  <video id="v" autoplay playsinline></video>
+  <div id="focus-box"></div>
+</div>
+<div id="status">Cargando cámara...</div>
 
 <script>
 const video = document.getElementById('v');
@@ -35,29 +40,28 @@ const zoomOutBtn = document.getElementById('zoomOut');
 const takeBtn = document.getElementById('takePhoto');
 
 let stream;
-let currentDeviceId = null;
 let devices = [];
+let currentDeviceIndex = 0;
 let zoomLevel = 1;
-const maxZoom = 3; // Ajusta según soporte
-const minZoom = 1;
+let maxZoom = 3;
+let minZoom = 1;
 
+// Obtener las cámaras disponibles
 async function getDevices() {
   const devs = await navigator.mediaDevices.enumerateDevices();
   devices = devs.filter(d => d.kind === 'videoinput');
 }
 
+// Inicia la cámara con el dispositivo actual
 async function startCamera() {
   if (!devices.length) await getDevices();
 
-  // Alterna entre cámaras frontal y trasera
-  const deviceId = devices.find(d => {
-    if (currentDeviceId) return d.deviceId === currentDeviceId;
-    // Si no hay seleccionado, busca frontal o trasera
-    // En general, "facingMode" sería mejor, pero aquí usamos deviceId
-    return true;
-  })?.deviceId || devices[0].deviceId;
+  // Si hay más de una cámara, alternar
+  if (devices.length > 1) {
+    currentDeviceIndex = (currentDeviceIndex + 1) % devices.length;
+  }
 
-  currentDeviceId = deviceId;
+  const deviceId = devices[currentDeviceIndex].deviceId;
 
   if (stream) {
     stream.getTracks().forEach(t => t.stop());
@@ -67,36 +71,35 @@ async function startCamera() {
     stream = await navigator.mediaDevices.getUserMedia({
       video: {
         deviceId: { exact: deviceId },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
         // zoom: true // No soportado en todos
       }
     });
     video.srcObject = stream;
     status.innerText = 'Cámara lista';
 
-    // Intenta detectar soporte de zoom
+    // Detectar soporte de zoom
     const [track] = stream.getVideoTracks();
     const capabilities = track.getCapabilities();
     if (capabilities.zoom) {
       maxZoom = capabilities.zoom.max;
       minZoom = capabilities.zoom.min;
+      zoomLevel = track.getSettings().zoom || 1;
+    } else {
+      zoomLevel = 1;
     }
   } catch (e) {
     status.innerText = 'Error: ' + e.message;
   }
 }
 
-async function switchCamera() {
-  // Cambia a la otra cámara
-  await getDevices();
-  // Encuentra la otra cámara (si hay más de 1)
-  const currentIndex = devices.findIndex(d => d.deviceId === currentDeviceId);
-  const newIndex = (currentIndex + 1) % devices.length;
-  currentDeviceId = devices[newIndex].deviceId;
-  await startCamera();
-}
+// Cambiar entre cámaras
+switchBtn.onclick = () => {
+  startCamera();
+};
 
+// Zoom in
 async function zoomIn() {
   if (!stream) return;
   const [track] = stream.getVideoTracks();
@@ -109,6 +112,7 @@ async function zoomIn() {
   }
 }
 
+// Zoom out
 async function zoomOut() {
   if (!stream) return;
   const [track] = stream.getVideoTracks();
@@ -121,48 +125,35 @@ async function zoomOut() {
   }
 }
 
-async function takePhoto() {
+// Tomar foto
+function takePhoto() {
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
-
-  // Dibujar la imagen
   ctx.drawImage(video, 0, 0);
-  // Aquí se puede integrar IA para mejorar la foto
-  // Por ejemplo, enviar la imagen a un API de mejora y mostrar la versión mejorada
-  // Por ahora, sólo descargamos la imagen
+  // Aquí se puede integrar IA para mejorar la foto.
   canvas.toBlob(blob => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'foto_mejorada.jpg';
+    a.download = 'foto_pro.jpg';
     a.click();
     status.innerText = 'Foto guardada!';
   }, 'image/jpeg', 0.95);
 }
 
-// Evento para enfocar y mover caja
+// Enfocar (mostrar caja en clic)
 video.addEventListener('click', (e) => {
-  focusBox.style.left = (e.clientX - 30) + 'px';
-  focusBox.style.top = (e.clientY - 30) + 'px';
+  focusBox.style.left = (e.offsetX - 40) + 'px';
+  focusBox.style.top = (e.offsetY - 40) + 'px';
   focusBox.style.display = 'block';
-
-  // Aquí se puede usar Points of Interest si soportado
-  // pero la mayoría de navegadores no soporta control de enfoque por punto
-
   setTimeout(() => { focusBox.style.display = 'none'; }, 1500);
 });
 
-// Botones
-switchBtn.onclick = () => { switchCamera(); }
-zoomInBtn.onclick = () => { zoomIn(); }
-zoomOutBtn.onclick = () => { zoomOut(); }
-takeBtn.onclick = () => { takePhoto(); }
-
-// Inicia la cámara al cargar
+// Iniciar la cámara al cargar
 startCamera();
-
 </script>
+
 </body>
 </html> 
