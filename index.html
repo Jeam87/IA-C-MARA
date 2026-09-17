@@ -1,159 +1,67 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Camara Profesional IA</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cam IA Real</title>
 <style>
-  body { margin: 0; background: #000; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-  #videoContainer { position: relative; width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; }
-  #v { width: 100%; height: auto; object-fit: cover; }
-  #focus-box { position: absolute; width: 80px; height: 80px; border: 3px solid #00FF00; border-radius: 50%; display: none; z-index: 10; pointer-events: none; }
-  #topBar { position: fixed; top: 10px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 100; }
-  #controls { position: fixed; bottom: 20px; display: flex; gap: 15px; z-index: 100; }
-  button { padding: 12px 20px; border: none; border-radius: 8px; background: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-  #status { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #0008; padding: 8px 15px; border-radius: 15px; color: #fff; font-weight: bold; z-index: 101; }
+body{margin:0;background:#000;color:#fff;font-family:sans-serif}
+#v{width:100%;height:100vh;object-fit:cover;background:#111}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:#000;display:flex;justify-content:space-around;padding:15px;z-index:10}
+button{padding:12px 18px;border-radius:10px;border:none;font-weight:bold}
+#foto{background:#fff;color:#000;font-size:18px}
+#msg{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#000c;padding:8px 15px;border-radius:20px;z-index:10}
+#res{position:fixed;inset:0;background:#000;display:none;flex-direction:column;z-index:20}
+#res img{width:100%;flex:1;object-fit:contain}
 </style>
 </head>
 <body>
-
-<div id="topBar">
-  <button id="switchCam">Cambiar Cámara</button>
-  <button id="zoomIn">Acercar</button>
-  <button id="zoomOut">Alejar</button>
-  <button id="takePhoto">Tomar Foto</button>
+<div id="msg">Tocá la pantalla para enfocar</div>
+<video id="v" autoplay playsinline></video>
+<div id="ctrl">
+  <button onclick="cambiar()">Cambiar Cámara</button>
+  <button id="foto" onclick="tomar()">Tomar Foto IA</button>
 </div>
-
-<div id="videoContainer">
-  <video id="v" autoplay playsinline></video>
-  <div id="focus-box"></div>
-</div>
-<div id="status">Cargando cámara...</div>
+<div id="res"><img id="out"><button onclick="this.parentElement.style.display='none'" style="padding:15px;background:#ff7800;color:#fff">Cerrar</button><a id="down" download="pastel-ia.jpg" style="padding:15px;background:#fff;color:#000;text-align:center;margin:10px;border-radius:10px;text-decoration:none">Guardar Foto HD</a></div>
 
 <script>
-const video = document.getElementById('v');
-const focusBox = document.getElementById('focus-box');
-const status = document.getElementById('status');
-const switchBtn = document.getElementById('switchCam');
-const zoomInBtn = document.getElementById('zoomIn');
-const zoomOutBtn = document.getElementById('zoomOut');
-const takeBtn = document.getElementById('takePhoto');
-
-let stream;
-let devices = [];
-let currentDeviceIndex = 0;
-let zoomLevel = 1;
-let maxZoom = 3;
-let minZoom = 1;
-
-// Obtener las cámaras disponibles
-async function getDevices() {
-  const devs = await navigator.mediaDevices.enumerateDevices();
-  devices = devs.filter(d => d.kind === 'videoinput');
-}
-
-// Inicia la cámara con el dispositivo actual
-async function startCamera() {
-  if (!devices.length) await getDevices();
-
-  // Si hay más de una cámara, alternar
-  if (devices.length > 1) {
-    currentDeviceIndex = (currentDeviceIndex + 1) % devices.length;
-  }
-
-  const deviceId = devices[currentDeviceIndex].deviceId;
-
-  if (stream) {
-    stream.getTracks().forEach(t => t.stop());
-  }
-
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        deviceId: { exact: deviceId },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        // zoom: true // No soportado en todos
-      }
-    });
-    video.srcObject = stream;
-    status.innerText = 'Cámara lista';
-
-    // Detectar soporte de zoom
-    const [track] = stream.getVideoTracks();
-    const capabilities = track.getCapabilities();
-    if (capabilities.zoom) {
-      maxZoom = capabilities.zoom.max;
-      minZoom = capabilities.zoom.min;
-      zoomLevel = track.getSettings().zoom || 1;
-    } else {
-      zoomLevel = 1;
-    }
-  } catch (e) {
-    status.innerText = 'Error: ' + e.message;
+let video=document.getElementById('v'), stream, facing='environment', track;
+async function iniciar(){
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing}});
+    video.srcObject=stream; await video.play();
+    track=stream.getVideoTracks()[0];
+    document.getElementById('msg').innerText='Cámara lista - Toca para enfocar';
+  }catch(e){
+    document.getElementById('msg').innerText='Error: Dale permiso a la cámara y usa HTTPS';
   }
 }
-
-// Cambiar entre cámaras
-switchBtn.onclick = () => {
-  startCamera();
-};
-
-// Zoom in
-async function zoomIn() {
-  if (!stream) return;
-  const [track] = stream.getVideoTracks();
-  const capabilities = track.getCapabilities();
-  if (capabilities.zoom) {
-    zoomLevel = Math.min(zoomLevel + 0.1, capabilities.zoom.max);
-    await track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
-  } else {
-    alert('Zoom no soportado');
+iniciar();
+function cambiar(){ facing=facing=='environment'?'user':'environment'; iniciar(); }
+video.onclick=async(e)=>{
+  const x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
+  document.getElementById('msg').innerText='Enfocando...';
+  try{ await track.applyConstraints({advanced:[{focusMode:'manual', pointsOfInterest:[{x,y}]}]}); }catch{}
+  setTimeout(()=>document.getElementById('msg').innerText='Cámara lista',800);
+}
+async function tomar(){
+  let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
+  c.getContext('2d').drawImage(video,0,0);
+  let base64=c.toDataURL('image/jpeg',0.9);
+  document.getElementById('msg').innerText='Subiendo a IA Real-ESRGAN... 5 seg';
+  try{
+    let r=await fetch('/api/upscale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
+    let data=await r.json();
+    if(!data.url) throw new Error(JSON.stringify(data));
+    document.getElementById('out').src=data.url;
+    document.getElementById('down').href=data.url;
+    document.getElementById('res').style.display='flex';
+    document.getElementById('msg').innerText='¡Foto mejorada con IA!';
+  }catch(err){
+    document.getElementById('msg').innerText='Error IA, guardando normal';
+    let a=document.createElement('a'); a.href=base64; a.download='foto-normal.jpg'; a.click();
   }
 }
-
-// Zoom out
-async function zoomOut() {
-  if (!stream) return;
-  const [track] = stream.getVideoTracks();
-  const capabilities = track.getCapabilities();
-  if (capabilities.zoom) {
-    zoomLevel = Math.max(zoomLevel - 0.1, capabilities.zoom.min);
-    await track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
-  } else {
-    alert('Zoom no soportado');
-  }
-}
-
-// Tomar foto
-function takePhoto() {
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0);
-  // Aquí se puede integrar IA para mejorar la foto.
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'foto_pro.jpg';
-    a.click();
-    status.innerText = 'Foto guardada!';
-  }, 'image/jpeg', 0.95);
-}
-
-// Enfocar (mostrar caja en clic)
-video.addEventListener('click', (e) => {
-  focusBox.style.left = (e.offsetX - 40) + 'px';
-  focusBox.style.top = (e.offsetY - 40) + 'px';
-  focusBox.style.display = 'block';
-  setTimeout(() => { focusBox.style.display = 'none'; }, 1500);
-});
-
-// Iniciar la cámara al cargar
-startCamera();
 </script>
-
 </body>
-</html> 
+</html>
