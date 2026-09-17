@@ -1,85 +1,87 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI Camara Pro Auto</title>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Camara - Detecta Escena</title>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 <style>
  body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
- #cam{display:none} #out{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
- #focusBox{display:none;position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:10px;z-index:20}
- #ui{position:fixed;bottom:0;left:0;right:0;padding:12px;background:linear-gradient(transparent,#000d);z-index:10}
- #lensBar{display:flex;gap:8px;justify-content:center;margin-bottom:8px;overflow-x:auto}
-.lens{padding:7px 14px;border-radius:20px;background:#222;color:#fff;border:1px solid #555;font-size:12px;white-space:nowrap}
-.lens.active{background:#fff;color:#000;font-weight:bold}
+ #out{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
+ #tag{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#ffffffeb;color:#000;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:bold;z-index:10;display:none}
+ #lensBar{display:flex;gap:8px;justify-content:center;position:fixed;top:55px;left:0;right:0;z-index:10}
+.lens{padding:6px 12px;border-radius:20px;background:#222c;color:#fff;border:1px solid #555;font-size:11px}
+.lens.active{background:#fff;color:#000}
+ #ui{position:fixed;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,#000d);z-index:10}
  #controls{display:flex;align-items:center;justify-content:space-around}
- #shutter{width:80px;height:80px;border-radius:50%;background:#fff;border:4px solid #fff8}
+ #shutter{width:78px;height:78px;border-radius:50%;background:#fff;border:4px solid #fff8}
 </style>
 </head>
 <body>
-<video id="cam" autoplay playsinline muted></video>
+<video id="cam" autoplay playsinline muted style="display:none"></video>
 <canvas id="out"></canvas>
-<div id="focusBox"></div>
+<div id="tag">Detectando...</div>
+<div id="lensBar"></div>
 <div id="ui">
-  <div id="lensBar"></div>
-  <div style="display:flex;gap:10px"><label style="color:#fff;font-size:11px;flex:1">Belleza <span id="bVal">50</span>%<input type="range" id="beauty" min="0" max="100" value="50"></label><label style="color:#fff;font-size:11px;flex:1">Zoom <span id="zVal">1x</span><input type="range" id="zoom" min="1" max="10" step="0.1" value="1"></label></div>
+  <div style="display:flex;gap:8px"><label style="color:#fff;font-size:11px;flex:1">Belleza <span id="bVal">50</span>%<input type="range" id="beauty" min="0" max="100" value="50"></label><label style="color:#fff;font-size:11px;flex:1">Zoom <span id="zVal">1x</span><input type="range" id="zoom" min="1" max="10" value="1"></label></div>
   <div id="controls"><div style="width:50px"></div><button id="shutter"></button><button id="flip" style="width:50px;height:50px;border-radius:50%;background:#222;color:#fff;border:2px solid #fff">↻</button></div>
 </div>
 <script>
-const video=document.getElementById('cam'), canvas=document.getElementById('out'), ctx=canvas.getContext('2d');
-let stream, track, devices=[], backCams=[], frontCams=[], currentIdx=0;
+const video=document.getElementById('cam'), canvas=document.getElementById('out'), ctx=canvas.getContext('2d'), tag=document.getElementById('tag');
+let stream, track, devices=[], model=null, scene='normal', lastScene='';
 
 async function init(){
+  tag.style.display='block'; tag.textContent='Cargando IA de escena...';
+  model = await cocoSsd.load({base:'lite_mobilenet_v2'}); // modelo liviano
+  tag.textContent='IA lista!';
+  setTimeout(()=>tag.style.display='none',1000);
   await navigator.mediaDevices.getUserMedia({video:true});
-  const devs = await navigator.mediaDevices.enumerateDevices();
-  devices = devs.filter(d=>d.kind==='videoinput');
-  frontCams = devices.filter(d=>d.label.toLowerCase().includes('front') || d.label.toLowerCase().includes('frontal') || d.label.toLowerCase().includes('user'));
-  backCams = devices.filter(d=>!frontCams.includes(d));
-  if(frontCams.length===0 && devices.length>0){ // si no detecta por nombre, el primero es frontal
-    frontCams=[devices[0]]; backCams=devices.slice(1);
-  }
-  if(backCams.length===0) backCams=devices; // fallback
-
-  const bar=document.getElementById('lensBar'); bar.innerHTML='';
-  devices.forEach((d,i)=>{
-    const b=document.createElement('button'); b.className='lens';
-    let txt=d.label; if(txt.toLowerCase().includes('front')) txt='FRONTAL';
-    else if(i===1 || devices.length===2) txt = i===0?'FRONTAL':'TRASERA';
-    else { if(backCams.indexOf(d)===0) txt='0.5x ULTRA'; else if(backCams.indexOf(d)===1) txt='1x'; else if(backCams.indexOf(d)===2) txt='3x TELE'; else txt=`LENTE ${i+1}`; }
-    b.textContent=txt; b.onclick=()=>start(d.deviceId);
-    bar.appendChild(b);
-  });
+  devices = (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+  const bar=document.getElementById('lensBar'); devices.forEach((d,i)=>{ const b=document.createElement('button'); b.className='lens'; b.textContent=d.label.includes('front')?'FRONTAL':`LENTE ${i}`; b.onclick=()=>start(d.deviceId); bar.appendChild(b); });
   start(devices[0]?.deviceId);
 }
-
-async function start(deviceId){
+async function start(id){
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:deviceId?{exact:deviceId}:undefined}});
+  stream = await navigator.mediaDevices.getUserMedia({video:{deviceId:id?{exact:id}:undefined}});
   video.srcObject=stream; track=stream.getVideoTracks()[0];
-  currentIdx = devices.findIndex(d=>d.deviceId===deviceId); if(currentIdx<0) currentIdx=0;
-  document.querySelectorAll('.lens').forEach((b,i)=>b.classList.toggle('active', i===currentIdx));
-  const caps=track.getCapabilities(); if(caps.zoom){ zoom.min=caps.zoom.min; zoom.max=Math.min(caps.zoom.max,10); }
-  await video.play(); canvas.width=video.videoWidth; canvas.height=video.videoHeight; requestAnimationFrame(draw);
+  await video.play(); canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+  requestAnimationFrame(loop);
 }
-function draw(){ const lv=beauty.value/100; ctx.filter=`contrast(${1+lv*0.1}) saturate(${1+lv*0.3}) brightness(${1+lv*0.1})`; ctx.drawImage(video,0,0,canvas.width,canvas.height); requestAnimationFrame(draw); }
-beauty.oninput=e=>bVal.textContent=e.target.value;
-zoom.oninput=async e=>{ zVal.textContent=parseFloat(e.target.value).toFixed(1)+'x'; if(track?.getCapabilities().zoom){ try{await track.applyConstraints({advanced:[{zoom:parseFloat(e.target.value)}]})}catch{}} };
+let frame=0;
+async function loop(){
+  frame++;
+  // Dibuja con filtro segun escena
+  let f=''; const lv=beauty.value/100;
+  if(scene==='flor' || scene==='potted plant') f=`contrast(1.2) saturate(1.8) brightness(1.1) hue-rotate(-10deg)`;
+  else if(scene==='comida' || scene==='pizza' || scene==='cake' || scene==='sandwich') f=`contrast(1.25) saturate(1.6) brightness(1.12) sepia(0.15)`;
+  else if(scene==='pelota' || scene==='sports ball') f=`contrast(1.3) saturate(1.7) brightness(1.15)`;
+  else if(scene==='persona' || scene==='person') f=`contrast(${1+lv*0.1}) saturate(${1+lv*0.2}) brightness(${1+lv*0.1})`;
+  else f=`contrast(1.15) saturate(1.3) brightness(1.05)`;
+  ctx.filter=f; ctx.drawImage(video,0,0,canvas.width,canvas.height); ctx.filter='none';
 
-// BOTON VUELTA AUTOMATICO
-flip.onclick=()=>{
-  const isFront = frontCams.some(d=>d.deviceId===devices[currentIdx]?.deviceId);
-  if(isFront){
-    // ir a la primera trasera
-    const firstBack = backCams[0]; start(firstBack.deviceId);
-  } else {
-    // rotar entre traseras, si llega al final regresa a frontal
-    const idxInBack = backCams.findIndex(d=>d.deviceId===devices[currentIdx]?.deviceId);
-    if(idxInBack < backCams.length-1){ start(backCams[idxInBack+1].deviceId); }
-    else { start(frontCams[0].deviceId); }
+  // Detecta cada 30 frames para no trabarse
+  if(frame%30===0 && model){
+    const preds = await model.detect(video);
+    if(preds[0]){
+      let obj = preds[0].class; // en ingles: person, potted plant, cake...
+      // Traduccion rapida
+      const mapa={ 'potted plant':'flor 🌸', 'person':'persona 👤', 'cat':'gato 🐱', 'dog':'perro 🐶', 'pizza':'comida 🍕', 'cake':'comida 🍰', 'sandwich':'comida 🥪', 'sports ball':'pelota ⚽', 'apple':'comida 🍎' };
+      scene=obj; let nombre = mapa[obj] || obj;
+      if(scene!==lastScene){ tag.style.display='block'; tag.textContent=`Detectado: ${nombre} - optimizando`; setTimeout(()=>tag.style.display='none',1500); lastScene=scene; }
+    }
   }
+  requestAnimationFrame(loop);
+}
+beauty.oninput=e=>bVal.textContent=e.target.value;
+zoom.oninput=async e=>{ zVal.textContent=e.target.value+'x'; try{await track.applyConstraints({advanced:[{zoom:parseFloat(e.target.value)}]})}catch{}};
+flip.onclick=()=>{
+  const idx=devices.findIndex(d=>d.deviceId===stream.getVideoTracks()[0].getSettings().deviceId);
+  start(devices[(idx+1)%devices.length].deviceId);
 };
-out.onclick=async e=>{ const r=canvas.getBoundingClientRect(); const x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height; focusBox.style.left=e.clientX-35+'px'; focusBox.style.top=e.clientY-35+'px'; focusBox.style.display='block'; setTimeout(()=>focusBox.style.display='none',1000); try{ await track.applyConstraints({advanced:[{focusMode:'continuous', pointsOfInterest:[{x,y}]}]}); }catch{} };
-shutter.onclick=()=>{ const c=document.createElement('canvas'); c.width=canvas.width; c.height=canvas.height; const f=c.getContext('2d'); f.filter='contrast(1.32) saturate(1.5) brightness(1.1) sharpen'; f.drawImage(canvas,0,0); f.globalCompositeOperation='overlay'; f.globalAlpha=0.28; f.drawImage(canvas,0,0); const a=document.createElement('a'); a.download=`AI-PRO-${Date.now()}.jpg`; a.href=c.toDataURL('image/jpeg',0.96); a.click(); };
+shutter.onclick=()=>{
+  const c=document.createElement('canvas'); c.width=canvas.width; c.height=canvas.height; const f=c.getContext('2d'); f.filter=ctx.filter+' contrast(1.15)'; f.drawImage(canvas,0,0);
+  const a=document.createElement('a'); a.download=`AI-${scene}-${Date.now()}.jpg`; a.href=c.toDataURL('image/jpeg',0.96); a.click();
+};
 init();
 </script>
 </body>
