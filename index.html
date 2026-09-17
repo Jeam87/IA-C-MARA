@@ -6,8 +6,7 @@
 <title>Cam Pasteles IA Gratis</title>
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
-#v{width:100vw;height:100vh;object-fit:cover;background:#111}
-#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:10px;display:none;pointer-events:none;z-index:5;transform:translate(-50%,-50%)}
+#v{width:100vw;height:100vh;object-fit:cover;background:#111;display:block}
 #msg{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 16px;border-radius:20px;z-index:10;font-size:13px;max-width:90%;text-align:center}
 #ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000e);padding:15px;display:flex;flex-direction:column;gap:10px;z-index:10}
 #row{display:flex;gap:8px;justify-content:center}
@@ -18,14 +17,21 @@ body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
 #res img{flex:1;width:100%;object-fit:contain;background:#111}
 #resBtns{display:flex;gap:10px;padding:15px}
 #resBtns a, #resBtns button{flex:1;padding:15px;text-align:center;border-radius:10px;text-decoration:none;font-weight:bold;border:none}
-#prog{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#ff7800;color:#fff;padding:6px 14px;border-radius:20px;display:none;z-index:15;font-size:13px}
+#prog{position:fixed;bottom:95px;left:50%;transform:translateX(-50%);background:#ff7800;color:#fff;padding:6px 14px;border-radius:20px;display:none;z-index:15}
+#allow{position:fixed;inset:0;background:#000e;z-index:30;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:15px;color:#fff;text-align:center;padding:20px}
+#allow button{padding:15px 30px;background:#ff7800;color:#fff;border:none;border-radius:30px;font-weight:bold;font-size:16px}
 </style>
 </head>
 <body>
 <video id="v" autoplay playsinline muted></video>
-<div id="focus"></div>
-<div id="msg">Toca el pastel para enfocar - IA Gratis lista</div>
-<div id="prog">Cargando IA...</div>
+<div id="msg">Iniciando cámara...</div>
+<div id="prog">Cargando IA Gratis...</div>
+
+<div id="allow" style="display:none">
+  <div>📷 Necesitamos permiso de cámara</div>
+  <button onclick="iniciarCam()">Permitir Cámara</button>
+  <small>En Chrome dale al candadito 🔒 arriba > Permisos > Cámara > Permitir</small>
+</div>
 
 <div id="ctrl">
   <div id="row">
@@ -40,80 +46,100 @@ body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
 <div id="res">
   <img id="out">
   <div id="resBtns">
-    <a id="down" download="pastel-HD-IA-GRATIS.jpg" style="background:#fff;color:#000">Guardar HD</a>
+    <a id="down" download="pastel-HD.jpg" style="background:#fff;color:#000">Guardar HD</a>
     <button onclick="document.getElementById('res').style.display='none'" style="background:#333;color:#fff">Cerrar</button>
   </div>
 </div>
 
-<script type="module">
-import Upscaler from 'https://cdn.jsdelivr.net/npm/upscaler@1.15.4/+esm';
-const upscaler = new Upscaler({ model: 'esrgan-thick' });
-let modelReady = false;
-upscaler.warmup([{patchSize:64, padding:2}]).then(()=>{modelReady=true; document.getElementById('msg').innerText='IA Gratis cargada ✓ - Toca el pastel para enfocar';});
-
-window.video=document.getElementById('v'); window.stream=null; window.track=null; window.devices=[]; window.idx=0;
-
-async function iniciar(deviceId=null){
-  if(window.stream) window.stream.getTracks().forEach(t=>t.stop());
-  let cons={video:{width:{ideal:1920},height:{ideal:1080},focusMode:{ideal:'continuous'}}};
-  if(deviceId) cons.video.deviceId={exact:deviceId}; else cons.video.facingMode='environment';
+<script>
+// CAMARA - INICIA PRIMERO, SIN ESPERAR IA
+let v=document.getElementById('v'), stream=null, track=null, devices=[], idx=0;
+async function iniciarCam(deviceId=null){
+  document.getElementById('allow').style.display='none';
+  if(stream) stream.getTracks().forEach(t=>t.stop());
   try{
-    window.stream=await navigator.mediaDevices.getUserMedia(cons);
-    window.video.srcObject=window.stream; await window.video.play(); window.track=window.stream.getVideoTracks()[0];
-    try{ await window.track.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch{}
-  }catch(e){ document.getElementById('msg').innerText='Error: '+e.message; }
+    let cons={video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}};
+    if(deviceId) cons.video={deviceId:{exact:deviceId}};
+    stream=await navigator.mediaDevices.getUserMedia(cons);
+    v.srcObject=stream; await v.play();
+    track=stream.getVideoTracks()[0];
+    document.getElementById('msg').innerText='Toca el pastel para enfocar - IA Gratis lista';
+    listarLentes();
+  }catch(e){
+    console.error(e);
+    document.getElementById('msg').innerText='Error cam: '+e.name;
+    document.getElementById('allow').style.display='flex';
+  }
 }
-async function listar(){
-  try{ let all=await navigator.mediaDevices.enumerateDevices(); window.devices=all.filter(d=>d.kind=='videoinput'); }catch{}
-  iniciar();
+async function listarLentes(){
+  try{ let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput'); }catch{}
 }
-listar();
-window.cambiarLente=()=>{
-  if(window.devices.length<2){ document.getElementById('msg').innerText='Solo 1 lente en web'; return; }
-  window.idx=(window.idx+1)%window.devices.length; iniciar(window.devices[window.idx].deviceId);
+function cambiarLente(){
+  if(devices.length<=1){ document.getElementById('msg').innerText='Solo 1 lente en este navegador'; return; }
+  idx=(idx+1)%devices.length; iniciarCam(devices[idx].deviceId);
 }
-window.setZoom=async(f)=>{
+async function setZoom(f){
   try{
-    if(window.track && window.track.getCapabilities && window.track.getCapabilities().zoom){
-      let c=window.track.getCapabilities().zoom; let z=f==0.6?c.min:f==2?Math.min(c.max,2.5):1;
-      await window.track.applyConstraints({advanced:[{zoom:z}]});
+    if(track && track.getCapabilities && track.getCapabilities().zoom){
+      let cap=track.getCapabilities().zoom; let z=f==0.6?cap.min:f==2?Math.min(cap.max,3):1;
+      await track.applyConstraints({advanced:[{zoom:z}]});
     }
   }catch{}
 }
-window.video.addEventListener('click', async(e)=>{
-  let box=document.getElementById('focus'); box.style.left=e.clientX+'px'; box.style.top=e.clientY+'px'; box.style.display='block';
-  setTimeout(()=>box.style.display='none',1500);
+v.addEventListener('click', async(e)=>{
   try{
-    const x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
-    await window.track.applyConstraints({advanced:[{focusMode:'manual', pointsOfInterest:[{x,y}]}]});
-    setTimeout(async()=>{ try{ await window.track.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch{} },800);
+    let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
+    await track.applyConstraints({advanced:[{focusMode:'manual', pointsOfInterest:[{x,y}]}]});
+    document.getElementById('msg').innerText='Enfocando...';
+    setTimeout(async()=>{ try{await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); document.getElementById('msg').innerText='Enfocado ✓ - IA Gratis lista';}catch{} },800);
   }catch{}
 });
+iniciarCam();
 
-window.tomar=async()=>{
-  let prog=document.getElementById('prog'); prog.style.display='block'; prog.innerText='Procesando IA Gratis 2x... (5 seg)';
-  let c=document.createElement('canvas'); c.width=window.video.videoWidth; c.height=window.video.videoHeight;
-  c.getContext('2d').drawImage(window.video,0,0);
-  let w=c.width, h=c.height;
-  document.getElementById('msg').innerText='Foto '+w+'x'+h+' -> IA Gratis mejorando...';
+// IA GRATIS - CARGA DESPUES, NO BLOQUEA CAMARA
+let upscalerReady=false, upscaler=null;
+(async()=>{
   try{
-    // IA real gratis en el navegador
-    let dataUrl = c.toDataURL('image/jpeg',0.92);
-    let hd = await upscaler.upscale(dataUrl, { patchSize: 64, padding: 2, progress: (p)=>{ prog.innerText='IA '+Math.round(p*100)+'% - '+w*2+'x'+h*2; } });
-    document.getElementById('out').src=hd;
-    document.getElementById('down').href=hd;
-    document.getElementById('res').style.display='flex';
-    document.getElementById('msg').innerText='¡IA GRATIS OK! '+w+'x'+h+' -> '+(w*2)+'x'+(h*2)+' HD Real';
-    prog.style.display='none';
+    document.getElementById('prog').style.display='block';
+    const mod = await import('https://cdn.jsdelivr.net/npm/upscaler@1.15.4/+esm');
+    upscaler = new mod.default({ model: 'esrgan-thick' });
+    await upscaler.warmup([{patchSize:64, padding:2}]);
+    upscalerReady=true;
+    document.getElementById('prog').style.display='none';
+    document.getElementById('msg').innerText='IA Gratis cargada ✓ - Lista para foto HD';
   }catch(e){
-    console.error(e);
-    prog.innerText='Usando 2x rápido gratis';
+    console.log('IA no cargó, usar fallback', e);
+    document.getElementById('prog').style.display='none';
+  }
+})();
+
+async function tomar(){
+  let w=v.videoWidth, h=v.videoHeight;
+  if(!w){ document.getElementById('msg').innerText='Cámara no lista'; return; }
+  let c=document.createElement('canvas'); c.width=w; c.height=h;
+  c.getContext('2d').drawImage(v,0,0);
+  let prog=document.getElementById('prog'); prog.style.display='block'; prog.innerText='Mejorando a '+w*2+'x'+h*2+'...';
+  document.getElementById('msg').innerText='Procesando IA Gratis...';
+  try{
+    let hd;
+    if(upscalerReady){
+      hd = await upscaler.upscale(c.toDataURL('image/jpeg',0.9), {patchSize:64, padding:2, progress:(p)=>{prog.innerText='IA '+Math.round(p*100)+'%';}});
+    } else {
+      throw new Error('usar fallback');
+    }
+    document.getElementById('out').src=hd; document.getElementById('down').href=hd;
+    document.getElementById('res').style.display='flex';
+    document.getElementById('msg').innerText='¡IA GRATIS OK! HD '+(w*2)+'x'+(h*2);
+  }catch{
+    // Fallback 2x rápido, siempre queda chingona para pasteles
     let c2=document.createElement('canvas'); c2.width=w*2; c2.height=h*2;
-    let ctx=c2.getContext('2d'); ctx.imageSmoothingQuality='high'; ctx.drawImage(window.video,0,0,c2.width,c2.height);
+    let ctx=c2.getContext('2d'); ctx.imageSmoothingQuality='high'; ctx.drawImage(v,0,0,c2.width,c2.height);
     let hd=c2.toDataURL('image/jpeg',0.92);
     document.getElementById('out').src=hd; document.getElementById('down').href=hd;
-    document.getElementById('res').style.display='flex'; prog.style.display='none';
+    document.getElementById('res').style.display='flex';
+    document.getElementById('msg').innerText='HD Gratis 2x OK: '+c2.width+'x'+c2.height;
   }
+  prog.style.display='none';
 }
 </script>
 </body>
