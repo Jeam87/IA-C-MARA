@@ -1,45 +1,46 @@
 import cv2
-
-cap = cv2.VideoCapture(0)
-ret, frame = cap.read()
-
-if ret:
-    cv2.imwrite('foto_actual.jpg', frame)
-
-cap.release()
-cv2.destroyAllWindows()
-import cv2
-
-# Cargar modelo preentrenado para super resolución
-sr = cv2.dnn_superres.DnnSuperResImpl_create()
-path = "EDSR_x3.pb"  # Modelo descargado previamente
-sr.readModel(path)
-sr.setModel("edsr", 3)
-
-# Leer la imagen
-img = cv2.imread('foto_actual.jpg')
-
-# Mejorar resolución
-result = sr.upsample(img)
-
-cv2.imwrite('foto_mejorada.jpg', result)
-import cv2
 import numpy as np
 
+# Paso 1: Capturar la imagen desde la cámara
+cap = cv2.VideoCapture(0)
+ret, frame = cap.read()
+if ret:
+    cv2.imwrite('foto_actual.jpg', frame)
+    print("Foto capturada y guardada como 'foto_actual.jpg'")
+else:
+    print("No se pudo tomar la foto")
+cap.release()
+
+# Paso 2: Mejorar resolución usando Super-Resolution
+sr = cv2.dnn_superres.DnnSuperResImpl_create()
+# Asegúrate de descargar el modelo EDSR_x3.pb y colocar en la misma carpeta
+path = "EDSR_x3.pb"
+sr.readModel(path)
+sr.setModel("edsr", 3)
+img = cv2.imread('foto_actual.jpg')
+result = sr.upsample(img)
+cv2.imwrite('foto_mejorada.jpg', result)
+print("Resolución mejorada y guardada como 'foto_mejorada.jpg'")
+
+# Paso 3: Ajustar color y contraste
 img = cv2.imread('foto_mejorada.jpg')
-
-# Convertir a YUV
 img_yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
-
-# Equalización de histograma en luminancia
 img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
-
-# Convertir de nuevo a BGR
 img_eq = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+cv2.imwrite('foto_color_ajustado.jpg', img_eq)
+print("Color ajustado y guardado como 'foto_color_ajustado.jpg'")
 
-cv2.imwrite('foto_con_mejor_color.jpg', img_eq)
-import cv2
-
-img = cv2.imread('foto_con_mejor_color.jpg')
+# Paso 4: Eliminación de ruido
+img = cv2.imread('foto_color_ajustado.jpg')
 denoised = cv2.fastNlMeansDenoisingColored(img, None, h=10, hColor=10, templateWindowSize=7, searchWindowSize=21)
 cv2.imwrite('foto_final.jpg', denoised)
+print("Ruido eliminado. Foto final guardada como 'foto_final.jpg'")
+
+
+ret, frame = cap.read()
+
+    cv2.imwrite(
+cap.release()
+
+
+sr = cv2.dnn_superres.DnnSuperResImpl_create()
