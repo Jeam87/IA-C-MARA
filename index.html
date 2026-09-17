@@ -6,64 +6,80 @@
 <title>App de Cámara con IA</title>
 </head>
 <body>
-<h1>Mejorador de Fotos con IA</h1>
+<h1>Tomar foto y mejorar con IA</h1>
 
-<!-- Subir imagen -->
-<input type="file" id="upload" accept="image/*" />
+<!-- Video para mostrar la cámara -->
+<video id="video" width="400" height="300" autoplay></video>
+<br>
+<!-- Botón para tomar foto -->
+<button id="btnCapturar">Tomar Foto</button>
 <br><br>
+<!-- Canvas para dibujar la foto -->
+<canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
 
-<!-- Botón para procesar la imagen -->
-<button onclick="procesarImagen()">Mejorar Imagen</button>
+<!-- Imagen original -->
+<h2>Foto Tomada</h2>
+<img id="fotoOriginal" src="" alt="Foto original" width="300" />
 
-<!-- Mostrar la imagen original -->
-<h2>Imagen Original</h2>
-<img id="originalImage" src="" alt="Imagen subido" width="300" />
-
-<!-- Mostrar la imagen final procesada -->
-<h2>Imagen Mejorada</h2>
-<img id="resultImage" src="" alt="Imagen mejorada" width="300" />
+<!-- Imagen mejorada -->
+<h2>Foto Mejorada</h2>
+<img id="fotoMejorada" src="" alt="Foto mejorada" width="300" />
 
 <script>
-let imagenSubida = null;
+// Acceder a la cámara
+const video = document.getElementById('video');
+const btnCapturar = document.getElementById('btnCapturar');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const fotoOriginal = document.getElementById('fotoOriginal');
+const fotoMejorada = document.getElementById('fotoMejorada');
 
-// Cuando se sube la imagen
-document.getElementById('upload').addEventListener('change', function(event) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('originalImage').src = e.target.result;
-        imagenSubida = e.target.result;
-    }
-    reader.readAsDataURL(event.target.files[0]);
+// Pedir permisos y acceder a la cámara
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+    video.srcObject = stream;
+})
+.catch(err => {
+    alert("No se pudo acceder a la cámara: " + err);
 });
 
-// Función para procesar la imagen
-function procesarImagen() {
-    if (!imagenSubida) {
-        alert('Por favor, sube una imagen primero.');
-        return;
-    }
+// Cuando se hace clic en "Tomar Foto"
+btnCapturar.addEventListener('click', () => {
+    // Dibujar la foto en el canvas
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Obtener la imagen en base64
+    const dataURL = canvas.toDataURL('image/png');
+    // Mostrar la foto original
+    fotoOriginal.src = dataURL;
+    // Aquí debes enviar la imagen a tu backend para procesarla
+    // Por ahora, simulamos que la mejora es la misma imagen
+    // En un escenario real, envías dataURL y recibes la imagen mejorada
+    mejorarFoto(dataURL);
+});
 
-    // Aquí deberías enviar la imagen a tu backend que ejecuta el código Python
-    // Por ejemplo, usando fetch para enviar la imagen y recibir la imagen mejorada
-    // Como este es un ejemplo, vamos a simularlo mostrando la misma imagen
-
-    // Simulación: simplemente muestra la misma imagen
-    document.getElementById('resultImage').src = imagenSubida;
-
-    // En un caso real, aquí usarías fetch() para enviar la imagen al backend
+// Función para enviar la imagen al backend y recibir la mejorada
+function mejorarFoto(dataURL) {
+    // Aquí deberías hacer un fetch a tu backend
+    // Ejemplo (comenta esto si no tienes backend):
     /*
     fetch('/procesar-imagen', {
         method: 'POST',
-        body: data // la imagen en formato adecuado
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ imagen: dataURL })
     })
-    .then(response => response.blob())
-    .then(blob => {
-        const url = URL.createObjectURL(blob);
-        document.getElementById('resultImage').src = url;
+    .then(res => res.json())
+    .then(data => {
+        // La respuesta debe ser la URL o base64 de la imagen mejorada
+        fotoMejorada.src = data.imagen_mejorada;
     });
     */
+
+    // Para este ejemplo, simplemente copiamos la misma imagen
+    // (Quita o comenta esto cuando tengas backend)
+    fotoMejorada.src = dataURL;
 }
 </script>
-
 </body>
-</html>
+</html> 
