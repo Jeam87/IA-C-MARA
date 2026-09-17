@@ -1,85 +1,66 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>App de Cámara con IA</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Camara</title>
+<style>
+body{margin:0;background:#000}
+#v{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover}
+#b{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:70px;height:70px;background:white;border-radius:50%;border:4px solid #000;z-index:99}
+#s{position:fixed;top:10px;left:10px;color:white;background:#0008;padding:5px 10px;border-radius:10px;z-index:99}
+#fo{position:fixed;width:60px;height:60px;border:2px solid yellow;display:none;z-index:99;pointer-events:none}
+</style>
 </head>
 <body>
-<h1>Tomar foto y mejorar con IA</h1>
-
-<!-- Video para mostrar la cámara -->
-<video id="video" width="400" height="300" autoplay></video>
-<br>
-<!-- Botón para tomar foto -->
-<button id="btnCapturar">Tomar Foto</button>
-<br><br>
-<!-- Canvas para dibujar la foto -->
-<canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
-
-<!-- Imagen original -->
-<h2>Foto Tomada</h2>
-<img id="fotoOriginal" src="" alt="Foto original" width="300" />
-
-<!-- Imagen mejorada -->
-<h2>Foto Mejorada</h2>
-<img id="fotoMejorada" src="" alt="Foto mejorada" width="300" />
+<video id="v" autoplay playsinline></video>
+<div id="fo"></div>
+<div id="s">Tocá para enfocar</div>
+<div id="b"></div>
 
 <script>
-// Acceder a la cámara
-const video = document.getElementById('video');
-const btnCapturar = document.getElementById('btnCapturar');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const fotoOriginal = document.getElementById('fotoOriginal');
-const fotoMejorada = document.getElementById('fotoMejorada');
+let video=document.getElementById('v');
+let stream, track;
 
-// Pedir permisos y acceder a la cámara
-navigator.mediaDevices.getUserMedia({ video: true })
-.then(stream => {
-    video.srcObject = stream;
-})
-.catch(err => {
-    alert("No se pudo acceder a la cámara: " + err);
-});
-
-// Cuando se hace clic en "Tomar Foto"
-btnCapturar.addEventListener('click', () => {
-    // Dibujar la foto en el canvas
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    // Obtener la imagen en base64
-    const dataURL = canvas.toDataURL('image/png');
-    // Mostrar la foto original
-    fotoOriginal.src = dataURL;
-    // Aquí debes enviar la imagen a tu backend para procesarla
-    // Por ahora, simulamos que la mejora es la misma imagen
-    // En un escenario real, envías dataURL y recibes la imagen mejorada
-    mejorarFoto(dataURL);
-});
-
-// Función para enviar la imagen al backend y recibir la mejorada
-function mejorarFoto(dataURL) {
-    // Aquí deberías hacer un fetch a tu backend
-    // Ejemplo (comenta esto si no tienes backend):
-    /*
-    fetch('/procesar-imagen', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ imagen: dataURL })
-    })
-    .then(res => res.json())
-    .then(data => {
-        // La respuesta debe ser la URL o base64 de la imagen mejorada
-        fotoMejorada.src = data.imagen_mejorada;
-    });
-    */
-
-    // Para este ejemplo, simplemente copiamos la misma imagen
-    // (Quita o comenta esto cuando tengas backend)
-    fotoMejorada.src = dataURL;
+async function inicia(){
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    video.srcObject=stream;
+    track=stream.getVideoTracks()[0];
+    await video.play();
+    document.getElementById('s').innerText='Cámara lista';
+  }catch(e){
+    document.getElementById('s').innerText='Error: '+e.message+' - usa https';
+    alert('Activa https:// en Vercel');
+  }
 }
+inicia();
+
+video.addEventListener('click', async(e)=>{
+  let fo=document.getElementById('fo');
+  fo.style.left=(e.clientX-30)+'px';
+  fo.style.top=(e.clientY-30)+'px';
+  fo.style.display='block';
+  let x=e.clientX/window.innerWidth;
+  let y=e.clientY/window.innerHeight;
+  try{ await track.applyConstraints({advanced:[{focusMode:'continuous', pointsOfInterest:[{x:x,y:y}]}]}); }catch{}
+  setTimeout(()=>fo.style.display='none',1500);
+});
+
+document.getElementById('b').onclick=()=>{
+  let c=document.createElement('canvas');
+  c.width=video.videoWidth;
+  c.height=video.videoHeight;
+  c.getContext('2d').drawImage(video,0,0);
+  c.toBlob(blob=>{
+    let url=URL.createObjectURL(blob);
+    let a=document.createElement('a');
+    a.href=url;
+    a.download='foto.jpg';
+    a.click();
+    document.getElementById('s').innerText='Foto guardada!';
+  },'image/jpeg',0.95);
+};
 </script>
 </body>
-</html> 
+</html>
