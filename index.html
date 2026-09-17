@@ -3,25 +3,31 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>AI Camara</title>
+<title>AI Camara Pro</title>
 <link rel="manifest" href="manifest.json" />
 <style>
   body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
   #cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;display:none}
   #out{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
-  #ui{position:fixed;bottom:0;left:0;right:0;padding:20px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(transparent, #0009)}
-  #shutter{width:80px;height:80px;border-radius:50%;background:#fff;border:4px solid #ffffff88;margin:0 auto}
+  #ui{position:fixed;bottom:0;left:0;right:0;padding:20px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(transparent, #000c)}
+  #controls{display:flex;align-items:center;justify-content:space-around}
+  #shutter{width:80px;height:80px;border-radius:50%;background:#fff;border:4px solid #ffffff88}
+  #flip{width:50px;height:50px;border-radius:50%;background:#222;color:#fff;border:2px solid #fff;font-size:24px}
+  label{color:#fff;font-size:14px;text-align:center}
   input{width:100%}
-  label{color:#fff;font-size:14px}
 </style>
 </head>
 <body>
 <video id="cam" autoplay playsinline muted></video>
 <canvas id="out"></canvas>
 <div id="ui">
-  <label> Nivel Belleza IA: <span id="val">50</span>%</label>
+  <label>Belleza IA: <span id="val">50</span>%</label>
   <input type="range" id="beauty" min="0" max="100" value="50">
-  <button id="shutter"></button>
+  <div id="controls">
+    <button id="flip">↻</button>
+    <button id="shutter"></button>
+    <div style="width:50px"></div>
+  </div>
 </div>
 <script>
 const video = document.getElementById('cam');
@@ -29,45 +35,52 @@ const canvas = document.getElementById('out');
 const ctx = canvas.getContext('2d');
 const slider = document.getElementById('beauty');
 const val = document.getElementById('val');
+let facing = 'user'; // empieza en frontal
+let stream;
 
 async function start(){
-  const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}, audio:false});
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); }
+  stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:facing}, audio:false});
   video.srcObject = stream;
   await video.play();
-  resize();
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
   requestAnimationFrame(draw);
-}
-function resize(){
-  canvas.width = video.videoWidth || 720;
-  canvas.height = video.videoHeight || 1280;
 }
 function draw(){
   const level = slider.value / 100;
-  // Efecto tipo TikTok: contraste + saturacion + suavizado
   const blur = (level * 1.2).toFixed(1);
   const bright = 1 + level * 0.15;
   const sat = 1 + level * 0.3;
-  
   ctx.filter = `contrast(${1 + level*0.1}) saturate(${sat}) brightness(${bright}) blur(${blur*0.3}px)`;
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
-  // Segunda capa suave para piel (efecto belleza)
   ctx.globalAlpha = level * 0.4;
   ctx.filter = `blur(${blur}px) brightness(1.1)`;
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  ctx.globalAlpha = 1;
-  ctx.filter = 'none';
-  
+  ctx.globalAlpha = 1; ctx.filter = 'none';
   requestAnimationFrame(draw);
 }
 slider.oninput = ()=> val.textContent = slider.value;
+document.getElementById('flip').onclick = ()=>{
+  facing = facing === 'user' ? 'environment' : 'user'; // cambia a trasera
+  start();
+};
 document.getElementById('shutter').onclick = ()=>{
+  // AUTO-MEJORA al guardar
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = canvas.width; finalCanvas.height = canvas.height;
+  const fCtx = finalCanvas.getContext('2d');
+  fCtx.filter = 'contrast(1.25) saturate(1.35) brightness(1.08)';
+  fCtx.drawImage(canvas, 0, 0);
+  // Nitidez extra
+  fCtx.globalAlpha = 0.25; fCtx.globalCompositeOperation = 'overlay';
+  fCtx.drawImage(canvas, 0, 0);
+  
   const a = document.createElement('a');
-  a.download = `ai-foto-${Date.now()}.jpg`;
-  a.href = canvas.toDataURL('image/jpeg', 0.9);
+  a.download = `AI-foto-${Date.now()}.jpg`;
+  a.href = finalCanvas.toDataURL('image/jpeg', 0.95);
   a.click();
 };
 start();
 </script>
 </body>
-</html>
+</html> 
