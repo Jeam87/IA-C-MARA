@@ -2,81 +2,82 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-<title>Pro Focus</title>
+<title>P30 Pro - Mejorada</title>
 <style>
- body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
- #out{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
- #topBar{position:fixed;top:0;left:0;right:0;z-index:99;padding:10px;background:linear-gradient(#000c,transparent)}
-.bar{display:flex;gap:6px;overflow-x:auto;margin-top:8px}.bar::-webkit-scrollbar{display:none}
-.btn{min-width:75px;height:36px;border-radius:18px;border:1px solid #fff4;background:#222;color:#fff;font-size:11px;font-weight:bold}
-.btn.active{background:#fff;color:#000}
-#focusBox{position:fixed;width:70px;height:70px;border:2px solid #ffeb00;border-radius:4px;z-index:100;pointer-events:none;display:none;justify-content:center;align-items:center}
-#focusBox::after{content:'';width:6px;height:6px;background:#ffeb00;border-radius:50%;display:block}
-#focusBox.focusing{animation: pulse 0.6s infinite}
-@keyframes pulse{0%{transform:scale(1.3);opacity:0.6}100%{transform:scale(1);opacity:1}}
- #ui{position:fixed;bottom:0;left:0;right:0;z-index:99;display:flex;justify-content:space-around;padding:15px;background:linear-gradient(transparent,#000a)}
- #shutter{width:78px;height:78px;border-radius:50%;background:#fff;border:4px solid #fff8}
+*{margin:0;padding:0;box-sizing:border-box}body{background:#000;font-family:sans-serif;overflow:hidden;color:#fff}
+#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
+.top{position:fixed;top:0;left:0;right:0;height:52px;background:#000;display:flex;justify-content:space-around;align-items:center;z-index:10}
+.top span{font-size:22px;opacity:.9}
+.chip{position:fixed;bottom:200px;left:50%;transform:translateX(-50%);background:#000a;border:1px solid #fff;padding:6px 18px;border-radius:20px;font-size:13px;z-index:10;display:flex;gap:8px;align-items:center;backdrop-filter:blur(6px)}
+.zoom{position:fixed;bottom:145px;left:50%;transform:translateX(-50%);display:flex;gap:18px;align-items:center;z-index:10}
+.zoom b{width:46px;height:46px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;background:#0006;font-size:14px}
+.modes{position:fixed;bottom:78px;left:0;right:0;display:flex;justify-content:space-around;z-index:10;font-size:14px;letter-spacing:1px}
+.modes div{opacity:.6}.modes div.active{opacity:1;font-weight:bold}.modes div.active::after{content:'';display:block;width:6px;height:6px;background:#f00;border-radius:50%;margin:4px auto 0}
+.bottom{position:fixed;bottom:0;left:0;right:0;height:78px;background:#000;display:flex;justify-content:space-around;align-items:center;z-index:10}
+#shutter{width:68px;height:68px;background:#fff;border-radius:50%;border:4px solid #fff3}
+.thumb{width:46px;height:46px;border-radius:50%;background:#222;overflow:hidden;border:2px solid #fff6}
+.thumb img{width:100%;height:100%;object-fit:cover}
+#focusBox{position:fixed;width:64px;height:64px;border:1.5px solid #ffeb00;border-radius:50%;display:none;z-index:20;pointer-events:none}
+#focusBox::before{content:'';position:absolute;inset:-1px;border:1px solid #0005;border-radius:50%}
 </style>
 </head>
 <body>
-<video id="cam" autoplay playsinline muted style="display:none"></video>
-<canvas id="out"></canvas>
+<video id="camV" autoplay playsinline muted style="display:none"></video>
+<canvas id="cam"></canvas>
+<div class="top"><span>◉</span><span>AI</span><span>⚡✕</span><span>▭</span><span>⚙</span></div>
+<div class="chip">🍴 COMIDA X</div>
+<div class="zoom"><span>•</span><b>1x</b><span>• •</span></div>
 <div id="focusBox"></div>
-<div id="topBar">
-  <div class="bar" id="colorBar"><button class="btn active" data-c="normal">NORMAL</button><button class="btn" data-c="sony">SONY</button><button class="btn" data-c="vivid">VIVID</button></div>
-  <div class="bar" id="lensBar"></div>
-</div>
-<div id="ui"><div style="width:50px"></div><button id="shutter"></button><button id="flip" style="width:48px;height:48px;border-radius:50%;background:#222;color:#fff;border:1px solid #fff">↻</button></div>
+<div class="modes"><div>NOCHE</div><div>RETRATO</div><div class="active">FOTO</div><div>VIDEO</div><div>PROFESIO</div></div>
+<div class="bottom"><div class="thumb" id="thumb"></div><div id="shutter"></div><div style="width:46px;height:46px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center">⇄</div></div>
 
 <script>
-const video=document.getElementById('cam'), canvas=document.getElementById('out'), ctx=canvas.getContext('2d'), focusBox=document.getElementById('focusBox');
-let stream,track,devices=[],color='normal',curIdx=0;
+const video=document.getElementById('camV'), canvas=document.getElementById('cam'), ctx=canvas.getContext('2d'), focusBox=document.getElementById('focusBox');
+let stream,track,imageCapture;
 
 async function init(){
-  const tmp=await navigator.mediaDevices.getUserMedia({video:true}); tmp.getTracks().forEach(t=>t.stop());
-  devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-  const bar=document.getElementById('lensBar'); bar.innerHTML='';
-  devices.forEach((d,i)=>{ const b=document.createElement('button'); b.className='btn'+(i==0?' active':''); b.textContent=d.label.toLowerCase().includes('front')?'FRONTAL':`LENTE ${i+1}`; b.onclick=()=>start(d.deviceId,i); bar.appendChild(b); });
-  start(devices[0]?.deviceId,0);
-}
-async function start(id,idx){
-  if(stream) stream.getTracks().forEach(t=>t.stop());
-  stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:id?{exact:id}:undefined, width:{ideal:1920}, height:{ideal:1080}}});
+  stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1920},height:{ideal:1080}, facingMode:'environment'}});
   video.srcObject=stream; track=stream.getVideoTracks()[0];
+  try{ imageCapture=new ImageCapture(track); }catch{}
   await video.play(); canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+  loop();
+}
+function loop(){
+  // MEJORA: corrige el amarillo de tu foto original + más nitidez
+  ctx.filter='contrast(1.08) saturate(1.15) brightness(1.08) hue-rotate(-4deg)'; // quita amarillo
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
   requestAnimationFrame(loop);
 }
-function getFilter(){ if(color==='sony') return 'contrast(1.1) saturate(1.05) brightness(1.08)'; if(color==='vivid') return 'contrast(1.18) saturate(1.35) brightness(1.08)'; return 'contrast(1.05) brightness(1.05)'; }
-function loop(){ ctx.filter=getFilter(); ctx.drawImage(video,0,0,canvas.width,canvas.height); requestAnimationFrame(loop); }
 
-document.querySelectorAll('#colorBar .btn').forEach(b=>{
-  b.onclick=()=>{ document.querySelectorAll('#colorBar .btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); color=b.dataset.c; }
-});
-document.getElementById('flip').onclick=()=>{ curIdx=(curIdx+1)%devices.length; start(devices[curIdx].deviceId,curIdx); document.querySelectorAll('#lensBar .btn').forEach((x,i)=>x.classList.toggle('active',i==curIdx)); };
-
-// TAP PARA ENFOCAR - SOLO CUADRITO
-canvas.addEventListener('click', async (e)=>{
-  const r=canvas.getBoundingClientRect();
-  const x=(e.clientX-r.left)/r.width;
-  const y=(e.clientY-r.top)/r.height;
-  
-  focusBox.style.left=(e.clientX-35)+'px';
-  focusBox.style.top=(e.clientY-35)+'px';
-  focusBox.style.display='flex';
-  focusBox.classList.add('focusing');
-
-  try{
-    await track.applyConstraints({advanced:[{focusMode:'continuous', pointsOfInterest:[{x,y}]}]});
-  }catch(err){ console.log('focus no soportado',err); }
-
-  setTimeout(()=>{ focusBox.classList.remove('focusing'); focusBox.style.borderColor='#2fff00'; }, 600);
-  setTimeout(()=>{ focusBox.style.display='none'; focusBox.style.borderColor='#ffeb00'; }, 2000);
+// TAP PARA ENFOCAR COMO P30 ORIGINAL
+canvas.addEventListener('click', async(e)=>{
+  const r=canvas.getBoundingClientRect(); const x=(e.clientX-r.left)/r.width; const y=(e.clientY-r.top)/r.height;
+  focusBox.style.left=(e.clientX-32)+'px'; focusBox.style.top=(e.clientY-32)+'px'; focusBox.style.display='block';
+  try{ await track.applyConstraints({advanced:[{focusMode:'continuous', pointsOfInterest:[{x,y}]}]});}catch{}
+  setTimeout(()=>focusBox.style.display='none',1500);
 });
 
-document.getElementById('shutter').onclick=()=>{
-  canvas.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`IMG-${Date.now()}.jpg`; a.click(); },'image/jpeg',0.98);
+// FOTO MEJORADA - ALTA RESOLUCIÓN + PROCESADO COMIDA PRO
+document.getElementById('shutter').onclick=async()=>{
+  let blob;
+  try{ blob=await imageCapture.takePhoto({imageWidth:4000}); }catch{
+    const tmp=document.createElement('canvas'); tmp.width=canvas.width; tmp.height=canvas.height;
+    const tctx=tmp.getContext('2d'); tctx.filter=ctx.filter; tctx.drawImage(canvas,0,0);
+    blob=await new Promise(r=>tmp.toBlob(r,'image/jpeg',0.98));
+  }
+  // Post-proceso tipo Leica COMIDA
+  const img=await createImageBitmap(blob);
+  const out=document.createElement('canvas'); out.width=img.width; out.height=img.height; const o=out.getContext('2d');
+  o.filter='contrast(1.12) saturate(1.25) brightness(1.06) hue-rotate(-6deg) sharpness'; o.drawImage(img,0,0);
+  // un poco de sharpen suave
+  o.filter='none'; o.globalAlpha=0.18; o.globalCompositeOperation='overlay'; o.drawImage(out,0,0); o.globalAlpha=1; o.globalCompositeOperation='source-over';
+
+  const final=await new Promise(r=>out.toBlob(r,'image/jpeg',0.97));
+  const url=URL.createObjectURL(final);
+  document.getElementById('thumb').innerHTML=`<img src="${url}">`;
+  const a=document.createElement('a'); a.href=url; a.download=`COMIDA-PRO-${Date.now()}.jpg`; a.click();
 };
 init();
 </script>
 </body>
-</html> 
+</html>
