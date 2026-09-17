@@ -1,93 +1,107 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cam Fix</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Cam Pro</title>
 <style>
-body{margin:0;background:#000;color:#fff;font-family:sans-serif}
-#v{width:100%;height:100vh;object-fit:cover;background:#111}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:#000;padding:12px;display:flex;flex-direction:column;gap:8px;align-items:center;z-index:10}
-button{padding:10px 16px;border-radius:20px;border:none;font-weight:bold}
-#foto{background:#fff;color:#000;font-size:17px;padding:14px 28px;border-radius:30px;width:90%}
-#row{display:flex;gap:8px}
-#row button{background:#222;color:#fff;border:1px solid #444}
-#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000c;padding:6px 14px;border-radius:20px;z-index:10}
-#res{position:fixed;inset:0;background:#000;display:none;flex-direction:column;z-index:20}
-#res img{width:100%;flex:1;object-fit:contain}
+body{margin:0;background:#000;overflow:hidden}
+#v{width:100vw;height:100vh;object-fit:cover;background:#111}
+#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:10px;display:none;pointer-events:none;z-index:5;transform:translate(-50%,-50%)}
+#focus::after{content:'';position:absolute;top:50%;left:50%;width:10px;height:10px;background:#ff0;border-radius:50%;transform:translate(-50%,-50%)}
+#msg{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 16px;border-radius:20px;z-index:10;font-family:sans-serif;font-size:13px}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000c);padding:15px;display:flex;flex-direction:column;gap:10px;z-index:10}
+#row{display:flex;gap:8px;justify-content:center}
+#row button{background:#222;color:#fff;border:1px solid #555;padding:12px 16px;border-radius:12px;font-weight:bold}
+#row button.active{background:#ff7800;border-color:#ff7800}
+#foto{width:100%;padding:16px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
+#res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
+#res img{flex:1;width:100%;object-fit:contain}
 </style>
 </head>
 <body>
-<div id="msg">Iniciando cámara...</div>
 <video id="v" autoplay playsinline muted></video>
-
+<div id="focus"></div>
+<div id="msg">Toca la pantalla para enfocar el pastel</div>
 <div id="ctrl">
   <div id="row">
-    <button onclick="setZoom(0.6)">0.6x Alejado</button>
-    <button onclick="setZoom(1)" style="background:#ff7800">1x Normal</button>
-    <button onclick="setZoom(2)">2x Cerca</button>
-    <button onclick="cambiar()">↻ Cambiar</button>
+    <button onclick="setZoom(0.6)">0.6x*</button>
+    <button id="b1" class="active" onclick="setZoom(1)">1x Normal</button>
+    <button onclick="setZoom(2)">2x</button>
+    <button onclick="cambiarLente()">↻ Lente</button>
   </div>
-  <button id="foto" onclick="tomar()">📸 Tomar Foto con IA 2x</button>
+  <button id="foto" onclick="tomar()">📸 Tomar Foto IA 2x</button>
+  <small style="color:#aaa;text-align:center;font-family:sans-serif">*0.6x no disponible en web en Huawei, aléjate físicamente</small>
 </div>
-
-<div id="res"><img id="out"><a id="down" download="pastel-HD.jpg" style="padding:15px;background:#fff;color:#000;text-align:center;margin:10px;border-radius:10px;text-decoration:none">Guardar Foto HD</a><button onclick="this.parentElement.style.display='none'" style="padding:15px;background:#333;color:#fff;margin:10px;border-radius:10px">Cerrar</button></div>
+<div id="res"><img id="out"><a id="down" download="pastel-HD.jpg" style="margin:10px;padding:15px;background:#fff;color:#000;text-align:center;border-radius:10px;text-decoration:none;font-family:sans-serif;font-weight:bold">Guardar HD</a><button onclick="this.parentElement.style.display='none'" style="margin:10px;padding:15px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button></div>
 
 <script>
-let video=document.getElementById('v'), stream, track, facing='environment', baseZoom=1;
-async function iniciar(){
+let video=document.getElementById('v'), stream, track, devices=[], idx=0;
+async function iniciar(deviceId=null){
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  let cons={video:{width:{ideal:1920},height:{ideal:1080},focusMode:{ideal:'continuous'}}};
+  if(deviceId) cons.video.deviceId={exact:deviceId}; else cons.video.facingMode='environment';
   try{
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing, width:{ideal:1920}}});
-    video.srcObject=stream; await video.play();
-    track=stream.getVideoTracks()[0];
-    let caps=track.getCapabilities? track.getCapabilities() : {};
-    document.getElementById('msg').innerText='Lista - Toca para enfocar. Zoom: '+(caps.zoom? caps.zoom.min+'x a '+caps.zoom.max+'x' : 'usa botones 0.6x');
-    if(caps.zoom) baseZoom=caps.zoom.min;
-  }catch(e){
-    document.getElementById('msg').innerText='Error: '+e.message+' Activa permiso de cámara en Chrome';
-    alert('Ve a Ajustes > Apps > Chrome > Permisos > Cámara > Permitir');
-  }
+    stream=await navigator.mediaDevices.getUserMedia(cons);
+    video.srcObject=stream; await video.play(); track=stream.getVideoTracks()[0];
+    // intenta auto-focus continuo para no borroso
+    try{await track.applyConstraints({advanced:[{focusMode:'continuous', exposureMode:'continuous', whiteBalanceMode:'continuous'}]});}catch{}
+    document.getElementById('msg').innerText='Lista - Toca el pastel para enfocar';
+  }catch(e){ document.getElementById('msg').innerText='Error: '+e.message; }
 }
-iniciar();
-function cambiar(){ facing=facing=='environment'?'user':'environment'; iniciar(); }
-
-async function setZoom(factor){
-  if(!track) return;
+async function listar(){
   try{
-    let caps=track.getCapabilities();
-    if(caps && caps.zoom){
-      let z=caps.zoom.min + (caps.zoom.max - caps.zoom.min)*(factor==0.6?0: factor==1?0.3 : 0.7);
-      if(factor==0.6) z=caps.zoom.min;
-      if(factor==2) z=Math.min(caps.zoom.max, 2.5);
+    let all=await navigator.mediaDevices.enumerateDevices();
+    devices=all.filter(d=>d.kind=='videoinput');
+    console.log(devices); // ver cuantos detecta
+  }catch{}
+  iniciar();
+}
+listar();
+function cambiarLente(){
+  if(devices.length<2){document.getElementById('msg').innerText='Huawei solo expone 1 lente en web'; return;}
+  idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId);
+  document.getElementById('msg').innerText='Lente '+(idx+1)+': '+(devices[idx].label||'cam');
+}
+async function setZoom(f){
+  document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active'));
+  if(f==1) document.getElementById('b1').classList.add('active');
+  try{
+    if(track && track.getCapabilities && track.getCapabilities().zoom){
+      let c=track.getCapabilities().zoom;
+      let z=f==0.6?c.min:f==2?Math.min(c.max,2):1;
       await track.applyConstraints({advanced:[{zoom:z}]});
-      document.getElementById('msg').innerText='Zoom '+z.toFixed(1)+'x - '+ (factor==0.6?'¡Alejado para pasteles!':'');
-    }else{
-      // truco para Huawei: zoom digital con CSS
-      video.style.transform=`scale(${factor})`;
-      document.getElementById('msg').innerText=factor==0.6?'0.6x Alejar digital - aléjate un poco más':'Zoom '+factor+'x';
+      document.getElementById('msg').innerText='Zoom '+z.toFixed(1)+'x';
+    } else {
+      // no hay zoom real, aviso
+      document.getElementById('msg').innerText=f==0.6?'0.6x no disponible en web, aléjate 30cm más':'Zoom digital '+f+'x';
     }
-  }catch(e){ video.style.transform=`scale(${factor})`; }
+  }catch(e){ document.getElementById('msg').innerText='Zoom no soportado en este lente'; }
 }
-
+// CUADRITO DE ENFOQUE
 video.addEventListener('click', async(e)=>{
-  if(!track) return;
-  const x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
-  try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); document.getElementById('msg').innerText='Enfocando...'; }catch{}
+  let box=document.getElementById('focus');
+  box.style.left=e.clientX+'px'; box.style.top=e.clientY+'px'; box.style.display='block';
+  setTimeout(()=>box.style.display='none',1500);
+  document.getElementById('msg').innerText='Enfocando pastel...';
+  try{
+    const x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
+    await track.applyConstraints({advanced:[{focusMode:'manual', pointsOfInterest:[{x,y}], exposureMode:'manual', pointsOfInterest:[{x,y}]}]});
+    setTimeout(async()=>{
+      try{await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
+      document.getElementById('msg').innerText='Enfocado ✓';
+    },800);
+  }catch{ document.getElementById('msg').innerText='Enfoque fijo en Huawei'; }
 });
-
 async function tomar(){
-  let c=document.createElement('canvas'); let scale=video.style.transform.includes('scale')?1:1;
-  c.width=video.videoWidth; c.height=video.videoHeight;
-  c.getContext('2d').drawImage(video,0,0,c.width,c.height);
-  let base64=c.toDataURL('image/jpeg',0.92);
-  document.getElementById('msg').innerText='Enviando a Real-ESRGAN...';
+  let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
+  c.getContext('2d').drawImage(video,0,0);
+  let base64=c.toDataURL('image/jpeg',0.95);
+  document.getElementById('msg').innerText='Mejorando a 2x con Real-ESRGAN...';
   try{
     let r=await fetch('/api/upscale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
-    let data=await r.json();
-    if(data.url){ document.getElementById('out').src=data.url; document.getElementById('down').href=data.url; document.getElementById('res').style.display='flex'; document.getElementById('msg').innerText='¡HD lista!'; return; }
-    throw new Error();
-  }catch{ let a=document.createElement('a'); a.href=base64; a.download='pastel.jpg'; a.click(); document.getElementById('msg').innerText='Guardada sin IA (falta key?)'; }
+    let d=await r.json();
+    if(d.url){ document.getElementById('out').src=d.url; document.getElementById('down').href=d.url; document.getElementById('res').style.display='flex'; document.getElementById('msg').innerText='¡HD 2x lista!'; return; }
+    throw 0;
+  }catch{ let a=document.createElement('a'); a.href=base64; a.download='pastel.jpg'; a.click(); document.getElementById('msg').innerText='Guardada (IA falló, revisa FAL_KEY)'; }
 }
 </script>
 </body>
-</html>
+</html> 
