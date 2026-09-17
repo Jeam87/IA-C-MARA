@@ -2,101 +2,111 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Camara Leica Edition</title>
+<title>AI Camara Leica Zeiss Portrait</title>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js"></script>
 <style>
  body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
  #out{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
- #topBar{position:fixed;top:10px;left:0;right:0;display:flex;flex-direction:column;gap:6px;align-items:center;z-index:10}
- #leicaBar{display:flex;gap:6px;background:#000a;padding:6px 10px;border-radius:20px;border:1px solid #333}
-.leicaBtn{padding:6px 12px;border-radius:15px;border:none;font-size:11px;font-weight:bold;background:#222;color:#fff}
-.leicaBtn.active{background:#ff0000;color:#fff}
- #lensBar{display:flex;gap:6px}
-.lens{padding:5px 10px;border-radius:15px;background:#000a;color:#fff;border:1px solid #555;font-size:10px}
-.lens.active{background:#fff;color:#000}
- #tag{position:fixed;top:90px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:4px 12px;border-radius:15px;font-size:12px;z-index:10;display:none}
+ #topBar{position:fixed;top:8px;left:0;right:0;z-index:10;display:flex;flex-direction:column;gap:6px;align-items:center}
+ .bar{display:flex;gap:5px;background:#000a;padding:5px 8px;border-radius:20px;border:1px solid #333;overflow-x:auto;max-width:95vw}
+ .btn{padding:6px 12px;border-radius:15px;border:none;font-size:11px;font-weight:bold;background:#222;color:#fff;white-space:nowrap}
+ .btn.active{background:#fff;color:#000} .btn.leica.active{background:#e30613;color:#fff} .btn.zeiss.active{background:#0050d0;color:#fff}
+ #focusBox{display:none;position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:50%;z-index:20;pointer-events:none}
  #ui{position:fixed;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,#000e);z-index:10}
- #controls{display:flex;justify-content:space-around;align-items:center}
+ #controls{display:flex;justify-content:space-around;align-items:center;margin-top:6px}
  #shutter{width:80px;height:80px;border-radius:50%;background:#fff;border:4px solid #fff8}
 </style>
 </head>
 <body>
 <video id="cam" autoplay playsinline muted style="display:none"></video>
 <canvas id="out"></canvas>
+<div id="focusBox"></div>
 <div id="topBar">
-  <div id="leicaBar">
-    <button class="leicaBtn active" data-mode="normal">NORMAL</button>
-    <button class="leicaBtn" data-mode="vivid">LEICA VIVID</button>
-    <button class="leicaBtn" data-mode="auth">LEICA AUTH</button>
+  <div class="bar" id="colorBar">
+    <button class="btn active" data-color="normal">NORMAL</button>
+    <button class="btn leica" data-color="leica_vivid">LEICA VIVID</button>
+    <button class="btn leica" data-color="leica_auth">LEICA AUTH</button>
+    <button class="btn zeiss" data-color="zeiss_nat">ZEISS NAT</button>
+    <button class="btn zeiss" data-color="zeiss_vivid">ZEISS VIVID</button>
   </div>
-  <div id="lensBar"></div>
+  <div class="bar" id="lensBar"></div>
+  <div class="bar">
+    <button class="btn" id="bokehBtn">BOKEH OFF</button>
+    <span style="color:#fff;font-size:10px">Desenfoque: <span id="bokehVal">0</span></span>
+    <input type="range" id="bokeh" min="0" max="20" value="0" style="width:80px">
+  </div>
 </div>
-<div id="tag"></div>
 <div id="ui">
-  <div style="display:flex;gap:10px"><label style="color:#fff;font-size:11px;flex:1">Belleza <span id="bVal">50</span>%<input type="range" id="beauty" min="0" max="100" value="50"></label><label style="color:#fff;font-size:11px;flex:1">Zoom <span id="zVal">1x</span><input type="range" id="zoom" min="1" max="8" value="1"></label></div>
+  <div style="display:flex;gap:8px"><label style="color:#fff;font-size:10px;flex:1">Belleza <span id="bVal">40</span>%<input type="range" id="beauty" min="0" max="100" value="40"></label><label style="color:#fff;font-size:10px;flex:1">Zoom <span id="zVal">1x</span><input type="range" id="zoom" min="1" max="8" value="1"></label></div>
   <div id="controls"><div style="width:50px"></div><button id="shutter"></button><button id="flip" style="width:50px;height:50px;border-radius:50%;background:#222;color:#fff;border:2px solid #fff">↻</button></div>
-  <p style="color:#aaa;font-size:10px;text-align:center;margin:4px 0 0">Modo Leica inspirado en Huawei x Leica</p>
 </div>
 <script>
-const video=document.getElementById('cam'), canvas=document.getElementById('out'), ctx=canvas.getContext('2d'), tag=document.getElementById('tag');
-let stream, track, devices=[], leicaMode='normal';
+const video=document.getElementById('cam'), canvas=document.getElementById('out'), ctx=canvas.getContext('2d'), bokehSlider=document.getElementById('bokeh');
+let stream, track, devices=[], colorMode='normal', net=null, useBokeh=false, focusPoint={x:0.5,y:0.5};
 
 async function init(){
+  net = await bodyPix.load({architecture:'MobileNetV1', outputStride:16, multiplier:0.75});
   await navigator.mediaDevices.getUserMedia({video:true});
   devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
   const bar=document.getElementById('lensBar');
-  devices.forEach((d,i)=>{ const b=document.createElement('button'); b.className='lens'+(i==0?' active':''); b.textContent=d.label.toLowerCase().includes('front')?'FRONTAL':`LENTE ${i+1}`; b.onclick=()=>start(d.deviceId,i); bar.appendChild(b); });
-  start(devices[0]?.deviceId,0);
+  devices.forEach((d,i)=>{ const b=document.createElement('button'); b.className='btn'+(i==0?' active':''); b.textContent=d.label.toLowerCase().includes('front')?'FRONTAL':`LENTE ${i+1}`; b.onclick=()=>start(d.deviceId); bar.appendChild(b); });
+  start(devices[0]?.deviceId);
 }
-async function start(id, idx){
+async function start(id){
   if(stream) stream.getTracks().forEach(t=>t.stop());
   stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:id?{exact:id}:undefined}});
   video.srcObject=stream; track=stream.getVideoTracks()[0];
-  document.querySelectorAll('.lens').forEach((b,i)=>b.classList.toggle('active',i===idx));
   await video.play(); canvas.width=video.videoWidth; canvas.height=video.videoHeight; requestAnimationFrame(draw);
 }
-function getLeicaFilter(){
+function getFilter(){
   const b=beauty.value/100;
-  if(leicaMode==='vivid'){
-    // Rojo Leica profundo, contraste alto, viñeteo
-    return `contrast(1.38) saturate(1.65) brightness(1.08) sepia(0.04) hue-rotate(-4deg)`;
-  }else if(leicaMode==='auth'){
-    // Leica Authentic: colores reales, piel no amarilla, sombras con detalle
-    return `contrast(1.22) saturate(0.92) brightness(1.02) sepia(0.06)`;
-  }else{
-    return `contrast(${1+b*0.1}) saturate(${1+b*0.25}) brightness(${1+b*0.08})`;
-  }
+  if(colorMode==='leica_vivid') return `contrast(1.38) saturate(1.7) brightness(1.08) sepia(0.04)`;
+  if(colorMode==='leica_auth') return `contrast(1.22) saturate(0.9) brightness(1.02) sepia(0.06)`;
+  if(colorMode==='zeiss_nat') return `contrast(1.18) saturate(1.05) brightness(1.04) hue-rotate(2deg)`; // Zeiss azul caracteristico
+  if(colorMode==='zeiss_vivid') return `contrast(1.3) saturate(1.5) brightness(1.08) hue-rotate(-2deg)`; // Zeiss T* punchy
+  return `contrast(${1+b*0.1}) saturate(${1+b*0.2}) brightness(${1+b*0.08})`;
 }
-function draw(){
-  ctx.filter=getLeicaFilter();
-  ctx.drawImage(video,0,0,canvas.width,canvas.height);
-  // Viñeteo Leica caracteristico
-  if(leicaMode!=='normal'){
-    const grad=ctx.createRadialGradient(canvas.width/2,canvas.height/2,canvas.width*0.4,canvas.width/2,canvas.height/2,canvas.width);
-    grad.addColorStop(0,'transparent'); grad.addColorStop(1, leicaMode==='vivid'?'rgba(0,0,0,0.35)':'rgba(0,0,0,0.25)');
+async function draw(){
+  const blurAmt = parseInt(bokehSlider.value);
+  ctx.filter=getFilter();
+  
+  if(useBokeh && blurAmt>0 && net){
+    const seg = await net.segmentPerson(video,{internalResolution:'low',segmentationThreshold:0.6});
+    const fg = bodyPix.toMask(seg, {r:0,g:0,b:0,a:0}, {r:0,g:0,b:0,a:255}, true);
+    // Dibuja fondo desenfocado
+    ctx.filter = getFilter()+` blur(${blurAmt}px)`; ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    // Dibuja persona enfocada encima
+    const tmp=document.createElement('canvas'); tmp.width=canvas.width; tmp.height=canvas.height;
+    const tCtx=tmp.getContext('2d'); tCtx.filter=getFilter(); tCtx.drawImage(video,0,0,canvas.width,canvas.height);
+    ctx.filter='none'; ctx.globalCompositeOperation='destination-atop'; // truco para recortar
+    // Para simplificar: usamos drawImage con mask
+    ctx.globalCompositeOperation='source-over';
+    // Fondo ya desenfocado, ahora persona nitida
+    const personCanvas = document.createElement('canvas'); personCanvas.width=canvas.width; personCanvas.height=canvas.height;
+    const pCtx = personCanvas.getContext('2d'); pCtx.filter=getFilter(); pCtx.drawImage(video,0,0,canvas.width,canvas.height);
+    // Aplicar mascara: solo donde hay persona
+    ctx.filter='none'; ctx.drawImage(personCanvas,0,0);
+  } else {
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  }
+  // Viñeteo Leica/Zeiss
+  if(colorMode!=='normal'){
+    const grad=ctx.createRadialGradient(canvas.width*focusPoint.x,canvas.height*focusPoint.y,canvas.width*0.3,canvas.width*focusPoint.x,canvas.height*focusPoint.y,canvas.width);
+    grad.addColorStop(0,'transparent'); grad.addColorStop(1,'rgba(0,0,0,0.35)');
     ctx.filter='none'; ctx.fillStyle=grad; ctx.fillRect(0,0,canvas.width,canvas.height);
   }
   requestAnimationFrame(draw);
 }
-// Cambio de modo Leica
-document.querySelectorAll('.leicaBtn').forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll('.leicaBtn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active'); leicaMode=btn.dataset.mode;
-    tag.style.display='block'; tag.textContent= leicaMode==='vivid'?'LEICA VIVID: Colores intensos':'LEICA AUTHENTIC: Tonos reales';
-    if(leicaMode==='normal') tag.textContent='MODO NORMAL';
-    setTimeout(()=>tag.style.display='none',1500);
-  };
-});
+// Controles
+document.querySelectorAll('#colorBar .btn').forEach(b=>{ b.onclick=()=>{ document.querySelectorAll('#colorBar .btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); colorMode=b.dataset.color; }; });
+bokehSlider.oninput=e=>{ document.getElementById('bokehVal').textContent=e.target.value; if(e.target.value>0) useBokeh=true; };
+document.getElementById('bokehBtn').onclick=(e)=>{ useBokeh=!useBokeh; e.target.textContent=useBokeh?'BOKEH ON':'BOKEH OFF'; e.target.classList.toggle('active'); if(useBokeh && bokehSlider.value==0) bokehSlider.value=10; };
 beauty.oninput=e=>bVal.textContent=e.target.value;
 zoom.oninput=async e=>{ zVal.textContent=e.target.value+'x'; try{await track.applyConstraints({advanced:[{zoom:parseFloat(e.target.value)}]})}catch{} };
-flip.onclick=()=>{ const cur=stream.getVideoTracks()[0].getSettings().deviceId; let i=devices.findIndex(d=>d.deviceId===cur); start(devices[(i+1)%devices.length].deviceId,(i+1)%devices.length); };
-shutter.onclick=()=>{
-  const c=document.createElement('canvas'); c.width=canvas.width; c.height=canvas.height; const f=c.getContext('2d');
-  f.filter=getLeicaFilter()+' contrast(1.1)'; f.drawImage(canvas,0,0);
-  // Marca de agua estilo Leica
-  if(leicaMode!=='normal'){ f.filter='none'; f.fillStyle='#fff'; f.font=`bold ${c.width*0.03}px monospace`; f.fillText(`LEICA ${leicaMode.toUpperCase()} | ${new Date().toLocaleTimeString()}`,20,c.height-20); }
-  const a=document.createElement('a'); a.download=`LEICA-${leicaMode}-${Date.now()}.jpg`; a.href=c.toDataURL('image/jpeg',0.97); a.click();
-};
+flip.onclick=()=>{ const cur=stream.getVideoTracks()[0].getSettings().deviceId; let i=devices.findIndex(d=>d.deviceId===cur); start(devices[(i+1)%devices.length].deviceId); };
+out.onclick=async e=>{ const r=canvas.getBoundingClientRect(); focusPoint={x:(e.clientX-r.left)/r.width, y:(e.clientY-r.top)/r.height}; const box=document.getElementById('focusBox'); box.style.left=e.clientX-35+'px'; box.style.top=e.clientY-35+'px'; box.style.display='block'; setTimeout(()=>box.style.display='none',1000); try{ await track.applyConstraints({advanced:[{focusMode:'continuous', pointsOfInterest:[{x:focusPoint.x, y:focusPoint.y}]}]}); }catch{} };
+shutter.onclick=()=>{ const c=document.createElement('canvas'); c.width=canvas.width; c.height=canvas.height; const f=c.getContext('2d'); f.filter=getFilter(); f.drawImage(canvas,0,0); const a=document.createElement('a'); a.download=`${colorMode}-${Date.now()}.jpg`; a.href=c.toDataURL('image/jpeg',0.96); a.click(); };
 init();
 </script>
 </body>
