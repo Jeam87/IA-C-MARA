@@ -3,23 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles PRO</title>
+<title>Cam Pasteles PRO Flash</title>
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
 #v{width:100vw;height:100vh;object-fit:cover;background:#111}
+#shutter{position:fixed;inset:0;background:#000;z-index:50;display:none;pointer-events:none}
+#shutter.flash{animation:shutterFlash 0.45s ease-out}
+@keyframes shutterFlash{
+  0%{background:#000;opacity:0}
+  20%{background:#000;opacity:1}
+  45%{background:#fff;opacity:1}
+  100%{background:#fff;opacity:0}
+}
 #msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px;text-align:center;width:85%}
-#focus{position:fixed;width:90px;height:90px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%)}
+#focus{position:fixed;width:90px;height:90px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 10px #ff0}
 #ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000e);padding:12px;display:flex;flex-direction:column;gap:8px;z-index:10}
 #row{display:flex;gap:6px;justify-content:center}
 #row button{background:#222;color:#fff;border:1px solid #555;padding:12px;border-radius:12px;font-weight:bold;flex:1;font-size:13px}
 #row button.active{background:#ff7800}
-#foto{width:100%;padding:16px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
+#foto{width:100%;padding:16px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold;transition:transform 0.1s}
+#foto:active{transform:scale(0.93);background:#ff7800;color:#fff}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
 #res img{flex:1;width:100%;object-fit:contain;background:#111}
 #resBtns{display:flex;gap:10px;padding:12px}
 </style>
 </head>
 <body>
+<div id="shutter"></div>
 <video id="v" autoplay playsinline muted></video>
 <div id="focus"></div>
 <div id="msg">Toca el sticker para enfocar</div>
@@ -35,23 +45,24 @@ body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
 <div id="res">
   <img id="out">
   <div id="resBtns">
-    <a id="down" download="pastel-PRO.jpg" style="flex:1;padding:15px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar HD</a>
-    <button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:15px;background:#333;color:#fff;border-radius:10px;border:none">Cerrar</button>
+    <a id="down" download="pastel-PRO-FLASH.jpg" style="flex:1;padding:15px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar HD</a>
+    <button onclick="document.getElementById('res').style.display='none'; document.getElementById('shutter').style.display='none'" style="flex:1;padding:15px;background:#333;color:#fff;border-radius:10px;border:none">Cerrar</button>
   </div>
 </div>
 <script>
 let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0;
-async function iniciar(deviceId=null){
+async function iniciar(d=null){
   if(stream) stream.getTracks().forEach(t=>t.stop());
   try{
-    let cons={video:{facingMode:'environment', width:{ideal:1920}, height:{ideal:1080}}};
-    if(deviceId) cons.video={deviceId:{exact:deviceId}};
-    stream=await navigator.mediaDevices.getUserMedia(cons);
+    let c={video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}};
+    if(d) c.video={deviceId:{exact:d}};
+    stream=await navigator.mediaDevices.getUserMedia(c);
     v.srcObject=stream; await v.play();
     track=stream.getVideoTracks()[0];
     try{ imageCapture=new ImageCapture(track); }catch{}
-    document.getElementById('msg').innerText='Cámara HD lista - Toca para enfocar macro';
-    let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput');
+    document.getElementById('msg').innerText='HD listo - Toca para enfocar';
+    let all=await navigator.mediaDevices.enumerateDevices();
+    devices=all.filter(x=>x.kind=='videoinput');
   }catch(e){ document.getElementById('msg').innerText='Permite la cámara 🔒'; }
 }
 iniciar();
@@ -65,13 +76,27 @@ v.addEventListener('click', async(e)=>{
   let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1000);
   try{
     let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
-    await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}], focusMode:'manual'}]});
+    await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}],focusMode:'manual'}]});
     document.getElementById('msg').innerText='Enfocando...';
     setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); document.getElementById('msg').innerText='Enfocado ✓'; }catch{} },900);
   }catch{}
 });
 async function tomarPro(){
-  let msg=document.getElementById('msg'); msg.innerText='Tomando HD...';
+  let s=document.getElementById('shutter'), msg=document.getElementById('msg');
+  // EFECTO SE APAGA Y PRENDE
+  s.style.display='block';
+  s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
+  if(navigator.vibrate) navigator.vibrate([30,40,30]);
+  try{
+    let ctx=new (window.AudioContext||window.webkitAudioContext)();
+    let o=ctx.createOscillator(), g=ctx.createGain();
+    o.frequency.value=1200; o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.8,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.2);
+    o.start(); o.stop(ctx.currentTime+0.2);
+  }catch{}
+  msg.innerText='📸 ¡FLASH!';
+  await new Promise(r=>setTimeout(r,280));
   try{
     let blob;
     if(imageCapture && imageCapture.takePhoto){ blob=await imageCapture.takePhoto(); }
@@ -79,13 +104,14 @@ async function tomarPro(){
     let url=URL.createObjectURL(blob);
     let img=new Image(); img.src=url; await img.decode();
     let c2=document.createElement('canvas'); c2.width=img.width*1.5; c2.height=img.height*1.5;
-    let ctx=c2.getContext('2d'); ctx.imageSmoothingQuality='high'; ctx.drawImage(img,0,0,c2.width,c2.height);
+    let ctx2=c2.getContext('2d'); ctx2.imageSmoothingQuality='high'; ctx2.drawImage(img,0,0,c2.width,c2.height);
     let hd=c2.toDataURL('image/jpeg',0.92);
     document.getElementById('out').src=hd; document.getElementById('down').href=hd;
     document.getElementById('res').style.display='flex';
-    msg.innerText='Foto PRO: '+Math.round(c2.width)+'x'+Math.round(c2.height)+' HD';
-  }catch(e){ msg.innerText='Error: '+e.message; }
+    msg.innerText='¡Foto PRO '+Math.round(c2.width)+'x'+Math.round(c2.height)+'!';
+    setTimeout(()=>{ s.style.display='none'; },500);
+  }catch(e){ msg.innerText='Error: '+e.message; s.style.display='none'; }
 }
 </script>
 </body>
-</html> 
+</html>
