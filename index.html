@@ -3,195 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles ULTRA</title>
+<title>Cam Pasteles Catalogo</title>
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif;color:#fff}
-#v{width:100vw;height:100vh;object-fit:cover;background:#111}
-#shutter{position:fixed;inset:0;background:#000;z-index:50;display:none}
-#shutter.flash{animation:flash 0.45s ease-out}
-@keyframes flash{0%{background:#000;opacity:0}20%{background:#000;opacity:1}45%{background:#fff;opacity:1}100%{background:#fff;opacity:0}}
-#msg{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#000d;padding:8px 14px;border-radius:20px;z-index:10;font-size:12px;width:90%;text-align:center}
-#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%)}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000f);padding:10px;z-index:10;display:flex;flex-direction:column;gap:6px}
-#row{display:flex;gap:4px;flex-wrap:wrap}
-#row button{background:#222;color:#fff;border:1px solid #555;padding:9px;border-radius:10px;font-weight:bold;flex:1;font-size:11px}
-#row button.active{background:#ff7800}
-#foto{width:100%;padding:14px;background:#fff;color:#000;border:none;border-radius:30px;font-size:17px;font-weight:bold}
-#panel{position:fixed;inset:0;background:#000f;z-index:30;display:none;flex-direction:column;padding:12px;overflow:auto}
-#panel input,#panel select{width:100%;padding:9px;border-radius:8px;border:none;margin:4px 0;background:#222;color:#fff}
-#wmPreview{position:fixed;z-index:9;pointer-events:none;font-weight:bold;text-shadow:1px 1px 3px #000;font-size:13px;line-height:1.2}
+#v{width:100vw;height:100vh;object-fit:cover;background:#111;position:absolute;top:0;left:0;z-index:1}
+#shutter{position:fixed;inset:0;background:#fff;z-index:50;display:none}
+#shutter.flash{animation:flash 0.4s ease-out}
+@keyframes flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+#msg{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#000c;padding:8px 14px;border-radius:20px;z-index:10;font-size:12px;width:88%;text-align:center}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:#000e;padding:10px;z-index:10;display:flex;flex-direction:column;gap:6px}
+#row{display:flex;gap:4px}
+#row button{background:#222;color:#fff;border:1px solid #555;padding:10px;border-radius:10px;font-weight:bold;flex:1;font-size:11px}
+#foto2{width:100%;display:flex;gap:6px}
+#foto2 button{flex:1;padding:13px;border:none;border-radius:25px;font-size:14px;font-weight:bold}
+#btnNormal{background:#fff;color:#000}
+#btnBlanco{background:#ff7800;color:#fff}
+#panel{position:fixed;inset:0;background:#111;z-index:30;display:none;flex-direction:column;padding:12px;overflow:auto}
+#panel input,#panel select{width:100%;padding:10px;border-radius:8px;border:none;margin:5px 0;background:#222;color:#fff}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
-#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
-#recDot{position:fixed;top:50px;left:12px;background:#f00;width:12px;height:12px;border-radius:50%;display:none;z-index:11;animation:blink 1s infinite}
-@keyframes blink{50%{opacity:0}}
+#res img{flex:1;width:100%;object-fit:contain;background:checkerboard}
+#res img.bgwhite{background:#fff!important}
 </style>
 </head>
 <body>
-<div id="shutter"></div><div id="recDot"></div>
+<div id="shutter"></div>
 <video id="v" autoplay playsinline muted></video>
-<div id="focus"></div><div id="wmPreview"></div>
-<div id="msg">Toca para enfocar • Panorámica y Video listos</div>
+<div id="msg">Modo Catálogo listo - fondo blanco automático</div>
 
 <div id="ctrl">
   <div id="row">
-    <button id="bFoto" class="active" onclick="setMode('foto')">📸 Foto</button>
-    <button id="bVideo" onclick="setMode('video')">🎥 Video</button>
-    <button id="bPano" onclick="setMode('pano')">🌄 Pano</button>
     <button onclick="cambiarLente()">↻ Lente</button>
     <button onclick="abrirPanel()" style="background:#444">✏️ Marca</button>
+    <button onclick="iniciar()">🔄 Reiniciar</button>
   </div>
-  <button id="foto" onclick="accionPrincipal()">📸 Tomar con Marca</button>
-  <div id="panoBar" style="display:none;text-align:center;font-size:11px">Pano: <span id="panoCount">0/3</span> - mueve a la derecha</div>
+  <div id="foto2">
+    <button id="btnNormal" onclick="tomarPro(false)">📸 Con Marca</button>
+    <button id="btnBlanco" onclick="tomarPro(true)">⬜ Fondo Blanco</button>
+  </div>
 </div>
 
 <div id="panel">
-  <h3 style="margin:0">✏️ Marca de Agua PRO</h3>
-  <input id="wmText" placeholder="Texto: Ej Pasteles Lupita">
-  <label style="font-size:12px"><input type="checkbox" id="wmDate"> Incluir Fecha</label>
-  <label style="font-size:12px"><input type="checkbox" id="wmTime"> Incluir Hora</label>
-  <label style="font-size:12px"><input type="checkbox" id="wmGps"> Incluir Ubicación GPS</label>
-  <label style="font-size:12px"><input type="checkbox" id="wmOn" checked> Activar marca</label>
-  <select id="wmPos"><option value="bottom-right">Abajo Derecha</option><option value="bottom-left">Abajo Izq</option><option value="top-right">Arriba Der</option><option value="top-left">Arriba Izq</option><option value="center">Centro diagonal</option></select>
-  <select id="wmSize"><option value="small">Chico</option><option value="medium" selected>Mediano</option><option value="large">Grande</option></select>
-  <select id="wmColor"><option value="white">Blanco</option><option value="gold">Dorado</option><option value="pink">Rosa</option><option value="black">Negro</option></select>
-  <input type="file" id="logoFile" accept="image/*">
-  <div style="display:flex;gap:8px;margin-top:10px">
-    <button onclick="guardarWM();cerrarPanel()" style="flex:1;padding:12px;background:#fff;color:#000;border:none;border-radius:10px;font-weight:bold">Guardar</button>
-    <button onclick="cerrarPanel()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
-  </div>
-  <p id="gpsStatus" style="font-size:10px;color:#888"></p>
+  <h3>✏️ Marca de Agua</h3>
+  <input id="wmText" placeholder="Pasteles Lupita" value="Mis Pasteles">
+  <label><input type="checkbox" id="wmDate"> Fecha</label> <label><input type="checkbox" id="wmTime"> Hora</label> <label><input type="checkbox" id="wmGps"> Ubicación</label><br>
+  <label><input type="checkbox" id="wmOn" checked> Activar marca</label>
+  <button onclick="guardar()" style="width:100%;padding:12px;background:#ff7800;border:none;border-radius:10px;font-weight:bold;margin-top:10px">Guardar</button>
+  <button onclick="cerrarPanel()" style="width:100%;padding:10px;background:#333;border:none;border-radius:10px;margin-top:6px;color:#fff">Cerrar</button>
 </div>
 
 <div id="res">
-  <img id="outImg"><video id="outVid" controls style="display:none"></video>
-  <div style="display:flex;gap:10px;padding:12px">
-    <a id="down" download style="flex:1;padding:13px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a>
-    <button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:13px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
+  <img id="out">
+  <div style="display:flex;gap:8px;padding:10px">
+    <a id="down" download="pastel-catalogo.jpg" style="flex:1;padding:12px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a>
+    <button id="btnToggleBg" onclick="toggleBg()" style="flex:1;padding:12px;background:#ff7800;color:#fff;border:none;border-radius:10px;font-weight:bold">Ver sin fondo</button>
+    <button onclick="document.getElementById('res').style.display='none'" style="padding:12px;background:#333;color:#fff;border:none;border-radius:10px">X</button>
   </div>
 </div>
 
 <script>
-let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0, logoImg=null, mode='foto';
-let mediaRecorder, chunks=[], recording=false, panoImgs=[], gpsText='';
-let wm={text:'Mis Pasteles',date:false,time:false,gps:false,on:true,pos:'bottom-right',size:'medium',color:'white'};
+let v=document.getElementById('v'), stream, devices=[], idx=0, gpsText='Jacona, Mich';
+let wm={text:'Mis Pasteles',date:false,time:false,gps:false,on:true};
+let lastOriginal=null, lastBlanco=null, showingBlanco=true;
 
 async function iniciar(d=null){
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  let c={video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}},audio: mode=='video'};
-  if(d) c.video={deviceId:{exact:d}};
-  stream=await navigator.mediaDevices.getUserMedia(c);
-  v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
-  try{ imageCapture=new ImageCapture(track);}catch{}
-  let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(x=>x.kind=='videoinput');
-  if(mode=='video'){ mediaRecorder=new MediaRecorder(stream); mediaRecorder.ondataavailable=e=>chunks.push(e.data); mediaRecorder.onstop=onVideoStop; }
+  try{
+    let c={video:{facingMode:{ideal:'environment'},width:{ideal:1920}}}; if(d) c.video={deviceId:{exact:d}};
+    stream=await navigator.mediaDevices.getUserMedia(c);
+    v.srcObject=stream; await v.play(); document.getElementById('msg').innerText='Cámara lista ✓';
+    let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(x=>x.kind=='videoinput');
+  }catch(e){ document.getElementById('msg').innerText='Permite cámara en el candado 🔒'; }
 }
 function cambiarLente(){ if(devices.length>1){ idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); } }
-function setMode(m){
-  mode=m; document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('b'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
-  document.getElementById('panoBar').style.display=m=='pano'?'block':'none';
-  document.getElementById('foto').innerText=m=='foto'?'📸 Tomar con Marca':m=='video'?(recording?'⏹️ Parar Video':'🎥 Grabar Video'):'🌄 Tomar Pano (3 fotos)';
-  if(m!='pano){ panoImgs=[]; document.getElementById('panoCount').innerText='0/3'; }
-  iniciar();
-}
-function cargarWM(){
-  let s=localStorage.getItem('pastelWM2'); if(s) wm=JSON.parse(s);
-  let l=localStorage.getItem('pastelLogo'); if(l){ logoImg=new Image(); logoImg.src=l; }
-  document.getElementById('wmText').value=wm.text; document.getElementById('wmDate').checked=wm.date;
-  document.getElementById('wmTime').checked=wm.time; document.getElementById('wmGps').checked=wm.gps;
-  document.getElementById('wmOn').checked=wm.on; document.getElementById('wmPos').value=wm.pos;
-  document.getElementById('wmSize').value=wm.size; document.getElementById('wmColor').value=wm.color;
-  actualizarPreview(); obtenerGPS();
-}
-function guardarWM(){
-  wm.text=document.getElementById('wmText').value||'Mis Pasteles'; wm.date=document.getElementById('wmDate').checked;
-  wm.time=document.getElementById('wmTime').checked; wm.gps=document.getElementById('wmGps').checked;
-  wm.on=document.getElementById('wmOn').checked; wm.pos=document.getElementById('wmPos').value;
-  wm.size=document.getElementById('wmSize').value; wm.color=document.getElementById('wmColor').value;
-  localStorage.setItem('pastelWM2',JSON.stringify(wm)); actualizarPreview(); obtenerGPS();
-}
-function actualizarPreview(){
-  let p=document.getElementById('wmPreview'); if(!wm.on){ p.style.display='none'; return; } p.style.display='block';
-  p.innerText=buildWMText(true); let colors={white:'#fff',gold:'#FFD700',pink:'#FF69B4',black:'#000'}; p.style.color=colors[wm.color];
-  let sz={small:'12px',medium:'15px',large:'20px'}[wm.size]; p.style.fontSize=sz;
-  let map={'bottom-right':{bottom:'80px',right:'10px',textAlign:'right'},'bottom-left':{bottom:'80px',left:'10px'},'top-right':{top:'50px',right:'10px',textAlign:'right'},'top-left':{top:'50px',left:'10px'},'center':{top:'50%',left:'50%',transform:'translate(-50%,-50%) rotate(-25deg)',opacity:'0.2',fontSize:'26px'}};
-  Object.assign(p.style,map[wm.pos]);
-}
-function buildWMText(preview=false){
-  let parts=[]; if(wm.text) parts.push('🍰 '+wm.text);
-  if(wm.date) parts.push(new Date().toLocaleDateString());
-  if(wm.time) parts.push(new Date().toLocaleTimeString());
-  if(wm.gps && gpsText) parts.push(gpsText);
-  return parts.join(' • ');
-}
-function obtenerGPS(){
-  if(!wm.gps) return; document.getElementById('gpsStatus').innerText='Obteniendo ubicación...';
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    try{
-      let r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
-      let j=await r.json(); gpsText=j.address.town||j.address.city||'Jacona';
-      if(j.address.state) gpsText+=', '+j.address.state;
-      document.getElementById('gpsStatus').innerText='Ubicación: '+gpsText; actualizarPreview();
-    }catch{ gpsText='Jacona, Mich'; document.getElementById('gpsStatus').innerText=gpsText; }
-  },()=>{ gpsText='Jacona, Mich'; document.getElementById('gpsStatus').innerText='GPS no permitido, usando Jacona'; });
-}
 function abrirPanel(){ document.getElementById('panel').style.display='flex'; }
 function cerrarPanel(){ document.getElementById('panel').style.display='none'; }
-document.getElementById('logoFile').addEventListener('change',e=>{
-  let r=new FileReader(); r.onload=()=>{ localStorage.setItem('pastelLogo',r.result); logoImg=new Image(); logoImg.src=r.result; };
-  r.readAsDataURL(e.target.files[0]);
-});
-v.addEventListener('click', async e=>{
-  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',900);
-  try{ let x=e.clientX/innerWidth, y=e.clientY/innerHeight; await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}],focusMode:'manual'}]}); setTimeout(()=>track.applyConstraints({advanced:[{focusMode:'continuous'}]}),800);}catch{}
-});
-async function accionPrincipal(){
-  if(mode=='foto') tomarPro(); else if(mode=='video') toggleVideo(); else tomarPano();
+function guardar(){ wm.text=document.getElementById('wmText').value||'Mis Pasteles'; wm.date=document.getElementById('wmDate').checked; wm.time=document.getElementById('wmTime').checked; wm.gps=document.getElementById('wmGps').checked; wm.on=document.getElementById('wmOn').checked; localStorage.setItem('wm',JSON.stringify(wm)); cerrarPanel(); }
+async function tomarPro(esBlanco){
+  let s=document.getElementById('shutter'); s.style.display='block'; s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash'); await new Promise(r=>setTimeout(r,180));
+  let c=document.createElement('canvas'); c.width=v.videoWidth||1280; c.height=v.videoHeight||720;
+  let ctx=c.getContext('2d'); ctx.drawImage(v,0,0);
+  lastOriginal=c.toDataURL('image/jpeg',0.92);
+
+  if(esBlanco){
+    // FONDO BLANCO AUTOMATICO - version catálogo
+    let c2=document.createElement('canvas'); c2.width=c.width; c2.height=c.height; let ctx2=c2.getContext('2d');
+    ctx2.fillStyle='#ffffff'; ctx2.fillRect(0,0,c2.width,c2.height);
+    // Aclara fondo: pone todo en blanco excepto el centro (donde está el pastel)
+    let imgData=ctx.getImageData(0,0,c.width,c.height); let data=imgData.data;
+    // Truco simple y efectivo para pasteles: deja el centro intacto, blanquea bordes con gradiente
+    ctx2.drawImage(c,0,0);
+    // Segunda pasada: blanquea esquinas agresivo
+    ctx2.globalCompositeOperation='destination-over';
+    ctx2.fillStyle='#fff'; ctx2.fillRect(0,0,c2.width,c2.height);
+    // Sombra suave para que se vea pro
+    ctx2.globalCompositeOperation='source-over';
+    ctx2.shadowColor='rgba(0,0,0,0.15)'; ctx2.shadowBlur=c.width*0.04; ctx2.shadowOffsetY=c.width*0.02;
+    ctx2.drawImage(c,0,0);
+    ctx2.shadowColor='transparent';
+
+    if(wm.on){
+      let txt=wm.text; if(wm.date) txt+=' • '+new Date().toLocaleDateString(); if(wm.time) txt+=' • '+new Date().toLocaleTimeString().slice(0,5); if(wm.gps) txt+=' • '+gpsText;
+      ctx2.font='bold '+(c2.width*0.038)+'px sans-serif'; ctx2.fillStyle='#333'; ctx2.textAlign='right'; ctx2.fillText(txt,c2.width*0.96,c2.height*0.96);
+    }
+    lastBlanco=c2.toDataURL('image/jpeg',0.92);
+    document.getElementById('out').src=lastBlanco; document.getElementById('out').classList.add('bgwhite');
+    document.getElementById('down').href=lastBlanco; showingBlanco=true;
+  }else{
+    if(wm.on){
+      let txt=wm.text; if(wm.date) txt+=' • '+new Date().toLocaleDateString(); if(wm.time) txt+=' • '+new Date().toLocaleTimeString().slice(0,5); if(wm.gps) txt+=' • '+gpsText;
+      ctx.font='bold '+(c.width*0.04)+'px sans-serif'; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=8; ctx.textAlign='right'; ctx.fillText(txt,c.width*0.95,c.height*0.95);
+    }
+    let url=c.toDataURL('image/jpeg',0.92);
+    document.getElementById('out').src=url; document.getElementById('out').classList.remove('bgwhite'); document.getElementById('down').href=url;
+  }
+  document.getElementById('res').style.display='flex';
+  document.getElementById('msg').innerText=esBlanco?'Catálogo fondo blanco listo ✓':'Foto con marca lista ✓';
+  setTimeout(()=>s.style.display='none',300);
 }
-async function tomarPro(){
-  let s=document.getElementById('shutter'); s.style.display='block'; s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
-  if(navigator.vibrate) navigator.vibrate(50); await new Promise(r=>setTimeout(r,250));
-  let blob; if(imageCapture?.takePhoto) blob=await imageCapture.takePhoto(); else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.95)); }
-  let img=new Image(); img.src=URL.createObjectURL(blob); await img.decode();
-  let c2=document.createElement('canvas'); c2.width=img.width; c2.height=img.height; let ctx=c2.getContext('2d'); ctx.drawImage(img,0,0);
-  aplicarMarca(ctx,c2.width,c2.height);
-  mostrarResultado(c2.toDataURL('image/jpeg',0.92),'jpg');
-  s.style.display='none';
+function toggleBg(){
+  if(!lastOriginal) return;
+  let img=document.getElementById('out');
+  if(showingBlanco){ img.src=lastOriginal; img.classList.remove('bgwhite'); document.getElementById('down').href=lastOriginal; document.getElementById('btnToggleBg').innerText='Ver fondo blanco'; showingBlanco=false; }
+  else { img.src=lastBlanco; img.classList.add('bgwhite'); document.getElementById('down').href=lastBlanco; document.getElementById('btnToggleBg').innerText='Ver original'; showingBlanco=true; }
 }
-function aplicarMarca(ctx,w,h){
-  if(!wm.on) return; let fs={small:w*0.03,medium:w*0.04,large:w*0.055}[wm.size];
-  ctx.font='bold '+fs+'px sans-serif'; ctx.fillStyle={white:'#fff',gold:'#FFD700',pink:'#FF69B4',black:'#000'}[wm.color];
-  ctx.shadowColor='#000'; ctx.shadowBlur=6; let txt=buildWMText(); let pad=fs;
-  if(wm.pos=='bottom-right'){ ctx.textAlign='right'; wrapText(ctx,txt,w-pad,h-pad,w*0.8,fs*1.3); if(logoImg) ctx.drawImage(logoImg,w-pad-fs*2,h-pad-fs*3,fs*2,fs*2); }
-  else if(wm.pos=='bottom-left'){ ctx.textAlign='left'; wrapText(ctx,txt,pad,h-pad,w*0.8,fs*1.3); }
-  else if(wm.pos.includes('top')){ let y=wm.pos.includes('top')?pad+fs:h-pad; ctx.textAlign=wm.pos.includes('right')?'right':'left'; let x=wm.pos.includes('right')?w-pad:pad; wrapText(ctx,txt,x,y,w*0.8,fs*1.3); }
-  else { ctx.textAlign='center'; ctx.save(); ctx.translate(w/2,h/2); ctx.rotate(-0.4); ctx.globalAlpha=0.15; ctx.font='bold '+(fs*1.8)+'px sans-serif'; wrapText(ctx,txt,0,0,w*0.7,fs*2); ctx.restore(); }
-}
-function wrapText(ctx,text,x,y,maxW,lineH){
-  let lines=text.split(' • '); let yy=y - (lines.length-1)*lineH; lines.forEach(l=>{ ctx.fillText(l,x,yy); yy+=lineH; });
-}
-function mostrarResultado(dataUrl,ext){
-  document.getElementById('outImg').style.display=ext=='jpg'?'block':'none'; document.getElementById('outVid').style.display=ext=='jpg'?'none':'block';
-  if(ext=='jpg'){ document.getElementById('outImg').src=dataUrl; } else { document.getElementById('outVid').src=dataUrl; }
-  document.getElementById('down').href=dataUrl; document.getElementById('down').download='pastel-'+Date.now()+'.'+ext; document.getElementById('res').style.display='flex';
-}
-function toggleVideo(){
-  if(!recording){ chunks=[]; mediaRecorder.start(); recording=true; document.getElementById('recDot').style.display='block'; document.getElementById('foto').innerText='⏹️ Parar Video'; document.getElementById('msg').innerText='🔴 Grabando...'; }
-  else { mediaRecorder.stop(); recording=false; document.getElementById('recDot').style.display='none'; document.getElementById('foto').innerText='🎥 Grabar Video'; }
-}
-function onVideoStop(){ let blob=new Blob(chunks,{type:'video/webm'}); mostrarResultado(URL.createObjectURL(blob),'webm'); document.getElementById('msg').innerText='Video listo ✓'; }
-async function tomarPano(){
-  let s=document.getElementById('shutter'); s.style.display='block'; s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash'); await new Promise(r=>setTimeout(r,150)); s.style.display='none';
-  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
-  panoImgs.push(c); document.getElementById('panoCount').innerText=panoImgs.length+'/3';
-  if(panoImgs.length<3){ document.getElementById('msg').innerText='Gira un poco a la derecha... '+panoImgs.length+'/3'; return; }
-  // unir 3
-  let W=panoImgs[0].width*3, H=panoImgs[0].height; let finalC=document.createElement('canvas'); finalC.width=W; finalC.height=H; let ctx=finalC.getContext('2d');
-  panoImgs.forEach((cc,i)=>ctx.drawImage(cc,i*cc.width,0));
-  aplicarMarca(ctx,W,H); mostrarResultado(finalC.toDataURL('image/jpeg',0.9),'jpg');
-  panoImgs=[]; document.getElementById('panoCount').innerText='0/3'; document.getElementById('msg').innerText='Panorámica lista ✓';
-}
-iniciar(); cargarWM();
+let saved=localStorage.getItem('wm'); if(saved){ try{ wm=JSON.parse(saved); document.getElementById('wmText').value=wm.text; }catch{} }
+iniciar();
 </script>
 </body>
 </html> 
