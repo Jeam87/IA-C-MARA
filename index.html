@@ -7,24 +7,22 @@
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
 #v{width:100vw;height:100vh;object-fit:cover;background:#111}
-#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000e;color:#fff;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px;text-align:center;width:85%}
+#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px;text-align:center;width:85%}
 #focus{position:fixed;width:90px;height:90px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%)}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:#000c;padding:12px;display:flex;flex-direction:column;gap:8px;z-index:10}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000e);padding:12px;display:flex;flex-direction:column;gap:8px;z-index:10}
 #row{display:flex;gap:6px;justify-content:center}
-#row button{background:#222;color:#fff;border:1px solid #555;padding:12px;border-radius:12px;font-weight:bold;flex:1}
+#row button{background:#222;color:#fff;border:1px solid #555;padding:12px;border-radius:12px;font-weight:bold;flex:1;font-size:13px}
 #row button.active{background:#ff7800}
 #foto{width:100%;padding:16px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
-#res img{flex:1;width:100%;object-fit:contain}
+#res img{flex:1;width:100%;object-fit:contain;background:#111}
 #resBtns{display:flex;gap:10px;padding:12px}
-#debug{position:fixed;bottom:130px;left:10px;background:#000a;color:#0f0;font-size:10px;padding:5px;z-index:15;max-width:90%;white-space:pre-wrap}
 </style>
 </head>
 <body>
 <video id="v" autoplay playsinline muted></video>
 <div id="focus"></div>
-<div id="msg">Iniciando...</div>
-<div id="debug"></div>
+<div id="msg">Toca el sticker para enfocar</div>
 <div id="ctrl">
   <div id="row">
     <button onclick="setModo('lejos')">Lejos</button>
@@ -43,68 +41,42 @@ body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
 </div>
 <script>
 let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0;
-let debugEl=document.getElementById('debug');
-function log(t){ debugEl.innerText+=t+'\n'; }
-
 async function iniciar(deviceId=null){
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  let intentos=[
-    {video:{deviceId:deviceId?{exact:deviceId}:undefined, facingMode:deviceId?undefined:'environment', width:{ideal:1920}, height:{ideal:1080}}},
-    {video:{deviceId:deviceId?{exact:deviceId}:undefined, facingMode:deviceId?undefined:'environment', width:{ideal:1280}, height:{ideal:720}}},
-    {video:{facingMode:'environment'}},
-    {video:true}
-  ];
-  for(let cons of intentos){
-    try{
-      log('Probando: '+JSON.stringify(cons).slice(0,60));
-      stream=await navigator.mediaDevices.getUserMedia(cons);
-      v.srcObject=stream; await v.play();
-      track=stream.getVideoTracks()[0];
-      try{ imageCapture=new ImageCapture(track); }catch(e){ imageCapture=null; }
-      document.getElementById('msg').innerText='Cámara lista - Toca el sticker para enfocar macro';
-      log('OK: '+track.label+' '+v.videoWidth+'x'+v.videoHeight);
-      listar(); return;
-    }catch(e){ log('Falló: '+e.name+' '+e.message); }
-  }
-  document.getElementById('msg').innerText='No se pudo abrir cámara - Revisa permiso 🔒';
+  try{
+    let cons={video:{facingMode:'environment', width:{ideal:1920}, height:{ideal:1080}}};
+    if(deviceId) cons.video={deviceId:{exact:deviceId}};
+    stream=await navigator.mediaDevices.getUserMedia(cons);
+    v.srcObject=stream; await v.play();
+    track=stream.getVideoTracks()[0];
+    try{ imageCapture=new ImageCapture(track); }catch{}
+    document.getElementById('msg').innerText='Cámara HD lista - Toca para enfocar macro';
+    let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput');
+  }catch(e){ document.getElementById('msg').innerText='Permite la cámara 🔒'; }
 }
-async function listar(){ try{ let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput'); log('Lentes: '+devices.length); }catch{} }
 iniciar();
-
-function cambiarLente(){
-  if(devices.length<=1){ document.getElementById('msg').innerText='Solo 1 lente'; return; }
-  idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId);
-}
+function cambiarLente(){ if(devices.length<=1) return; idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); }
 async function setModo(m){
   document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active'));
   if(m=='macro') document.getElementById('bMacro').classList.add('active');
-  try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); document.getElementById('msg').innerText='Modo '+m+' - Toca para enfocar'; }catch{}
+  try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch{}
 }
 v.addEventListener('click', async(e)=>{
-  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1200);
+  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1000);
   try{
     let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
     await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}], focusMode:'manual'}]});
     document.getElementById('msg').innerText='Enfocando...';
     setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); document.getElementById('msg').innerText='Enfocado ✓'; }catch{} },900);
-  }catch(e){ log('Focus fail: '+e.message); }
+  }catch{}
 });
-
 async function tomarPro(){
   let msg=document.getElementById('msg'); msg.innerText='Tomando HD...';
   try{
     let blob;
-    if(imageCapture && imageCapture.takePhoto){
-      log('Usando takePhoto() real');
-      blob=await imageCapture.takePhoto();
-    } else {
-      log('Usando canvas fallback');
-      let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
-      c.getContext('2d').drawImage(v,0,0);
-      blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.95));
-    }
+    if(imageCapture && imageCapture.takePhoto){ blob=await imageCapture.takePhoto(); }
+    else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.95)); }
     let url=URL.createObjectURL(blob);
-    // Mejora de nitidez 2x
     let img=new Image(); img.src=url; await img.decode();
     let c2=document.createElement('canvas'); c2.width=img.width*1.5; c2.height=img.height*1.5;
     let ctx=c2.getContext('2d'); ctx.imageSmoothingQuality='high'; ctx.drawImage(img,0,0,c2.width,c2.height);
@@ -112,7 +84,7 @@ async function tomarPro(){
     document.getElementById('out').src=hd; document.getElementById('down').href=hd;
     document.getElementById('res').style.display='flex';
     msg.innerText='Foto PRO: '+Math.round(c2.width)+'x'+Math.round(c2.height)+' HD';
-  }catch(e){ msg.innerText='Error foto: '+e.message; log(e.stack); }
+  }catch(e){ msg.innerText='Error: '+e.message; }
 }
 </script>
 </body>
