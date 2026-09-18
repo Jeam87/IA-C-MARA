@@ -3,245 +3,257 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles PRO MAX FINAL</title>
+<title>Cam Pasteles PRO MAX PLUS - Final</title>
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif;color:#fff}
-#v{width:100vw;height:100vh;object-fit:cover;background:#111;position:absolute;top:0;left:0;z-index:1;transition:transform 0.15s linear}
+#v{width:100vw;height:100vh;object-fit:cover;background:#111;position:absolute;top:0;left:0;z-index:1;transition:transform 0.15s}
+#grid{position:fixed;inset:0;z-index:2;pointer-events:none;display:none}
+#grid::before,#grid::after{content:'';position:absolute;background:#fff3}
+#grid::before{left:33.3%;top:0;bottom:0;width:1px;box-shadow:66.6vw 0 0 #fff3}
+#grid::after{top:33.3%;left:0;right:0;height:1px;box-shadow:0 33.3vh 0 #fff3}
+#gridLines{position:absolute;inset:0;border:1px solid #fff2}
 #start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;padding:20px;text-align:center}
 #start button{padding:18px 25px;background:#ff7800;color:#fff;border:none;border-radius:30px;font-size:18px;font-weight:bold;width:90%}
 #shutter{position:fixed;inset:0;background:#fff;z-index:50;display:none}
+#countdown{position:fixed;inset:0;background:#000a;z-index:60;display:none;align-items:center;justify-content:center;font-size:120px;font-weight:bold}
 #msg{position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#000c;padding:7px 12px;border-radius:20px;z-index:10;font-size:11px;width:92%;text-align:center}
 #focus{position:fixed;width:85px;height:85px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%);z-index:12}
-#light{position:fixed;right:8px;top:40%;transform:translateY(-50%);z-index:11;display:flex;flex-direction:column;align-items:center;gap:4px;background:#0008;padding:6px;border-radius:20px}
-#light input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:8px;height:90px}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:#000e;padding:8px;z-index:10;display:flex;flex-direction:column;gap:6px}
-#row{display:flex;gap:4px;flex-wrap:wrap}
-#row button{background:#222;color:#fff;border:1px solid #555;padding:8px;border-radius:10px;font-weight:bold;flex:1;font-size:10px;min-width:52px}
+#light{position:fixed;right:8px;top:35%;transform:translateY(-50%);z-index:11;display:flex;flex-direction:column;align-items:center;gap:4px;background:#0008;padding:6px;border-radius:20px}
+#light input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:8px;height:80px}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:#000f;padding:8px;z-index:10;display:flex;flex-direction:column;gap:5px}
+#row{display:flex;gap:3px;flex-wrap:wrap}
+#row button{background:#222;color:#fff;border:1px solid #555;padding:7px;border-radius:10px;font-weight:bold;flex:1;font-size:9.5px;min-width:48px}
 #row button.active{background:#ff7800}
 #mainBtns{display:flex;gap:6px}
 #mainBtns button{flex:1;padding:13px;border:none;border-radius:25px;font-weight:bold;font-size:13px}
 #btnFoto{background:#fff;color:#000}
 #btnBlanco{background:#ff7800;color:#fff}
-#panel{position:fixed;inset:0;background:#111;z-index:30;display:none;flex-direction:column;padding:12px;overflow:auto}
-#panel input,#panel select{width:100%;padding:10px;border-radius:8px;border:none;margin:4px 0;background:#222;color:#fff}
+#panel,#galeria{position:fixed;inset:0;background:#111;z-index:30;display:none;flex-direction:column;padding:12px;overflow:auto}
+#panel input,#panel select{width:100%;padding:9px;border-radius:8px;border:none;margin:3px 0;background:#222;color:#fff}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
 #res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
 #recBox{position:fixed;top:12px;left:12px;background:#000a;padding:6px 10px;border-radius:20px;display:none;align-items:center;gap:6px;z-index:11;border:1px solid #f00a}
 #recDot{width:12px;height:12px;background:#f00;border-radius:50%;animation:blink 1s infinite}
-#recTime{font-weight:bold;font-size:14px;font-family:monospace}
 @keyframes blink{50%{opacity:0.2}}
 #stabOn{position:fixed;top:12px;right:12px;background:#00ff88;color:#000;padding:4px 8px;border-radius:12px;font-size:10px;font-weight:bold;display:none;z-index:11}
+.galItem{width:31%;aspect-ratio:1;object-fit:cover;border-radius:8px;margin:1%;background:#222}
 </style>
 </head>
 <body>
 <div id="start">
-<h2 style="margin:0">🍰 Cam Pasteles PRO MAX</h2>
-<p style="font-size:12px;color:#0f0">4 Lentes • Video • Pano • MAX 15MB / HD 4MB • Marca de agua</p>
+<h2 style="margin:0">🍰 Cam Pasteles PRO MAX PLUS</h2>
+<p style="font-size:11px;color:#0f0">4 Lentes • Video • Pano • MAX/HD • Cuadrícula • Timer • Filtros • Precio • Galería</p>
 <button onclick="iniciarReal()">📷 PRENDER CÁMARA</button>
 <p id="err" style="font-size:11px;color:#ff0;word-break:break-all"></p>
 </div>
 <div id="shutter"></div>
+<div id="countdown">3</div>
 <div id="recBox"><div id="recDot"></div><span id="recTime">00:00</span></div>
 <div id="stabOn">📹 ESTABLE</div>
 <video id="v" autoplay playsinline muted></video>
+<div id="grid"><div id="gridLines"></div></div>
 <div id="focus"></div>
 <div id="msg">Esperando...</div>
-<div id="light"><span>☀️</span><input type="range" min="-2" max="2" step="0.2" value="0" oninput="v.style.filter='brightness('+(1+parseFloat(this.value)*0.25)+')'"><span>🌙</span></div>
+<div id="light"><span>☀️</span><input type="range" min="-2" max="2" step="0.2" value="0" oninput="v.style.filter=getFilterPreview()"><span>🌙</span></div>
 
 <div id="ctrl">
 <div id="row">
 <button id="mFoto" class="active" onclick="setMode('foto')">📸 Foto</button>
 <button id="mVideo" onclick="setMode('video')">🎥 Video</button>
 <button id="mPano" onclick="setMode('pano')">🌄 Pano</button>
-<button onclick="cambiarLente()">↻ Lente <span id="lenteNum"></span></button>
-<button id="btnStab" onclick="toggleStab()" style="background:#333">📹 Estab</button>
-<button onclick="abrirPanel()">⚙️ Ajustes</button>
+<button onclick="cambiarLente()">↻ <span id="lenteNum"></span></button>
+<button id="btnGrid" onclick="toggleGrid()">📐</button>
+<button id="btnTimer" onclick="toggleTimer()">⏱️ OFF</button>
+<button id="btnStab" onclick="toggleStab()">📹</button>
+<button onclick="abrirPanel()">⚙️</button>
+<button onclick="abrirGaleria()">🖼️ Gal</button>
+</div>
+<div id="row">
+<button id="rFree" class="active" onclick="setRatio('free')">Libre 9:16</button>
+<button id="r1-1" onclick="setRatio('1-1')">1:1 Insta</button>
+<button id="r4-5" onclick="setRatio('4-5')">4:5 Catálogo</button>
+<button id="r9-16" onclick="setRatio('9-16')">9:16 Reel</button>
+<button id="rFilt" onclick="cicloFiltro()">🎨 <span id="fLabel">Normal</span></button>
 </div>
 <div id="mainBtns">
 <button id="btnFoto" onclick="accion()">📸 Tomar</button>
 <button id="btnBlanco" onclick="tomarPro(true)">⬜ Fondo Blanco</button>
 </div>
-<div id="panoInfo" style="display:none;text-align:center;font-size:11px">Pano: <span id="pCount">0/3</span> - mueve el cel</div>
+<div id="panoInfo" style="display:none;text-align:center;font-size:11px">Pano: <span id="pCount">0/3</span></div>
 </div>
 
 <div id="panel">
-<h3 style="margin:0 0 10px 0">⚙️ Ajustes PRO MAX</h3>
-<label style="color:#ff7800;font-weight:bold">📸 Calidad guardado:</label>
-<select id="modoCalidad">
-<option value="max" selected>🖨️ MAX 15MB - Impresión 100% - 3840x5120</option>
-<option value="hd">📱 HD 4MB - WhatsApp 82% - 3840x5120</option>
-<option value="lite">⚡ LITE 1.5MB - 1920x2560</option>
-</select>
-<label style="color:#ff7800;font-weight:bold;margin-top:8px">🎥 Resolución Video:</label>
-<select id="resVideo">
-<option value="1280x720">HD 720p</option>
-<option value="1920x1080" selected>Full HD 1080p</option>
-</select>
-<label style="color:#ff7800;font-weight:bold;margin-top:8px">📹 Estabilizador:</label>
-<select id="stabMode">
-<option value="off">OFF</option>
-<option value="on" selected>ON</option>
-<option value="pro">PRO (zoom 1.15x)</option>
-</select>
-<hr style="border-color:#333;margin:10px 0">
-<label style="font-weight:bold">🖼️ Marca de Agua:</label>
-<input id="wmText" placeholder="Nombre Ej: Pasteles Jimbo" value="Pasteles Jimbo">
+<h3 style="margin:0 0 8px 0">⚙️ Ajustes PLUS</h3>
+<label style="color:#ff7800">📸 Calidad:</label>
+<select id="modoCalidad"><option value="max" selected>🖨️ MAX 15MB 100%</option><option value="hd">📱 HD 4MB 82%</option><option value="lite">⚡ LITE 1.5MB</option></select>
+<label style="color:#ff7800">🎥 Video:</label><select id="resVideo"><option value="1280x720">720p</option><option value="1920x1080" selected>1080p</option></select>
+<label style="color:#ff7800">📹 Estabilizador:</label><select id="stabMode"><option value="off">OFF</option><option value="on" selected>ON</option><option value="pro">PRO zoom 1.15x</option></select>
+<label style="color:#ff7800">🎨 Filtro color:</label><select id="filtroSel" onchange="document.getElementById('fLabel').innerText=this.options[this.selectedIndex].text"><option value="normal" selected>Normal</option><option value="vibrante">Vibrante (pastel vivo)</option><option value="pastel">Pastel Suave</option><option value="calido">Cálido</option><option value="frio">Frío pro</option></select>
+<hr style="border-color:#333">
+<label style="font-weight:bold">🖼️ Marca de agua + Precio:</label>
+<input id="wmText" value="Pasteles Jimbo">
+<input id="priceText" placeholder="Ej: $250 o $180 1kg">
 <input type="file" id="logoFile" accept="image/*">
-<p style="font-size:10px;color:#aaa;margin:2px 0">Logo: si subes logo aparece en esquina</p>
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0">
-<label style="font-size:12px"><input type="checkbox" id="wmOn" checked> Activar</label>
-<label style="font-size:12px"><input type="checkbox" id="wmDate" checked> Fecha</label>
-<label style="font-size:12px"><input type="checkbox" id="wmGps" checked> Ubicación</label>
-<label style="font-size:12px"><input type="checkbox" id="wmLogo" checked> Logo</label>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">
+<label style="font-size:11px"><input type="checkbox" id="wmOn" checked> Marca</label>
+<label style="font-size:11px"><input type="checkbox" id="wmDate" checked> Fecha</label>
+<label style="font-size:11px"><input type="checkbox" id="wmGps" checked> Lugar</label>
+<label style="font-size:11px"><input type="checkbox" id="wmLogo" checked> Logo</label>
+<label style="font-size:11px"><input type="checkbox" id="wmPrice" checked> Precio</label>
 </div>
-<button onclick="guardar()" style="width:100%;padding:12px;background:#ff7800;border:none;border-radius:10px;font-weight:bold;margin-top:12px">Guardar y Aplicar</button>
+<button onclick="guardar()" style="width:100%;padding:12px;background:#ff7800;border:none;border-radius:10px;font-weight:bold;margin-top:8px">Guardar</button>
 <button onclick="cerrarPanel()" style="width:100%;padding:10px;background:#333;border:none;border-radius:10px;margin-top:6px;color:#fff">Cerrar</button>
-<p id="gpsStatus" style="font-size:11px;color:#aaa">GPS: buscando...</p>
+<p id="gpsStatus" style="font-size:11px;color:#aaa"></p>
 </div>
 
-<div id="res"><img id="outImg"><video id="outVid" controls style="display:none"></video><div style="display:flex;gap:6px;padding:10px"><a id="down" download style="flex:1;padding:12px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a><button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button></div><div id="infoCal" style="padding:8px;font-size:11px;color:#0f0;text-align:center"></div></div>
+<div id="galeria">
+<h3 style="margin:0">🖼️ Galería (últimas 20) <button onclick="document.getElementById('galeria').style.display='none'" style="float:right;background:#333;color:#fff;border:none;padding:6px 10px;border-radius:10px">X</button></h3>
+<div id="galGrid" style="display:flex;flex-wrap:wrap;margin-top:10px"></div>
+<button onclick="localStorage.removeItem('galeria');renderGaleria()" style="width:100%;margin-top:10px;padding:10px;background:#500;border:none;border-radius:10px;color:#fff">Borrar galería</button>
+</div>
+
+<div id="res">
+<img id="outImg"><video id="outVid" controls style="display:none"></video>
+<div style="display:flex;gap:6px;padding:10px;flex-wrap:wrap">
+<a id="down" download style="flex:1;padding:12px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a>
+<button onclick="compartirWA()" style="flex:1;padding:12px;background:#25D366;color:#fff;border:none;border-radius:10px;font-weight:bold">📤 WhatsApp</button>
+<button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
+</div>
+<div id="infoCal" style="padding:8px;font-size:11px;color:#0f0;text-align:center"></div>
+</div>
 
 <script>
-let v=document.getElementById('v'), stream, track, devices=[], idx=0, mode='foto', gpsText='Jacona', logoImg=null, wm={}, mediaRecorder, chunks=[], recording=false, panoImgs=[], facing='environment', timerInt, sec=0, stab=true, stabModeVal='on';
+let v=document.getElementById('v'), stream, track, devices=[], idx=0, mode='foto', gpsText='Jacona', logoImg=null, wm={}, mediaRecorder, chunks=[], recording=false, panoImgs=[], facing='environment', sec=0, timerInt, timerOn=false, ratio='free', filtro='normal', currentBlobUrl=null;
 
 function parseRes(s){ let [w,h]=s.split('x').map(n=>parseInt(n)); return {w,h}; }
+function getFilterPreview(){
+  let b=1+parseFloat(document.querySelector('#light input').value)*0.25;
+  let sel=document.getElementById('filtroSel').value;
+  let f=`brightness(${b}) `;
+  if(sel==='vibrante') f+='saturate(1.45) contrast(1.1)';
+  else if(sel==='pastel') f+='saturate(1.2) contrast(0.95) brightness(1.05)';
+  else if(sel==='calido') f+='saturate(1.2) sepia(0.15)';
+  else if(sel==='frio') f+='saturate(1.1) hue-rotate(-10deg)';
+  return f;
+}
+function cicloFiltro(){ let s=document.getElementById('filtroSel'); s.selectedIndex=(s.selectedIndex+1)%s.options.length; document.getElementById('fLabel').innerText=s.options[s.selectedIndex].text; v.style.filter=getFilterPreview(); }
+
+function setRatio(r){
+  ratio=r; document.querySelectorAll('#row button[id^="r"]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('r'+r).classList.add('active');
+  if(r==='1-1') v.style.objectFit='cover', v.style.aspectRatio='1/1';
+  else v.style.objectFit='cover', v.style.aspectRatio='auto';
+  document.getElementById('msg').innerText='Proporción: '+r.replace('-',':')+' '+ (r==='1-1'?'Insta':r==='4-5'?'Catálogo':r==='9-16'?'Reel':'Libre');
+}
+function toggleGrid(){ let g=document.getElementById('grid'); g.style.display=g.style.display==='none'||!g.style.display?'block':'none'; document.getElementById('btnGrid').style.background=g.style.display==='block'?'#ff7800':'#222'; }
+function toggleTimer(){ timerOn=!timerOn; document.getElementById('btnTimer').innerText=timerOn?'⏱️ 3s':'⏱️ OFF'; document.getElementById('btnTimer').style.background=timerOn?'#ff7800':'#222'; }
 
 async function iniciarReal(){
-  document.getElementById('err').innerText='Pidiendo permiso...';
   try{
     if(stream) stream.getTracks().forEach(t=>t.stop());
     let curRes=parseRes(document.getElementById('resVideo').value);
-    if(devices.length>0 && devices[idx]){
-      stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[idx].deviceId}}, audio:mode=='video'});
-    }else{
-      let constraints={video:{facingMode:facing}, audio:mode=='video'};
-      if(mode=='video') constraints.video={width:{ideal:curRes.w}, height:{ideal:curRes.h}, facingMode:facing};
-      stream=await navigator.mediaDevices.getUserMedia(constraints);
-    }
+    if(devices.length>0 && devices[idx]) stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[idx].deviceId}}, audio:mode=='video'});
+    else stream=await navigator.mediaDevices.getUserMedia({video:mode=='video'?{width:{ideal:curRes.w}, height:{ideal:curRes.h}, facingMode:facing}:{facingMode:facing}, audio:mode=='video'});
     v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
     try{ await track.applyConstraints({advanced:[{videoStabilizationMode:'on'}]}); }catch{}
     document.getElementById('start').style.display='none';
-    try{
-      let all=await navigator.mediaDevices.enumerateDevices();
-      let filtered=all.filter(x=>x.kind=='videoinput');
-      if(filtered.length>0){ devices=filtered; let curId=track.getSettings().deviceId; let f=devices.findIndex(d=>d.deviceId===curId); if(f>=0) idx=f; document.getElementById('lenteNum').innerText=(idx+1)+'/'+devices.length; }
-    }catch{}
-    let s=track.getSettings(); document.getElementById('msg').innerText='Lente '+(idx+1)+'/'+(devices.length||1)+' - '+s.width+'x'+s.height+' ✓ '+mode.toUpperCase();
-    document.getElementById('err').innerText=''; aplicarStabVisual();
-  }catch(e){ document.getElementById('err').innerText='Error: '+e.name+' - '+e.message; }
+    try{ let all=await navigator.mediaDevices.enumerateDevices(); let f=all.filter(x=>x.kind=='videoinput'); if(f.length>0){ devices=f; let curId=track.getSettings().deviceId; let found=f.findIndex(d=>d.deviceId===curId); if(found>=0) idx=found; document.getElementById('lenteNum').innerText=(idx+1)+'/'+devices.length; } }catch{}
+    document.getElementById('msg').innerText='Lente '+(idx+1)+'/'+(devices.length||1)+' ✓ '+mode.toUpperCase(); v.style.filter=getFilterPreview(); aplicarStab();
+  }catch(e){ document.getElementById('err').innerText='Error: '+e.message; }
 }
-
-function aplicarStabVisual(){
-  let stabOn=document.getElementById('stabOn'), btn=document.getElementById('btnStab');
-  stabModeVal=document.getElementById('stabMode').value; stab=stabModeVal!=='off';
-  if(stab){ stabOn.style.display='block'; btn.style.background='#00ff88'; btn.style.color='#000'; btn.innerText='📹 ON'; v.style.transform=stabModeVal==='pro'?'scale(1.15)':'scale(1.08)'; }
-  else{ stabOn.style.display='none'; btn.style.background='#333'; btn.style.color='#fff'; btn.innerText='📹 OFF'; v.style.transform='scale(1)'; }
-}
-function toggleStab(){ let sel=document.getElementById('stabMode'); sel.value=sel.value==='off'?'on':'off'; aplicarStabVisual(); }
-
-async function cambiarLente(){
-  try{
-    if(devices.length===0){ let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput'); }
-    if(devices.length>1){ idx=(idx+1)%devices.length; if(stream) stream.getTracks().forEach(t=>t.stop()); stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[idx].deviceId}}, audio:mode=='video'}); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; document.getElementById('lenteNum').innerText=(idx+1)+'/'+devices.length; document.getElementById('msg').innerText='Lente '+(idx+1)+'/'+devices.length+' - '+track.label; aplicarStabVisual(); }
-    else { facing=facing==='environment'?'user':'environment'; await iniciarReal(); }
-  }catch(e){ document.getElementById('msg').innerText='Error lente: '+e.message; facing=facing==='environment'?'user':'environment'; await iniciarReal(); }
-}
-
-function setMode(m){
-  mode=m; document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('m'+m.charAt(0).toUpperCase()+m.slice(1))?.classList.add('active');
-  document.getElementById('panoInfo').style.display=m=='pano'?'block':'none';
-  document.getElementById('btnFoto').innerText=m=='foto'?'📸 Tomar':m=='video'?(recording?'⏹️ Parar':'🎥 Grabar'):'🌄 Foto '+(panoImgs.length+1)+'/3';
-  iniciarReal();
-}
-function abrirPanel(){ document.getElementById('panel').style.display='flex'; }
-function cerrarPanel(){ document.getElementById('panel').style.display='none'; }
-function guardar(){
-  wm={text:document.getElementById('wmText').value, date:document.getElementById('wmDate').checked, gps:document.getElementById('wmGps').checked, logo:document.getElementById('wmLogo').checked, on:document.getElementById('wmOn').checked};
-  localStorage.setItem('wm',JSON.stringify(wm));
-  localStorage.setItem('modoCalidad',document.getElementById('modoCalidad').value);
-  localStorage.setItem('resVideo',document.getElementById('resVideo').value);
-  localStorage.setItem('stabMode',document.getElementById('stabMode').value);
-  cerrarPanel(); aplicarStabVisual(); iniciarReal();
-}
+function aplicarStab(){ let stabModeVal=document.getElementById('stabMode').value; let on=document.getElementById('stabOn'), btn=document.getElementById('btnStab'); if(stabModeVal!=='off'){ on.style.display='block'; btn.style.background='#00ff88'; btn.style.color='#000'; v.style.transform=stabModeVal==='pro'?'scale(1.15)':'scale(1.08)'; }else{ on.style.display='none'; btn.style.background='#222'; btn.style.color='#fff'; v.style.transform='scale(1)'; } }
+function toggleStab(){ let s=document.getElementById('stabMode'); s.value=s.value==='off'?'on':'off'; aplicarStab(); }
+async function cambiarLente(){ try{ if(devices.length===0){ let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput'); } if(devices.length>1){ idx=(idx+1)%devices.length; if(stream) stream.getTracks().forEach(t=>t.stop()); stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[idx].deviceId}}, audio:mode=='video'}); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; document.getElementById('lenteNum').innerText=(idx+1)+'/'+devices.length; document.getElementById('msg').innerText='Lente '+(idx+1)+'/'+devices.length+' - '+track.label; aplicarStab(); v.style.filter=getFilterPreview(); }else{ facing=facing==='environment'?'user':'environment'; await iniciarReal(); } }catch(e){ facing=facing==='environment'?'user':'environment'; await iniciarReal(); } }
+function setMode(m){ mode=m; document.querySelectorAll('#row button[id^="m"]').forEach(b=>b.classList.remove('active')); document.getElementById('m'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active'); document.getElementById('panoInfo').style.display=m=='pano'?'block':'none'; document.getElementById('btnFoto').innerText=m=='foto'?'📸 Tomar':m=='video'?(recording?'⏹️ Parar':'🎥 Grabar'):'🌄 Foto '+(panoImgs.length+1)+'/3'; iniciarReal(); }
+function abrirPanel(){ document.getElementById('panel').style.display='flex'; } function cerrarPanel(){ document.getElementById('panel').style.display='none'; }
+function guardar(){ wm={text:document.getElementById('wmText').value, price:document.getElementById('priceText').value, date:document.getElementById('wmDate').checked, gps:document.getElementById('wmGps').checked, logo:document.getElementById('wmLogo').checked, priceOn:document.getElementById('wmPrice').checked, on:document.getElementById('wmOn').checked}; localStorage.setItem('wm',JSON.stringify(wm)); localStorage.setItem('modoCalidad',document.getElementById('modoCalidad').value); localStorage.setItem('resVideo',document.getElementById('resVideo').value); localStorage.setItem('stabMode',document.getElementById('stabMode').value); localStorage.setItem('filtro',document.getElementById('filtroSel').value); cerrarPanel(); aplicarStab(); v.style.filter=getFilterPreview(); }
 document.getElementById('logoFile').addEventListener('change',e=>{ let r=new FileReader(); r.onload=()=>{ localStorage.setItem('logo',r.result); logoImg=new Image(); logoImg.src=r.result; }; r.readAsDataURL(e.target.files[0]); });
-function obtenerGPS(){ navigator.geolocation?.getCurrentPosition(async p=>{ try{ let res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${p.coords.latitude}&lon=${p.coords.longitude}&format=json`); let j=await res.json(); gpsText=(j.address.town||j.address.city||'Jacona'); document.getElementById('gpsStatus').innerText='GPS: '+gpsText; }catch{ gpsText='Jacona'; document.getElementById('gpsStatus').innerText='GPS: Jacona'; } },()=>{ document.getElementById('gpsStatus').innerText='GPS: Jacona (sin permiso)'; }); }
-v.addEventListener('click', async e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',800); try{ let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight; await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}], focusMode:'single-shot'}]}); setTimeout(()=>track.applyConstraints({advanced:[{focusMode:'continuous'}]}),800); }catch{} });
-function accion(){ if(mode=='foto') tomarPro(false); else if(mode=='video') toggleVideo(); else tomarPano(); }
+function obtenerGPS(){ navigator.geolocation?.getCurrentPosition(async p=>{ try{ let res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${p.coords.latitude}&lon=${p.coords.longitude}&format=json`); let j=await res.json(); gpsText=j.address.town||j.address.city||'Jacona'; document.getElementById('gpsStatus').innerText='GPS: '+gpsText; }catch{} }); }
+v.addEventListener('click', async e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',800); });
+
+function accion(){ if(timerOn && mode==='foto'){ let cd=document.getElementById('countdown'); cd.style.display='flex'; let c=3; cd.innerText=c; let it=setInterval(()=>{ c--; cd.innerText=c; if(c<=0){ clearInterval(it); cd.style.display='none'; doAccion(); } },1000); }else doAccion(); }
+function doAccion(){ if(mode=='foto') tomarPro(false); else if(mode=='video') toggleVideo(); else tomarPano(); }
 
 async function tomarPro(esBlanco){
   let s=document.getElementById('shutter'); s.style.display='block'; setTimeout(()=>s.style.display='none',80);
-  let blobFoto=null;
-  try{ if(track && window.ImageCapture){ let cap=new ImageCapture(track); blobFoto=await cap.takePhoto(); } }catch(e){}
+  let blobFoto=null; try{ if(track && window.ImageCapture){ let cap=new ImageCapture(track); blobFoto=await cap.takePhoto(); } }catch{}
   let c, ctx;
-  if(blobFoto){
-    let img=await createImageBitmap(blobFoto);
-    c=document.createElement('canvas'); c.width=img.width; c.height=img.height; ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
-  }else{
-    let scale=stab?(stabModeVal==='pro'?1.15:1.08):1;
-    let vw=v.videoWidth, vh=v.videoHeight;
-    c=document.createElement('canvas'); c.width=vw; c.height=vh; ctx=c.getContext('2d');
-    if(stab){ let cw=vw/scale, ch=vh/scale, cx=(vw-cw)/2, cy=(vh-ch)/2; ctx.drawImage(v,cx,cy,cw,ch,0,0,vw,vh); }else{ ctx.drawImage(v,0,0); }
-  }
+  if(blobFoto){ let img=await createImageBitmap(blobFoto); c=document.createElement('canvas'); c.width=img.width; c.height=img.height; ctx=c.getContext('2d'); ctx.drawImage(img,0,0); }
+  else { c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; ctx=c.getContext('2d'); ctx.filter=getFilterPreview(); ctx.drawImage(v,0,0); }
+
+  // recorte por proporción
+  if(ratio!=='free'){ let target=ratio==='1-1'?1:ratio==='4-5'?0.8:0.5625; let cw=c.width, ch=c.height; let cur=cw/ch; let nw, nh; if(cur>target){ nh=ch; nw=ch*target; }else{ nw=cw; nh=cw/target; } let x=(cw-nw)/2, y=(ch-nh)/2; let c2=document.createElement('canvas'); c2.width=nw; c2.height=nh; c2.getContext('2d').drawImage(c,x,y,nw,nh,0,0,nw,nh); c=c2; ctx=c.getContext('2d'); }
 
   let sv=localStorage.getItem('wm'); if(sv) try{ wm=JSON.parse(sv);}catch{}
-  function buildTexto(){ let a=[]; if(wm.text) a.push(wm.text); if(wm.date) a.push(new Date().toLocaleDateString()); if(wm.gps) a.push(gpsText); return a.join(' • '); }
+  let price=wm.price||document.getElementById('priceText').value||'';
 
-  if(esBlanco){
-    let c2=document.createElement('canvas'); c2.width=c.width; c2.height=c.height; let ctx2=c2.getContext('2d');
-    ctx2.fillStyle='#fff'; ctx2.fillRect(0,0,c2.width,c2.height); ctx2.drawImage(c,0,0);
-    if(wm.on){ ctx2.font='bold '+(c2.width*0.035)+'px sans-serif'; ctx2.fillStyle='#333'; ctx2.textAlign='right'; ctx2.fillText(buildTexto(), c2.width*0.96, c2.height*0.96); if(logoImg && wm.logo) ctx2.drawImage(logoImg, c2.width*0.02, c2.height*0.02, c2.width*0.18*(logoImg.height/logoImg.width)); }
-    c=c2;
-  }else{
-    if(wm.on){ ctx.font='bold '+(c.width*0.035)+'px sans-serif'; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=8; ctx.textAlign='right'; ctx.fillText(buildTexto(), c.width*0.96, c.height*0.96); if(logoImg && wm.logo) ctx.drawImage(logoImg, c.width*0.02, c.height*0.02, c.width*0.18, c.width*0.18*(logoImg.height/logoImg.width)); }
+  function drawWM(context, W, H){
+    if(!wm.on) return;
+    let parts=[]; if(wm.text) parts.push(wm.text); if(wm.date) parts.push(new Date().toLocaleDateString()); if(wm.gps) parts.push(gpsText);
+    let txt=parts.join(' • ');
+    context.font='bold '+(W*0.035)+'px sans-serif'; context.fillStyle='#fff'; context.shadowColor='#000'; context.shadowBlur=8; context.textAlign='right'; context.fillText(txt, W*0.96, H*0.96);
+    if(price && wm.priceOn){ context.font='bold '+(W*0.08)+'px sans-serif'; context.fillStyle='#ff7800'; context.textAlign='left'; context.fillText(price, W*0.03, H*0.92); }
+    if(logoImg && wm.logo){ let lw=W*0.18, lh=lw*(logoImg.height/logoImg.width||1); context.shadowBlur=0; context.drawImage(logoImg, W*0.02, H*0.02, lw, lh); }
   }
 
-  let modo=document.getElementById('modoCalidad').value;
-  let url, etiqueta;
-  if(modo==='max'){ url=c.toDataURL('image/jpeg',1.0); etiqueta='MAX IMPRESION'; }
-  else if(modo==='hd'){ url=c.toDataURL('image/jpeg',0.82); etiqueta='HD 4MB'; }
-  else { let c2=document.createElement('canvas'); c2.width=c.width*0.5; c2.height=c.height*0.5; c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); url=c2.toDataURL('image/jpeg',0.8); c=c2; etiqueta='LITE'; }
+  if(esBlanco){ let c2=document.createElement('canvas'); c2.width=c.width; c2.height=c.height; let ctx2=c2.getContext('2d'); ctx2.fillStyle='#fff'; ctx2.fillRect(0,0,c2.width,c2.height); ctx2.drawImage(c,0,0); drawWM(ctx2,c2.width,c2.height); c=c2; }
+  else drawWM(ctx,c.width,c.height);
 
-  mostrar(url,'img',c.width,c.height,etiqueta);
+  let modo=document.getElementById('modoCalidad').value; let url;
+  if(modo==='max') url=c.toDataURL('image/jpeg',1.0);
+  else if(modo==='hd') url=c.toDataURL('image/jpeg',0.82);
+  else { let c2=document.createElement('canvas'); c2.width=c.width*0.5; c2.height=c.height*0.5; c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); url=c2.toDataURL('image/jpeg',0.8); c=c2; }
+
+  guardarEnGaleria(url); mostrar(url,'img',c.width,c.height,modo.toUpperCase()+' '+ratio);
 }
 
 function mostrar(url,t,w,h,etiqueta){
-  document.getElementById('outImg').style.display=t=='img'?'block':'none';
-  document.getElementById('outVid').style.display=t=='img'?'none':'block';
+  document.getElementById('outImg').style.display=t=='img'?'block':'none'; document.getElementById('outVid').style.display=t=='img'?'none':'block';
   if(t=='img') document.getElementById('outImg').src=url; else document.getElementById('outVid').src=url;
-  document.getElementById('down').href=url;
-  document.getElementById('down').download='Pastel_'+etiqueta+'_'+w+'x'+h+'.jpg';
+  document.getElementById('down').href=url; currentBlobUrl=url;
+  document.getElementById('down').download='Pastel_'+etiqueta.replace(/ /g,'_')+'_'+w+'x'+h+'.jpg';
   document.getElementById('res').style.display='flex';
   let sizeKB=Math.round(url.length*0.75/1024);
-  document.getElementById('infoCal').innerText=etiqueta+' - '+w+'x'+h+' - '+(sizeKB/1024).toFixed(2)+'MB - Lente '+(idx+1)+'/'+(devices.length||1);
+  document.getElementById('infoCal').innerText=etiqueta+' - '+w+'x'+h+' - '+(sizeKB/1024).toFixed(2)+'MB';
+}
+
+function guardarEnGaleria(url){ try{ let g=JSON.parse(localStorage.getItem('galeria')||'[]'); g.unshift({url: url, date: Date.now()}); if(g.length>20) g=g.slice(0,20); localStorage.setItem('galeria',JSON.stringify(g)); }catch{} }
+function abrirGaleria(){ document.getElementById('galeria').style.display='flex'; renderGaleria(); }
+function renderGaleria(){ let cont=document.getElementById('galGrid'); cont.innerHTML=''; try{ let g=JSON.parse(localStorage.getItem('galeria')||'[]'); g.forEach((it,i)=>{ let img=document.createElement('img'); img.src=it.url; img.className='galItem'; img.onclick=()=>{ document.getElementById('galeria').style.display='none'; mostrar(it.url,'img',0,0,'GALERIA'); }; cont.appendChild(img); }); if(g.length===0) cont.innerHTML='<p style="color:#888">No hay fotos aún</p>'; }catch{} }
+
+async function compartirWA(){
+  try{
+    let res=await fetch(currentBlobUrl); let blob=await res.blob(); let file=new File([blob],'pastel.jpg',{type:'image/jpeg'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'Pastel', text:(wm.text||'Pastel')+' '+(wm.price||'')}); }
+    else { let wa='https://wa.me/?text='+encodeURIComponent('Mira este pastel '+(wm.price||'')); window.open(wa,'_blank'); }
+  }catch(e){ window.open('https://wa.me/?text=Mira%20este%20pastel','_blank'); }
 }
 
 async function toggleVideo(){
   if(!recording){
     let curRes=parseRes(document.getElementById('resVideo').value);
     try{ if(stream) stream.getTracks().forEach(t=>t.stop()); stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:curRes.w}, height:{ideal:curRes.h}, deviceId:devices[idx]?{exact:devices[idx].deviceId}:undefined}, audio:true}); }catch{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing}, audio:true}); }
-    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; aplicarStabVisual();
+    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; aplicarStab(); v.style.filter=getFilterPreview();
     chunks=[]; try{ mediaRecorder=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9'}); }catch{ mediaRecorder=new MediaRecorder(stream); }
     mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
-    mediaRecorder.onstop=()=>{ let blob=new Blob(chunks,{type:'video/webm'}); let url=URL.createObjectURL(blob); document.getElementById('outImg').style.display='none'; document.getElementById('outVid').style.display='block'; document.getElementById('outVid').src=url; document.getElementById('down').href=url; document.getElementById('down').download='Video_Pastel_'+new Date().toISOString().slice(0,10)+'.webm'; document.getElementById('res').style.display='flex'; clearInterval(timerInt); sec=0; document.getElementById('recBox').style.display='none'; document.getElementById('btnFoto').innerText='🎥 Grabar'; document.getElementById('infoCal').innerText='Video Full HD - '+(blob.size/1024/1024).toFixed(2)+'MB'; };
+    mediaRecorder.onstop=()=>{ let blob=new Blob(chunks,{type:'video/webm'}); let url=URL.createObjectURL(blob); currentBlobUrl=url; document.getElementById('outImg').style.display='none'; document.getElementById('outVid').style.display='block'; document.getElementById('outVid').src=url; document.getElementById('down').href=url; document.getElementById('down').download='Video_'+new Date().toISOString().slice(0,10)+'.webm'; document.getElementById('res').style.display='flex'; clearInterval(timerInt); sec=0; document.getElementById('recBox').style.display='none'; document.getElementById('btnFoto').innerText='🎥 Grabar'; document.getElementById('infoCal').innerText='Video - '+(blob.size/1024/1024).toFixed(2)+'MB'; };
     mediaRecorder.start(100); recording=true; sec=0; document.getElementById('recBox').style.display='flex';
     timerInt=setInterval(()=>{ sec++; let m=String(Math.floor(sec/60)).padStart(2,'0'); let s=String(sec%60).padStart(2,'0'); document.getElementById('recTime').innerText=m+':'+s; document.getElementById('btnFoto').innerText='⏹️ '+m+':'+s; },1000);
   }else{ try{ mediaRecorder.stop(); }catch{} recording=false; clearInterval(timerInt); }
 }
-
 async function tomarPano(){
-  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); panoImgs.push(c);
+  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; let ctx=c.getContext('2d'); ctx.filter=getFilterPreview(); ctx.drawImage(v,0,0); panoImgs.push(c);
   document.getElementById('pCount').innerText=panoImgs.length+'/3'; document.getElementById('btnFoto').innerText='🌄 Foto '+(panoImgs.length+1)+'/3';
   if(panoImgs.length<3) return;
-  let W=panoImgs[0].width*3, H=panoImgs[0].height; let f=document.createElement('canvas'); f.width=W; f.height=H; let ctx=f.getContext('2d'); panoImgs.forEach((cc,i)=>ctx.drawImage(cc,i*cc.width,0));
-  mostrar(f.toDataURL('image/jpeg',1.0),'img',f.width,f.height,'PANO 12MP'); panoImgs=[]; document.getElementById('pCount').innerText='0/3'; document.getElementById('btnFoto').innerText='🌄 Foto 1/3';
+  let W=panoImgs[0].width*3, H=panoImgs[0].height; let f=document.createElement('canvas'); f.width=W; f.height=H; let cx=f.getContext('2d'); panoImgs.forEach((cc,i)=>cx.drawImage(cc,i*cc.width,0));
+  mostrar(f.toDataURL('image/jpeg',1.0),'img',f.width,f.height,'PANO'); panoImgs=[]; document.getElementById('pCount').innerText='0/3'; document.getElementById('btnFoto').innerText='🌄 Foto 1/3';
 }
-
-let sv=localStorage.getItem('wm'); if(sv){ try{ wm=JSON.parse(sv); document.getElementById('wmText').value=wm.text; document.getElementById('wmDate').checked=!!wm.date; document.getElementById('wmGps').checked=!!wm.gps; document.getElementById('wmOn').checked=!!wm.on; }catch{} }
+let sv=localStorage.getItem('wm'); if(sv){ try{ wm=JSON.parse(sv); document.getElementById('wmText').value=wm.text||''; document.getElementById('priceText').value=wm.price||''; document.getElementById('wmDate').checked=!!wm.date; document.getElementById('wmGps').checked=!!wm.gps; document.getElementById('wmOn').checked=!!wm.on; }catch{} }
 let lg=localStorage.getItem('logo'); if(lg){ logoImg=new Image(); logoImg.src=lg; }
 let mc=localStorage.getItem('modoCalidad'); if(mc) document.getElementById('modoCalidad').value=mc;
 let rv=localStorage.getItem('resVideo'); if(rv) document.getElementById('resVideo').value=rv;
 let sm=localStorage.getItem('stabMode'); if(sm) document.getElementById('stabMode').value=sm;
+let filt=localStorage.getItem('filtro'); if(filt){ document.getElementById('filtroSel').value=filt; document.getElementById('fLabel').innerText=document.getElementById('filtroSel').options[document.getElementById('filtroSel').selectedIndex].text; }
 obtenerGPS();
 </script>
 </body>
