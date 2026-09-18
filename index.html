@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles 4K MAX - Foto Real 12MP</title>
+<title>Cam Pasteles 12MP - MAX / HD</title>
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif;color:#fff}
-#v{width:100vw;height:100vh;object-fit:cover;background:#111;position:absolute;top:0;left:0;z-index:1;transition:transform 0.15s linear}
+#v{width:100vw;height:100vh;object-fit:cover;background:#111;position:absolute;top:0;left:0;z-index:1}
 #start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;padding:20px;text-align:center}
 #start button{padding:18px 25px;background:#ff7800;color:#fff;border:none;border-radius:30px;font-size:18px;font-weight:bold;width:90%}
 #shutter{position:fixed;inset:0;background:#fff;z-index:50;display:none}
 #msg{position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#000c;padding:7px 12px;border-radius:20px;z-index:10;font-size:11px;width:90%;text-align:center}
 #focus{position:fixed;width:85px;height:85px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%);z-index:12}
-#light{position:fixed;right:8px;top:40%;transform:translateY(-50%);z-index:11;display:flex;flex-direction:column;align-items:center;gap:4px;background:#0008;padding:6px;border-radius:20px}
-#light input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:8px;height:90px}
 #ctrl{position:fixed;bottom:0;left:0;right:0;background:#000e;padding:8px;z-index:10;display:flex;flex-direction:column;gap:6px}
 #row{display:flex;gap:4px;flex-wrap:wrap}
 #row button{background:#222;color:#fff;border:1px solid #555;padding:8px;border-radius:10px;font-weight:bold;flex:1;font-size:10px;min-width:55px}
@@ -28,184 +26,130 @@ body{margin:0;background:#000;overflow:hidden;font-family:sans-serif;color:#fff}
 #res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
 #recBox{position:fixed;top:12px;left:12px;background:#000a;padding:6px 10px;border-radius:20px;display:none;align-items:center;gap:6px;z-index:11;border:1px solid #f00a}
 #recDot{width:12px;height:12px;background:#f00;border-radius:50%;animation:blink 1s infinite}
-#recTime{font-weight:bold;font-size:14px;font-family:monospace}
 @keyframes blink{50%{opacity:0.2}}
-#stabOn{position:fixed;top:12px;right:12px;background:#00ff88;color:#000;padding:4px 8px;border-radius:12px;font-size:10px;font-weight:bold;display:none;z-index:11}
 </style>
 </head>
 <body>
 <div id="start">
-<h2 style="margin:0">🍰 Cam Pasteles 12MP REAL</h2>
-<p style="font-size:12px;color:#0f0">Ahora con foto real, no de video</p>
-<button onclick="iniciarReal()">📷 PRENDER CÁMARA HD</button>
+<h2 style="margin:0">🍰 Cam Pasteles 12MP</h2>
+<p style="font-size:12px;color:#0f0">Elige MAX o HD</p>
+<button onclick="iniciarReal()">📷 PRENDER CÁMARA</button>
 <p id="err" style="font-size:11px;color:#ff0"></p>
 </div>
 <div id="shutter"></div>
 <div id="recBox"><div id="recDot"></div><span id="recTime">00:00</span></div>
-<div id="stabOn">📹 ESTABLE</div>
 <video id="v" autoplay playsinline muted></video>
 <div id="focus"></div>
 <div id="msg">Esperando...</div>
-<div id="light"><span>☀️</span><input type="range" min="-2" max="2" step="0.2" value="0" oninput="v.style.filter='brightness('+(1+parseFloat(this.value)*0.25)+')'"><span>🌙</span></div>
 <div id="ctrl">
 <div id="row">
 <button id="mFoto" class="active" onclick="setMode('foto')">📸 Foto</button>
 <button id="mVideo" onclick="setMode('video')">🎥 Video</button>
-<button id="mPano" onclick="setMode('pano')">🌄 Pano</button>
 <button onclick="cambiarLente()">↻ Lente</button>
-<button id="btnStab" onclick="toggleStab()" style="background:#333">📹 Estab OFF</button>
-<button onclick="abrirPanel()">⚙️ Ajustes</button>
+<button onclick="abrirPanel()">⚙️ Calidad</button>
 </div>
 <div id="mainBtns">
 <button id="btnFoto" onclick="accion()">📸 Tomar</button>
 <button id="btnBlanco" onclick="tomarPro(true)">⬜ Fondo Blanco</button>
 </div>
-<div id="panoInfo" style="display:none;text-align:center;font-size:11px">Pano: <span id="pCount">0/3</span></div>
 </div>
 <div id="panel">
-<h3 style="margin:0 0 10px 0">⚙️ Ajustes PRO MAX 12MP</h3>
-<label style="color:#ff7800;font-weight:bold">📸 Resolución Foto:</label>
-<select id="resFoto">
-<option value="1920x1080">Full HD 1080p</option>
-<option value="3840x2160">4K</option>
-<option value="4032x3024" selected>12MP REAL - Máxima del cel</option>
+<h3 style="margin:0 0 10px 0">⚙️ Calidad de guardado</h3>
+<label style="color:#ff7800;font-weight:bold">📸 Modo de guardado:</label>
+<select id="modoCalidad">
+<option value="max" selected>🖨️ MAX 15MB - Impresión / Archivo madre - 3840x5120 100%</option>
+<option value="hd">📱 HD 4MB - WhatsApp / Facebook - 3840x5120 82% (se ve igual, pesa menos)</option>
+<option value="lite">⚡ LITE 1.5MB - Para enviar rápido - 1920x2560</option>
 </select>
-<label style="color:#ff7800;font-weight:bold;margin-top:8px">🎥 Resolución Video:</label>
-<select id="resVideo">
-<option value="1280x720">HD 720p</option>
-<option value="1920x1080" selected>Full HD 1080p MAX</option>
-</select>
-<label style="color:#ff7800;font-weight:bold;margin-top:8px">📹 Estabilizador:</label>
-<select id="stabMode">
-<option value="off">OFF</option>
-<option value="on" selected>ON</option>
-<option value="pro">PRO</option>
-</select>
-<hr style="border-color:#333;margin:10px 0">
+<p style="font-size:11px;color:#aaa">MAX = sin pérdida para imprimir lona, HD = misma resolución pero comprimida para que no te llene el cel</p>
+<hr style="border-color:#333;margin:12px 0">
 <label>Marca de Agua:</label>
 <input id="wmText" value="Pasteles Jimbo">
-<input type="file" id="logoFile" accept="image/*">
 <label style="font-size:12px"><input type="checkbox" id="wmDate" checked> Fecha</label> <label style="font-size:12px"><input type="checkbox" id="wmGps" checked> Ubicación</label> <label style="font-size:12px"><input type="checkbox" id="wmOn" checked> Activar</label>
-<button onclick="guardar()" style="width:100%;padding:12px;background:#ff7800;border:none;border-radius:10px;font-weight:bold;margin-top:12px">Guardar y Aplicar MAX</button>
+<button onclick="guardar()" style="width:100%;padding:12px;background:#ff7800;border:none;border-radius:10px;font-weight:bold;margin-top:12px">Guardar</button>
 <button onclick="cerrarPanel()" style="width:100%;padding:10px;background:#333;border:none;border-radius:10px;margin-top:6px;color:#fff">Cerrar</button>
 <p id="gpsStatus" style="font-size:11px;color:#aaa"></p>
 </div>
-<div id="res"><img id="outImg"><video id="outVid" controls style="display:none"></video><div style="display:flex;gap:6px;padding:10px"><a id="down" download="pastel_12MP.jpg" style="flex:1;padding:12px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar HD</a><button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button></div><div id="infoCal" style="padding:8px;font-size:11px;color:#0f0;text-align:center"></div></div>
+<div id="res"><img id="outImg"><video id="outVid" controls style="display:none"></video><div style="display:flex;gap:6px;padding:10px"><a id="down" download style="flex:1;padding:12px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a><button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button></div><div id="infoCal" style="padding:8px;font-size:11px;color:#0f0;text-align:center"></div></div>
 <script>
-let v=document.getElementById('v'), stream, track, devices=[], idx=0, mode='foto', gpsText='Jacona de Plancarte', logoImg=null, wm={}, mediaRecorder, chunks=[], recording=false, panoImgs=[], facing='environment', timerInt, sec=0, stab=true, stabModeVal='on';
+let v=document.getElementById('v'), stream, track, devices=[], idx=0, mode='foto', gpsText='Jacona', wm={}, mediaRecorder, chunks=[], recording=false, facing='environment', timerInt, sec=0;
 function parseRes(s){ let [w,h]=s.split('x').map(n=>parseInt(n)); return {w,h}; }
 async function iniciarReal(){
-  let rf=document.getElementById('resFoto').value, rv=document.getElementById('resVideo').value;
-  let curRes = mode=='foto'? parseRes(rf) : parseRes(rv);
   try{
     if(stream) stream.getTracks().forEach(t=>t.stop());
-    let constraints={ video:{ width:{ideal:curRes.w, max:4032}, height:{ideal:curRes.h, max:3024}, facingMode:facing }, audio:false };
-    if(mode=='video') constraints.audio=true;
-    try{ stream=await navigator.mediaDevices.getUserMedia(constraints); }
-    catch{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing}, audio:mode=='video'}); }
+    stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:4032}, height:{ideal:3024}, facingMode:facing}, audio:false});
     v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
-    try{ await track.applyConstraints({advanced:[{videoStabilizationMode:'on'}]}); }catch{}
     document.getElementById('start').style.display='none';
     let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(x=>x.kind=='videoinput');
-    let realW = track.getSettings().width || curRes.w;
-    let realH = track.getSettings().height || curRes.h;
-    let capInfo = "";
-    try{ if(window.ImageCapture){ let cap=new ImageCapture(track); let pc=await cap.getPhotoCapabilities(); capInfo=" - FotoReal "+pc.imageWidth.max+"x"+pc.imageHeight.max; } }catch{}
-    document.getElementById('msg').innerText='HD '+realW+'x'+realH+capInfo+' ✓';
-    aplicarStabVisual();
-  }catch(e){ document.getElementById('err').innerText='Error: '+e.name+' - '+e.message; }
+    let s=track.getSettings();
+    document.getElementById('msg').innerText='Listo '+s.width+'x'+s.height+' - Modo: '+document.getElementById('modoCalidad').value.toUpperCase();
+  }catch(e){ document.getElementById('err').innerText='Error: '+e.message; }
 }
-function aplicarStabVisual(){
-  let stabOn=document.getElementById('stabOn'), btn=document.getElementById('btnStab');
-  if(stab){ stabOn.style.display='block'; btn.style.background='#00ff88'; btn.style.color='#000'; btn.innerText='📹 Estab ON'; v.style.transform=stabModeVal==='pro'?'scale(1.15)':'scale(1.08)'; }
-  else{ stabOn.style.display='none'; btn.style.background='#333'; btn.style.color='#fff'; btn.innerText='📹 Estab OFF'; v.style.transform='scale(1)'; }
-}
-function toggleStab(){ stab=!stab; document.getElementById('stabMode').value=stab?'on':'off'; aplicarStabVisual(); }
-async function cambiarLente(){
-  try{
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    if(devices.length>1){ idx=(idx+1)%devices.length; stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[idx].deviceId}}}); }
-    else { facing=facing==='environment'?'user':'environment'; stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing}}); }
-    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; aplicarStabVisual();
-  }catch(e){ iniciarReal(); }
-}
-function setMode(m){ mode=m; document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active')); document.getElementById('m'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active'); document.getElementById('btnFoto').innerText=m=='foto'?'📸 Tomar':m=='video'?(recording?'⏹️ Parar':'🎥 Grabar'):'🌄 Foto 1/3'; iniciarReal(); }
+async function cambiarLente(){ facing=facing==='environment'?'user':'environment'; iniciarReal(); }
+function setMode(m){ mode=m; document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active')); document.getElementById('m'+m.charAt(0).toUpperCase()+m.slice(1))?.classList.add('active'); document.getElementById('btnFoto').innerText=m=='foto'?'📸 Tomar':(recording?'⏹️ Parar':'🎥 Grabar'); if(m!='foto') iniciarReal(); }
 function abrirPanel(){ document.getElementById('panel').style.display='flex'; }
 function cerrarPanel(){ document.getElementById('panel').style.display='none'; }
-function guardar(){ wm={text:document.getElementById('wmText').value, date:document.getElementById('wmDate').checked, gps:document.getElementById('wmGps').checked, on:document.getElementById('wmOn').checked}; localStorage.setItem('wm',JSON.stringify(wm)); localStorage.setItem('resFoto',document.getElementById('resFoto').value); localStorage.setItem('resVideo',document.getElementById('resVideo').value); cerrarPanel(); iniciarReal(); }
-document.getElementById('logoFile').addEventListener('change',e=>{ let r=new FileReader(); r.onload=()=>{ localStorage.setItem('logo',r.result); logoImg=new Image(); logoImg.src=r.result; }; r.readAsDataURL(e.target.files[0]); });
-function obtenerGPS(){ navigator.geolocation?.getCurrentPosition(async p=>{ try{ let res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${p.coords.latitude}&lon=${p.coords.longitude}&format=json`); let j=await res.json(); gpsText=(j.address.town||j.address.city||'Jacona'); }catch{ gpsText='Jacona'; } },()=>{ gpsText='Jacona'; }); }
-v.addEventListener('click', async e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',800); try{ let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight; await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}], focusMode:'manual'}]}); setTimeout(()=>track.applyConstraints({advanced:[{focusMode:'continuous'}]}),600); }catch{} });
-function accion(){ if(mode=='foto') tomarPro(false); else if(mode=='video') toggleVideo(); else tomarPano(); }
+function guardar(){ wm={text:document.getElementById('wmText').value, date:document.getElementById('wmDate').checked, gps:document.getElementById('wmGps').checked, on:document.getElementById('wmOn').checked}; localStorage.setItem('wm',JSON.stringify(wm)); localStorage.setItem('modoCalidad',document.getElementById('modoCalidad').value); cerrarPanel(); iniciarReal(); }
+function obtenerGPS(){ navigator.geolocation?.getCurrentPosition(async p=>{ try{ let res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${p.coords.latitude}&lon=${p.coords.longitude}&format=json`); let j=await res.json(); gpsText=(j.address.town||j.address.city||'Jacona'); }catch{} }); }
+v.addEventListener('click', async e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',800); });
+function accion(){ if(mode=='foto') tomarPro(false); else toggleVideo(); }
 
 async function tomarPro(esBlanco){
-  let s=document.getElementById('shutter'); s.style.display='block'; await new Promise(r=>setTimeout(r,80)); s.style.display='none';
-  let blobFoto = null;
-  try {
-    if(track && window.ImageCapture){
-      let cap = new ImageCapture(track);
-      blobFoto = await cap.takePhoto();
-    }
-  } catch(e) { console.log("takePhoto fallo", e); }
-  let c, ctx, vw, vh;
+  let s=document.getElementById('shutter'); s.style.display='block'; await new Promise(r=>setTimeout(r,60)); s.style.display='none';
+  let blobFoto=null;
+  try{ if(track && window.ImageCapture){ let cap=new ImageCapture(track); blobFoto=await cap.takePhoto(); } }catch(e){}
+  let c, ctx;
   if(blobFoto){
-    let img = await createImageBitmap(blobFoto);
-    vw = img.width; vh = img.height;
-    c = document.createElement('canvas'); c.width=vw; c.height=vh; ctx=c.getContext('2d');
-    ctx.drawImage(img,0,0);
-  } else {
-    let scale = stab? (stabModeVal==='pro'?1.15:1.08) : 1;
-    vw=v.videoWidth; vh=v.videoHeight;
-    c=document.createElement('canvas'); c.width=vw; c.height=vh; ctx=c.getContext('2d');
-    if(stab){
-      let cw=vw/scale, ch=vh/scale, cx=(vw-cw)/2, cy=(vh-ch)/2;
-      ctx.drawImage(v,cx,cy,cw,ch,0,0,vw,vh);
-    }else{ ctx.drawImage(v,0,0); }
+    let img=await createImageBitmap(blobFoto);
+    c=document.createElement('canvas'); c.width=img.width; c.height=img.height; ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
+  }else{
+    c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; ctx=c.getContext('2d'); ctx.drawImage(v,0,0);
   }
   let sv=localStorage.getItem('wm'); if(sv) try{ wm=JSON.parse(sv);}catch{}
   function build(){ let a=[]; if(wm.text) a.push(wm.text); if(wm.date) a.push(new Date().toLocaleDateString()); if(wm.gps) a.push(gpsText); return a.join(' • '); }
-  let calidad = 1.0;
-  if(esBlanco){
-    let c2=document.createElement('canvas'); c2.width=c.width; c2.height=c.height; let ctx2=c2.getContext('2d');
-    ctx2.fillStyle='#fff'; ctx2.fillRect(0,0,c2.width,c2.height); ctx2.drawImage(c,0,0);
-    if(wm.on){ ctx2.font='bold '+(c2.width*0.04)+'px sans-serif'; ctx2.fillStyle='#333'; ctx2.textAlign='right'; ctx2.fillText(build(), c2.width*0.96, c2.height*0.96); }
-    mostrar(c2.toDataURL('image/jpeg',calidad),'img', c2.width, c2.height, calidad);
+  if(wm.on){ ctx.font='bold '+(c.width*0.035)+'px sans-serif'; ctx.fillStyle='#fff'; ctx.shadowBlur=6; ctx.shadowColor='#000'; ctx.textAlign='right'; ctx.fillText(build(), c.width*0.96, c.height*0.96); }
+
+  let modo = document.getElementById('modoCalidad').value;
+  let calidad, wFinal=c.width, hFinal=c.height, canvasFinal=c;
+
+  if(modo==='max'){
+    calidad=1.0;
+    // MAX: 100% sin tocar nada
+    mostrar(canvasFinal.toDataURL('image/jpeg',calidad),'img', wFinal, hFinal, calidad, 'MAX IMPRESIÓN');
+  } else if(modo==='hd'){
+    calidad=0.82;
+    // HD 4MB: misma resolución pero calidad 82%
+    mostrar(canvasFinal.toDataURL('image/jpeg',calidad),'img', wFinal, hFinal, calidad, 'HD 4MB');
   } else {
-    if(wm.on){ ctx.font='bold '+(c.width*0.04)+'px sans-serif'; ctx.fillStyle='#fff'; ctx.shadowBlur=6; ctx.shadowColor='#000'; ctx.textAlign='right'; ctx.fillText(build(), c.width*0.95, c.height*0.95); }
-    mostrar(c.toDataURL('image/jpeg',calidad),'img', c.width, c.height, calidad);
+    calidad=0.8;
+    // LITE: reduce a la mitad para 1.5MB
+    let c2=document.createElement('canvas'); c2.width=c.width*0.5; c2.height=c.height*0.5; c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height);
+    mostrar(c2.toDataURL('image/jpeg',calidad),'img', c2.width, c2.height, calidad, 'LITE 1.5MB');
   }
 }
-function mostrar(url,t,w,h,cal){
+
+function mostrar(url,t,w,h,cal,etiqueta){
   document.getElementById('outImg').style.display=t=='img'?'block':'none';
-  document.getElementById('outVid').style.display=t=='img'?'none':'block';
-  if(t=='img') document.getElementById('outImg').src=url; else document.getElementById('outVid').src=url;
-  document.getElementById('down').href=url; document.getElementById('res').style.display='flex';
-  if(w){ let sizeKB = Math.round(url.length*0.75/1024); document.getElementById('infoCal').innerText = w+'x'+h+' - '+sizeKB+' KB - Calidad '+(cal*100)+'% MAX'; }
+  document.getElementById('outVid').style.display='none';
+  document.getElementById('outImg').src=url; document.getElementById('down').href=url;
+  document.getElementById('down').download='Pastel_'+etiqueta.replace(' ','_')+'_'+w+'x'+h+'.jpg';
+  document.getElementById('res').style.display='flex';
+  let sizeKB=Math.round(url.length*0.75/1024);
+  document.getElementById('infoCal').innerText=etiqueta+' - '+w+'x'+h+' - '+(sizeKB/1024).toFixed(2)+'MB - Calidad '+(cal*100)+'%';
 }
+
 async function toggleVideo(){
   if(!recording){
-    let curRes=parseRes(document.getElementById('resVideo').value);
-    let gotStream=null;
-    try{ gotStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:curRes.w}, height:{ideal:curRes.h}, facingMode:facing}, audio:true}); }
-    catch{ gotStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing}, audio:true}); }
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    stream=gotStream; v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
-    chunks=[]; mediaRecorder=new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp9'});
-    mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
-    mediaRecorder.onstop=()=>{ let blob=new Blob(chunks,{type:'video/webm'}); mostrar(URL.createObjectURL(blob),'vid'); clearInterval(timerInt); sec=0; document.getElementById('recBox').style.display='none'; document.getElementById('btnFoto').innerText='🎥 Grabar'; };
-    mediaRecorder.start(100); recording=true; sec=0; document.getElementById('recBox').style.display='flex';
-    timerInt=setInterval(()=>{ sec++; let m=String(Math.floor(sec/60)).padStart(2,'0'); let s=String(sec%60).padStart(2,'0'); document.getElementById('recTime').innerText=m+':'+s; document.getElementById('btnFoto').innerText='⏹️ Parar '+m+':'+s; },1000);
-  }else{ try{ mediaRecorder.stop(); }catch{} recording=false; clearInterval(timerInt); }
-}
-async function tomarPano(){
-  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); panoImgs.push(c);
-  if(panoImgs.length<3) return;
-  let W=panoImgs[0].width*3, H=panoImgs[0].height; let f=document.createElement('canvas'); f.width=W; f.height=H; let ctx=f.getContext('2d'); panoImgs.forEach((cc,i)=>ctx.drawImage(cc,i*cc.width,0)); mostrar(f.toDataURL('image/jpeg',1.0),'img', f.width, f.height, 1.0); panoImgs=[];
+    let gs=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1920}, height:{ideal:1080}, facingMode:facing}, audio:true});
+    if(stream) stream.getTracks().forEach(t=>t.stop()); stream=gs; v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+    chunks=[]; mediaRecorder=new MediaRecorder(stream); mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+    mediaRecorder.onstop=()=>{ let blob=new Blob(chunks,{type:'video/webm'}); document.getElementById('outVid').src=URL.createObjectURL(blob); document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('res').style.display='flex'; };
+    mediaRecorder.start(); recording=true; document.getElementById('recBox').style.display='flex';
+  }else{ mediaRecorder.stop(); recording=false; document.getElementById('recBox').style.display='none'; }
 }
 let sv=localStorage.getItem('wm'); if(sv){ try{ wm=JSON.parse(sv); document.getElementById('wmText').value=wm.text; }catch{} }
-let lg=localStorage.getItem('logo'); if(lg){ logoImg=new Image(); logoImg.src=lg; }
-let rf=localStorage.getItem('resFoto'); if(rf) document.getElementById('resFoto').value=rf; else document.getElementById('resFoto').value='4032x3024';
+let mc=localStorage.getItem('modoCalidad'); if(mc) document.getElementById('modoCalidad').value=mc;
 obtenerGPS();
 </script>
 </body>
-</html>
+</html> 
