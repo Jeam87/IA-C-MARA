@@ -2,63 +2,103 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Foto Pro IA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Foto Pro IA - Final</title>
 <style>
-body{margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center}
-video{width:100vw;height:100vh;object-fit:cover;position:fixed;top:0;left:0;background:#111}
-#ui{position:fixed;bottom:20px;left:0;right:0;z-index:10;display:flex;justify-content:center;gap:20px;align-items:center}
-#shutter{width:80px;height:80px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff}
-#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#000d;padding:20px;border-radius:15px;z-index:20;width:85%}
-button{padding:15px 25px;background:#ff7800;border:none;border-radius:30px;color:#fff;font-weight:bold;font-size:16px}
+body{margin:0;background:#000;overflow:hidden;font-family:sans-serif;color:#fff;touch-action:none}
+#v{width:100vw;height:100vh;object-fit:cover;background:#111;position:absolute;top:0;left:0;z-index:1}
+#start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;padding:20px;text-align:center}
+#start button{padding:18px 25px;background:#ff7800;color:#fff;border:none;border-radius:30px;font-size:18px;font-weight:bold;width:90%}
+#topPill{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#000a;backdrop-filter:blur(10px);padding:6px 12px;border-radius:20px;z-index:10;font-size:11px;display:flex;gap:10px;align-items:center;border:1px solid #333}
+#light{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:11;background:#0006;backdrop-filter:blur(10px);padding:8px 5px;border-radius:20px;display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid #3338}
+#light input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:4px;height:70px;accent-color:#ff7800}
+#zoomBar{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:11;background:#000a;backdrop-filter:blur(10px);padding:5px 8px;border-radius:20px;display:flex;align-items:center;gap:5px;border:1px solid #333}
+#zoomBar button{background:#2220;color:#fff;border:1px solid #444;padding:4px 8px;border-radius:12px;font-size:11px;min-width:32px}
+#zoomBar button.active{background:#fff;color:#000;border-color:#fff}
+#zoomRange{width:60px;accent-color:#fff;height:3px}
+#ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:10px 15px 20px;background:linear-gradient(transparent, #000c 30%, #000 80%)}
+#mainRow{display:flex;align-items:center;justify-content:space-between;gap:15px}
+#modeBtn{width:50px;height:50px;border-radius:50%;background:#0008;border:1px solid #555;color:#fff;font-size:20px}
+#shutterBtn{width:78px;height:78px;border-radius:50%;background:#fff;border:4px solid #000;box-shadow:0 0 0 2px #fff;display:flex;align-items:center;justify-content:center;font-size:30px}
+#moreBtn{width:50px;height:50px;border-radius:50%;background:#0008;border:1px solid #555;color:#fff}
+#drawer{position:fixed;bottom:0;left:0;right:0;background:#111f;backdrop-filter:blur(20px);border-radius:25px 25px 0 0;z-index:20;padding:15px;transform:translateY(100%);transition:transform 0.3s;max-height:75vh;overflow:auto;border-top:1px solid #333}
+#drawer.open{transform:translateY(0)}
+#drawerHandle{width:40px;height:4px;background:#555;border-radius:10px;margin:0 auto 15px}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.row button{flex:1;background:#222;color:#fff;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px;min-width:55px}
+.row button.active{background:#ff7800;border-color:#ff7800}
+#shutterFlash{position:fixed;inset:0;background:#fff;z-index:50;display:none}
+#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%);z-index:12}
+#res{position:fixed;inset:0;background:#000;z-index:30;display:none;flex-direction:column}
+#res img{flex:1;width:100%;object-fit:contain;background:#111}
 </style>
 </head>
 <body>
+<div id="start">
+<h2>🍰 Foto Pro IA - FINAL</h2>
+<p style="font-size:11px;color:#0f0">Con todos los cambios + fix Edge/Huawei</p>
+<button onclick="iniciar()">📷 PRENDER</button>
+<p id="err" style="font-size:11px;color:#ff0;white-space:pre-wrap"></p>
+</div>
+<div id="shutterFlash"></div><div id="focus"></div>
 <video id="v" autoplay playsinline muted></video>
-<div id="msg">
-<h2>🍰 Foto Pro IA</h2>
-<p id="txt">Toca PRENDER y dale Permitir</p>
-<button onclick="prender()">📷 PRENDER CÁMARA</button>
-<p id="err" style="color:#ff0;font-size:12px;margin-top:10px"></p>
+<div id="topPill"><span id="topInfo">1.0x</span><span style="background:#00ff88;color:#000;padding:2px 6px;border-radius:10px;font-weight:bold;font-size:9px">ESTABLE</span></div>
+<div id="light"><span>☀️</span><input type="range" min="-2" max="2" step="0.2" value="0" id="lightR" oninput="applyFilter()"><span>🌙</span></div>
+<div id="zoomBar"><button onclick="setZoom(0.5)" id="zb05">0.5x</button><button onclick="setZoom(1)" id="zb1" class="active">1x</button><button onclick="setZoom(2)" id="zb2">2x</button><button onclick="setZoom(5)">5x</button><input type="range" id="zoomRange" min="0.5" max="10" step="0.1" value="1" oninput="setZoom(this.value)"></div>
+<div id="ctrl"><div id="mainRow"><button id="modeBtn">📸</button><div id="shutterBtn" onclick="tomarFoto()">📸</div><button id="moreBtn" onclick="toggleDrawer()">⚙️</button></div><p style="text-align:center;font-size:10px;color:#888;margin:6px 0 0 0">Toca el pastel para enfocar • Pellizca para zoom</p></div>
+<div id="drawer"><div id="drawerHandle"></div><h3 style="margin:0">⚙️ Opciones guardadas</h3>
+<label style="font-size:11px;color:#ff7800">LENTE Y CALIDAD:</label>
+<div class="row"><button onclick="cambiarLente()">↻ Lente <span id="lenteNum">1/1</span></button><button onclick="setQuality('max')" id="qmax" class="active">🖨️ MAX</button><button onclick="setQuality('hd')" id="qhd">📱 HD</button></div>
+<label style="font-size:11px;color:#ff7800">MARCA DE AGUA + PRECIO:</label>
+<input id="wmText" placeholder="Nombre: Foto Pro IA Estudio" style="width:100%;padding:10px;border-radius:10px;background:#222;border:1px solid #333;color:#fff;margin:4px 0" value="Foto Pro IA Estudio">
+<input id="priceText" placeholder="Precio: $250" style="width:100%;padding:10px;border-radius:10px;background:#222;border:1px solid #333;color:#fff;margin:4px 0" value="$250">
+<div class="row"><label style="font-size:11px"><input type="checkbox" id="wmOn" checked> Marca</label><label style="font-size:11px"><input type="checkbox" id="wmPrice" checked> Precio</label><label style="font-size:11px"><input type="checkbox" id="wmDate" checked> Fecha</label></div>
+<button onclick="guardar();toggleDrawer()" style="width:100%;padding:12px;background:#ff7800;border:none;border-radius:12px;font-weight:bold;margin-top:10px">✅ Guardar y cerrar</button>
 </div>
-<div id="ui" style="display:none">
-<button onclick="location.reload()" style="background:#333">↻</button>
-<div id="shutter" onclick="foto()"></div>
-<button onclick="alert('Foto guardada en descargas')" style="background:#333">💾</button>
-</div>
-<canvas id="c" style="display:none"></canvas>
+<div id="res"><img id="outImg"><div style="display:flex;gap:6px;padding:10px"><a id="down" download="pastel.jpg" style="flex:1;padding:12px;background:#fff;color:#000;border-radius:12px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a><button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:12px">Cerrar</button></div></div>
 <script>
-let v=document.getElementById('v'), stream;
-async function prender(){
- let txt=document.getElementById('txt'), err=document.getElementById('err');
- txt.innerText='Pidiendo permiso...';
- try{
-   // PRIMERO pedimos permiso simple, sin buscar lentes
-   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
-   v.srcObject=stream; await v.play();
-   document.getElementById('msg').style.display='none';
-   document.getElementById('ui').style.display='flex';
- }catch(e){
-   console.log(e);
-   err.innerHTML='Error: '+e.name+'<br>'+e.message+'<br><br>1. Si es NotAllowedError: Ve a Ajustes > Apps > Edge > Permisos > Cámara > Permitir<br>2. Si es NotFoundError: Tu Edge no ve cámara, prueba en Chrome normal';
-   txt.innerText='No dio permiso';
-   // intento 2 con user
-   try{
-     stream=await navigator.mediaDevices.getUserMedia({video:true});
-     v.srcObject=stream; await v.play();
-     document.getElementById('msg').style.display='none';
-     document.getElementById('ui').style.display='flex';
-   }catch(e2){ err.innerHTML+='<br>Segundo intento falló: '+e2.message; }
- }
+let v=document.getElementById('v'), stream, track, devices=[], idx=0, zoom=1, minZoom=0.5, maxZoom=10, quality='max', wm={text:'Foto Pro IA Estudio',price:'$250',on:true,priceOn:true,date:true}, lastDist=0;
+let saved=localStorage.getItem('wm'); if(saved){ try{ wm=JSON.parse(saved); document.getElementById('wmText').value=wm.text; document.getElementById('priceText').value=wm.price; }catch{} }
+
+async function iniciar(){
+  let err=document.getElementById('err');
+  err.innerText='Pidiendo permiso...';
+  try{
+    // FIX: primero permiso simple, eso hace que Edge/Huawei lo permita
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+    document.getElementById('start').style.display='none';
+    err.innerText='';
+    // AHORA sí buscamos los demás lentes
+    try{
+      let all=await navigator.mediaDevices.enumerateDevices();
+      devices=all.filter(d=>d.kind=='videoinput');
+      document.getElementById('lenteNum').innerText='1/'+devices.length;
+      let caps=track.getCapabilities(); if(caps.zoom){ minZoom=caps.zoom.min||0.5; maxZoom=Math.min(10,caps.zoom.max||10); document.getElementById('zoomRange').min=minZoom; document.getElementById('zoomRange').max=maxZoom; }
+    }catch{}
+    applyFilter();
+  }catch(e){
+    err.innerText='Error: '+e.name+'\n'+e.message+'\n\nIntenta: Ajustes > Apps > Edge > Permisos > Cámara > Permitir';
+  }
 }
-function foto(){
- let c=document.getElementById('c'), x=c.getContext('2d');
- c.width=v.videoWidth; c.height=v.videoHeight;
- x.drawImage(v,0,0);
- let url=c.toDataURL('image/jpeg',0.95);
- let a=document.createElement('a'); a.href=url; a.download='pastel_'+Date.now()+'.jpg'; a.click();
- alert('✅ Foto guardada! Revisa tu galería/descargas');
+function applyFilter(){ let b=1+parseFloat(document.getElementById('lightR').value)*0.25; v.style.filter=`brightness(${b}) saturate(1.2)`; }
+function setZoom(z){ z=Math.min(maxZoom,Math.max(minZoom,parseFloat(z))); zoom=z; document.getElementById('zoomRange').value=z; document.getElementById('topInfo').innerText=z.toFixed(1)+'x'; document.querySelectorAll('#zoomBar button').forEach(b=>b.classList.remove('active')); if(z<0.8) document.getElementById('zb05').classList.add('active'); else if(z<1.5) document.getElementById('zb1').classList.add('active'); else if(z<3) document.getElementById('zb2').classList.add('active'); try{ track.applyConstraints({advanced:[{zoom:z}]}); }catch{ v.style.transform=`scale(${1+(z-1)*0.12})`; } }
+v.addEventListener('touchstart',e=>{ if(e.touches.length==2) lastDist=Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY); });
+v.addEventListener('touchmove',e=>{ if(e.touches.length==2){ e.preventDefault(); let d=Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY); setZoom(zoom+(d-lastDist)/150); lastDist=d; } },{passive:false});
+v.addEventListener('click',e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',700); });
+function toggleDrawer(){ document.getElementById('drawer').classList.toggle('open'); }
+function setQuality(q){ quality=q; document.querySelectorAll('[id^="q"]').forEach(b=>b.classList.remove('active')); document.getElementById('q'+q).classList.add('active'); }
+async function cambiarLente(){ if(devices.length==0){ let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput'); } if(devices.length>1){ idx=(idx+1)%devices.length; stream.getTracks().forEach(t=>t.stop()); stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[idx].deviceId}},audio:false}); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; document.getElementById('lenteNum').innerText=(idx+1)+'/'+devices.length; } }
+function guardar(){ wm={text:document.getElementById('wmText').value, price:document.getElementById('priceText').value, on:document.getElementById('wmOn').checked, priceOn:document.getElementById('wmPrice').checked, date:document.getElementById('wmDate').checked}; localStorage.setItem('wm',JSON.stringify(wm)); }
+function tomarFoto(){
+ let f=document.getElementById('shutterFlash'); f.style.display='block'; setTimeout(()=>f.style.display='none',80);
+ let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; let ctx=c.getContext('2d'); ctx.filter=v.style.filter; ctx.drawImage(v,0,0,c.width,c.height);
+ if(wm.on && wm.text){ ctx.font='bold '+(c.width*0.03)+'px sans-serif'; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=8; ctx.textAlign='right'; ctx.fillText(wm.text+' '+(wm.date?new Date().toLocaleDateString():'')+' '+gpsText, c.width*0.96, c.height*0.96); }
+ if(wm.priceOn && wm.price){ ctx.font='bold '+(c.width*0.07)+'px sans-serif'; ctx.fillStyle='#ff7800'; ctx.textAlign='left'; ctx.fillText(wm.price, c.width*0.03, c.height*0.92); }
+ let url=c.toDataURL('image/jpeg', quality=='max'?1.0:0.85);
+ document.getElementById('outImg').src=url; document.getElementById('down').href=url; document.getElementById('res').style.display='flex';
 }
+let gpsText='Jacona';
 </script>
 </body>
-</html> 
+</html>
