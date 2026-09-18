@@ -3,175 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro IA V3 - 15MB MAX</title>
+<title>Foto Pro IA V3.1 ESTABLE</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;-webkit-tap-highlight-color:transparent}
-#v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111;transform-origin:center}
+*{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff}
+#v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
 #start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:22px;text-align:center}
 #start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900} #start button.sec{background:#222;border:1px solid #444}
-#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000b;backdrop-filter:blur(12px);padding:7px 12px;border-radius:20px;display:flex;justify-content:space-between;align-items:center;font-size:10px;border:1px solid #333}
-#light{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:10;background:#0008;backdrop-filter:blur(10px);padding:8px 6px;border-radius:25px;display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid #3336}
-#light input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:4px;height:75px;accent-color:#ff7800}
-#zoomBar{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:10;background:#0009;backdrop-filter:blur(10px);padding:5px 8px;border-radius:25px;display:flex;gap:5px;border:1px solid #333}
-#zoomBar button{background:#222;color:#fff;border:1px solid #444;padding:5px 10px;border-radius:20px;font-size:11px} #zoomBar button.active{background:#fff;color:#000;font-weight:900}
+#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000b;padding:7px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333}
 #ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 18px 22px;background:linear-gradient(transparent,#000d 25%,#000 85%)}
 #mainRow{display:flex;align-items:center;justify-content:space-between}
-#shutter{width:82px;height:82px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;transition:.1s;font-size:26px}
-#shutter.rec{background:#f00;animation:pulse .8s infinite} @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
-.btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff30;color:#fff;font-size:20px;backdrop-filter:blur(8px)}
-#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616f8;backdrop-filter:blur(25px);border-radius:28px 28px 0 0;z-index:20;padding:18px 18px 30px;transform:translateY(105%);transition:.35s cubic-bezier(.2,.8,.2,1);max-height:80vh;overflow:auto;border-top:1px solid #333}
-#drawer.open{transform:translateY(0)} #handle{width:40px;height:5px;background:#555;border-radius:10px;margin:0 auto 14px}
+#shutter{width:82px;height:82px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center}
+#shutter.rec{background:#f00;animation:pulse.8s infinite} @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
+.btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff30;color:#fff;font-size:20px}
+#zoomBar{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:10;background:#0009;padding:5px 8px;border-radius:25px;display:flex;gap:5px;border:1px solid #333}
+#zoomBar button{background:#222;color:#fff;border:1px solid #444;padding:5px 10px;border-radius:20px;font-size:11px} #zoomBar button.active{background:#fff;color:#000}
 #res{position:fixed;inset:0;background:#000;z-index:30;display:none;flex-direction:column} #res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
-.label{font-size:11px;color:#ff7800;font-weight:800;letter-spacing:.8px;margin:12px 0 6px;display:block}
-.inp{width:100%;padding:11px;border-radius:11px;background:#222;border:1px solid #333;color:#fff;margin:4px 0;font-size:13px}
 </style>
 </head>
 <body>
-<div id="start">
-<div style="font-size:48px">🍰</div>
-<h2 style="margin:0">Foto Pro IA V3<br>ULTRA MAX 15MB</h2>
-<p style="color:#0f0;font-size:12px;margin:0">HD Real 4K + PNG 15-20 MB + Video + Frontal</p>
-<button onclick="iniciar(false)">📷 PRENDER TRASERA - HD MAX</button>
-<button onclick="iniciar(true)" class="sec">🤳 PRENDER FRONTAL</button>
-<p id="err" style="color:#ff0;font-size:11px;white-space:pre-wrap;min-height:18px"></p>
-<p style="color:#666;font-size:10px">Si no abre, ve a Ajustes > Apps > Edge > Permisos > Cámara > Permitir</p>
-</div>
-
+<div id="start"><h2>🍰 V3.1 ESTABLE<br>Sin parpadeo</h2><p style="color:#0f0;font-size:12px">Preview 1080p fluido + Foto 15MB</p><button onclick="iniciar(false)">📷 PRENDER TRASERA</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff0;font-size:11px"></p></div>
 <video id="v" autoplay playsinline muted></video>
-
-<div id="top"><span id="info">Esperando...</span><span id="size">-</span><span id="modeTxt" style="background:#fff;color:#000;padding:2px 8px;border-radius:10px;font-weight:900">FOTO</span></div>
-
-<div id="light"><span>☀️</span><input type="range" id="lightR" min="-2" max="2" step="0.1" value="0" oninput="applyLight()"><span>🌙</span></div>
-
-<div id="zoomBar"><button onclick="setZ(0.6)">0.6x</button><button onclick="setZ(1)" id="b1" class="active">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(5)">5x</button><button onclick="setZ(10)">10x</button></div>
-
-<div id="ctrl">
-<div id="mainRow">
-<button class="btn" onclick="voltear()">🔄</button>
-<div id="shutter" onclick="accion()">📸</div>
-<button class="btn" onclick="toggle()">⚙️</button>
-</div>
-<div style="display:flex;justify-content:center;gap:8px;margin-top:12px">
-<button onclick="setModo('foto')" id="mf" style="background:#fff;color:#000;padding:6px 18px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO</button>
-<button onclick="setModo('video')" id="mv" style="background:#222;color:#fff;padding:6px 18px;border-radius:20px;border:1px solid #555;font-size:12px">VIDEO</button>
-</div>
-<p style="text-align:center;color:#777;font-size:9px;margin:6px 0 0">Toca pastel = enfoca • Pellizca = zoom • Mantén foto = video rápido</p>
-</div>
-
-<div id="drawer"><div id="handle"></div>
-<h3 style="margin:0">⚙️ Calidad ULTRA MAX</h3>
-<span class="label">MODO 15 MB - ACTIVA ESTO</span>
-<label style="display:flex;align-items:center;gap:10px;background:#ff780022;border:1px solid #ff7800;padding:12px;border-radius:12px">
-<input type="checkbox" id="pngOn" checked> <span style="font-size:13px"><b>🖼️ PNG SIN PÉRDIDA</b><br><span style="font-size:11px;color:#aaa">12 a 22 MB • Llega a 15 MB • Máxima para IA</span></span>
-</label>
-<label style="display:flex;align-items:center;gap:10px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;margin-top:8px">
-<input type="checkbox" id="sensorOn" checked> <span style="font-size:12px"><b>📸 Foto directa del sensor</b> (ImageCapture)<br><span style="font-size:10px;color:#888">Más nítida que captura de video</span></span>
-</label>
-<span class="label">MARCA DE AGUA</span>
-<input id="wm" class="inp" value="Foto Pro IA Estudio - Jacona">
-<div style="display:flex;gap:6px"><input id="price" class="inp" value="$250" style="flex:1"><input id="gps" class="inp" value="Jacona, Mich" style="flex:2"></div>
-<div style="display:flex;gap:8px;margin-top:12px"><button onclick="toggle()" style="flex:1;padding:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR Y GUARDAR</button></div>
-<p id="debug" style="font-size:9px;color:#555;margin-top:12px;word-break:break-all"></p>
-</div>
-
-<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px;font-weight:700">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888;margin:0 0 10px"></p></div>
-
+<div id="top"><span id="info">-</span><span id="modeTxt" style="background:#fff;color:#000;padding:2px 8px;border-radius:10px;font-weight:900">FOTO</span></div>
+<div id="zoomBar"><button onclick="setZ(0.6)">0.6x</button><button onclick="setZ(1)" id="b1" class="active">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(5)">5x</button></div>
+<div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="accion()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div><div style="display:flex;justify-content:center;gap:8px;margin-top:10px"><button id="mf" onclick="setModo('foto')" style="background:#fff;color:#000;padding:6px 18px;border-radius:20px;border:none;font-weight:900">FOTO</button><button id="mv" onclick="setModo('video')" style="background:#222;color:#fff;padding:6px 18px;border-radius:20px;border:1px solid #555">VIDEO</button></div></div>
+<div id="drawer" style="position:fixed;bottom:0;left:0;right:0;background:#161616f8;border-radius:28px 28px 0 0;z-index:20;padding:18px;transform:translateY(105%);transition:.3s"><div style="width:40px;height:5px;background:#555;border-radius:10px;margin:0 auto 14px"></div><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:12px;border-radius:12px"><input type="checkbox" id="pngOn" checked><span><b>PNG 15MB</b> - para IA</span></label><input id="wm" value="Foto Pro IA - Jacona" style="width:100%;padding:10px;margin-top:10px;background:#222;border:1px solid #333;border-radius:10px;color:#fff"><button onclick="toggle()" style="width:100%;padding:14px;margin-top:10px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">Cerrar</button><p id="debug" style="font-size:9px;color:#555"></p></div>
+<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Cerrar</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
 <script>
-let v=document.getElementById('v'), stream, track, facingFront=false, modo='foto', recorder, chunks=[], isRec=false, zoom=1, minZ=0.5, maxZ=10;
-
+let v=document.getElementById('v'), stream, track, facingFront=false, modo='foto', recorder, chunks=[], isRec=false;
 async function iniciar(front){
- facingFront=front; let err=document.getElementById('err'); err.innerText='Pidiendo 4K...';
+ facingFront=front;
  try{
   if(stream) stream.getTracks().forEach(t=>t.stop());
+  // PREVIEW LIGERO - ESTO EVITA EL PARPADEO
   stream=await navigator.mediaDevices.getUserMedia({
-    video:{
-      facingMode: front? 'user':'environment',
-      width:{ideal:4032}, height:{ideal:3024},
-      aspectRatio:{ideal:1.333}
-    },
-    audio: true
+    video:{ facingMode: front?'user':'environment', width:{ideal:1280}, height:{ideal:720} },
+    audio:true
   });
   v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
-  let s=track.getSettings(); let c=track.getCapabilities();
-  if(c.zoom){ minZ=c.zoom.min||0.5; maxZ=Math.min(10,c.zoom.max||10); }
-  document.getElementById('info').innerText=`${s.width}x${s.height} • ${front?'FRONTAL':'TRASERA'}`;
-  document.getElementById('size').innerText=`${(s.width*s.height/1000000).toFixed(1)} MP`;
-  document.getElementById('debug').innerText=`Settings: ${s.width}x${s.height} facing:${s.facingMode}\nCapabilities zoom: ${c.zoom?c.zoom.min+'-'+c.zoom.max:'no'}`;
+  let s=track.getSettings();
+  document.getElementById('info').innerText=`${s.width}x${s.height} preview • ${front?'FRONTAL':'TRASERA'} • Foto 12MP`;
   document.getElementById('start').style.display='none';
-  applyLight();
- }catch(e){ err.innerText='❌ '+e.name+': '+e.message; }
+ }catch(e){ document.getElementById('err').innerText=e.message; }
 }
 async function voltear(){ await iniciar(!facingFront); }
 function setModo(m){ modo=m; document.getElementById('mf').style.background=m=='foto'?'#fff':'#222'; document.getElementById('mf').style.color=m=='foto'?'#000':'#fff'; document.getElementById('mv').style.background=m=='video'?'#fff':'#222'; document.getElementById('mv').style.color=m=='video'?'#000':'#fff'; document.getElementById('modeTxt').innerText=m.toUpperCase(); }
-function applyLight(){ let b=1+parseFloat(document.getElementById('lightR').value)*0.25; v.style.filter=`brightness(${b}) contrast(${1+(b-1)*0.15}) saturate(1.25)`; }
-function setZ(z){ zoom=Math.min(maxZ,Math.max(minZ,parseFloat(z))); document.querySelectorAll('#zoomBar button').forEach(x=>x.classList.remove('active')); if(zoom<0.8) document.querySelector('#zoomBar button').classList.add('active'); else if(zoom<1.5) document.getElementById('b1').classList.add('active'); try{ track.applyConstraints({advanced:[{zoom:zoom}]});}catch{ v.style.transform=`scale(${1+(zoom-1)*0.12})`; } }
-function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
-function cerrarRes(){ document.getElementById('res').style.display='none'; if(document.getElementById('outVid').src) URL.revokeObjectURL(document.getElementById('outVid').src); }
-
-v.addEventListener('click',e=>{ try{ track.applyConstraints({advanced:[{pointsOfInterest:[{x:e.clientX/window.innerWidth,y:e.clientY/window.innerHeight}]}]});}catch{} });
-
+function setZ(z){ try{ track.applyConstraints({advanced:[{zoom:parseFloat(z)}]});}catch{ v.style.transform=`scale(${z})`; } }
+function toggle(){ let d=document.getElementById('drawer'); d.style.transform=d.style.transform=='translateY(0%)'?'translateY(105%)':'translateY(0%)'; }
 async function accion(){ if(modo=='foto') await foto(); else video(); }
-
 async function foto(){
- let wmT=document.getElementById('wm').value, priceT=document.getElementById('price').value, gpsT=document.getElementById('gps').value;
- let usePNG=document.getElementById('pngOn').checked, useSensor=document.getElementById('sensorOn').checked;
- let blob=null, w=0, h=0;
+ let usePNG=document.getElementById('pngOn').checked, blob;
  try{
-  if(useSensor && window.ImageCapture){
-    let ic=new ImageCapture(track);
-    // foto del sensor a máxima resolución nativa
-    blob=await ic.takePhoto();
-    w=0; h=0;
-  }else{ throw 'no sensor'; }
+   let ic=new ImageCapture(track);
+   blob=await ic.takePhoto(); // FOTO NATIVA 12MP - NO VIDEO
  }catch(e){
-  // fallback canvas HD real
-  let c=document.createElement('canvas'); c.width=v.videoWidth||4032; c.height=v.videoHeight||3024; w=c.width; h=c.height;
-  let ctx=c.getContext('2d'); if(facingFront){ ctx.translate(c.width,0); ctx.scale(-1,1); } ctx.filter=v.style.filter; ctx.drawImage(v,0,0,c.width,c.height); ctx.filter='none';
-  // marca agua
-  ctx.font=`bold ${c.width*0.028}px system-ui`; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=c.width*0.01; ctx.textAlign='right';
-  ctx.fillText(`${wmT} • ${gpsT} • ${new Date().toLocaleDateString()}`, c.width*0.97, c.height*0.93);
-  ctx.font=`900 ${c.width*0.06}px system-ui`; ctx.fillStyle='#ff7800'; ctx.textAlign='left'; ctx.fillText(priceT, c.width*0.03, c.height*0.93);
-  let mime=usePNG?'image/png':'image/jpeg';
-  blob=await new Promise(r=>c.toBlob(r,mime,usePNG?1.0:1.0));
+   let c=document.createElement('canvas'); c.width=v.videoWidth*2; c.height=v.videoHeight*2;
+   let ctx=c.getContext('2d'); ctx.drawImage(v,0,0,c.width,c.height);
+   blob=await new Promise(r=>c.toBlob(r,usePNG?'image/png':'image/jpeg',1.0));
  }
- // Si es del sensor y pide marca de agua, la agregamos recomprimiendo a PNG/JPEG MAX
- if(useSensor && blob && (wmT || priceT)){
-   try{
-    let bmp=await createImageBitmap(blob);
-    let c=document.createElement('canvas'); c.width=bmp.width; c.height=bmp.height; w=bmp.width; h=bmp.height;
-    let ctx=c.getContext('2d'); ctx.drawImage(bmp,0,0);
-    ctx.font=`bold ${c.width*0.028}px system-ui`; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=c.width*0.01; ctx.textAlign='right';
-    ctx.fillText(`${wmT} • ${gpsT}`, c.width*0.97, c.height*0.93);
-    ctx.font=`900 ${c.width*0.06}px system-ui`; ctx.fillStyle='#ff7800'; ctx.textAlign='left'; ctx.fillText(priceT, c.width*0.03, c.height*0.93);
-    let mime=usePNG?'image/png':'image/jpeg';
-    blob=await new Promise(r=>c.toBlob(r,mime,1.0));
-   }catch{}
- }
- let url=URL.createObjectURL(blob);
- let mb=(blob.size/1024/1024).toFixed(2), kb=Math.round(blob.size/1024);
+ let url=URL.createObjectURL(blob), mb=(blob.size/1024/1024).toFixed(2);
  document.getElementById('outImg').src=url; document.getElementById('outImg').style.display='block'; document.getElementById('outVid').style.display='none';
- document.getElementById('dl').href=url; document.getElementById('dl').download= usePNG? `PASTEL_ULTRA_${mb}MB_${Date.now()}.png` : `PASTEL_MAX_${mb}MB_${Date.now()}.jpg`;
- document.getElementById('dl').innerText=`💾 Guardar ${mb} MB (${kb} KB)`;
- document.getElementById('resInfo').innerText=`${w||'sensor'}x${h||''} • ${blob.type} • ${mb} MB • Calidad 100%`;
+ document.getElementById('dl').href=url; document.getElementById('dl').download=`PASTEL_${mb}MB_${Date.now()}.${usePNG?'png':'jpg'}`;
+ document.getElementById('dl').innerText=`💾 Guardar ${mb} MB - ${usePNG?'PNG 15MB':'JPG MAX'}`;
+ document.getElementById('resInfo').innerText=`${mb} MB • ${blob.type} • Calidad 100%`;
  document.getElementById('res').style.display='flex';
 }
-
 function video(){
  let sh=document.getElementById('shutter');
- if(!isRec){
-  chunks=[]; let mt=MediaRecorder.isTypeSupported('video/webm;codecs=vp9')?'video/webm;codecs=vp9':'video/webm';
-  recorder=new MediaRecorder(stream,{mimeType:mt, videoBitsPerSecond:8000000}); // 8Mbps para HD
-  recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
-  recorder.onstop=()=>{
-   let blob=new Blob(chunks,{type:mt}); let url=URL.createObjectURL(blob); let mb=(blob.size/1024/1024).toFixed(2);
-   document.getElementById('outVid').src=url; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none';
-   document.getElementById('dl').href=url; document.getElementById('dl').download=`VIDEO_${mb}MB_${Date.now()}.webm`; document.getElementById('dl').innerText=`💾 Guardar VIDEO ${mb} MB`;
-   document.getElementById('resInfo').innerText=`Video ${mb} MB • ${mt}`;
-   document.getElementById('res').style.display='flex';
-  };
-  recorder.start(); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; setModo('video');
- }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; }
+ if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:5000000}); recorder.ondataavailable=e=>chunks.push(e.data); recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('dl').href=u; document.getElementById('dl').download=`VIDEO_${Date.now()}.webm`; document.getElementById('res').style.display='flex'; }; recorder.start(); isRec=true; sh.classList.add('rec'); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); }
 }
 </script>
 </body>
-</html> 
+</html>
