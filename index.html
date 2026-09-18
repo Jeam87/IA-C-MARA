@@ -1,117 +1,169 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles PRO Flash</title>
+<title>Cam Pasteles PRO</title>
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
 #v{width:100vw;height:100vh;object-fit:cover;background:#111}
 #shutter{position:fixed;inset:0;background:#000;z-index:50;display:none;pointer-events:none}
 #shutter.flash{animation:shutterFlash 0.45s ease-out}
-@keyframes shutterFlash{
-  0%{background:#000;opacity:0}
-  20%{background:#000;opacity:1}
-  45%{background:#fff;opacity:1}
-  100%{background:#fff;opacity:0}
-}
+@keyframes shutterFlash{0%{background:#000;opacity:0}20%{background:#000;opacity:1}45%{background:#fff;opacity:1}100%{background:#fff;opacity:0}}
 #msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px;text-align:center;width:85%}
-#focus{position:fixed;width:90px;height:90px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 10px #ff0}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000e);padding:12px;display:flex;flex-direction:column;gap:8px;z-index:10}
-#row{display:flex;gap:6px;justify-content:center}
-#row button{background:#222;color:#fff;border:1px solid #555;padding:12px;border-radius:12px;font-weight:bold;flex:1;font-size:13px}
+#focus{position:fixed;width:90px;height:90px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%)}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000f);padding:10px;display:flex;flex-direction:column;gap:8px;z-index:10}
+#row{display:flex;gap:5px}
+#row button{background:#222;color:#fff;border:1px solid #555;padding:10px;border-radius:10px;font-weight:bold;flex:1;font-size:12px}
 #row button.active{background:#ff7800}
-#foto{width:100%;padding:16px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold;transition:transform 0.1s}
-#foto:active{transform:scale(0.93);background:#ff7800;color:#fff}
+#foto{width:100%;padding:15px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
+#watermarkPreview{position:fixed;z-index:9;pointer-events:none;font-weight:bold;text-shadow:1px 1px 3px #000;opacity:0.8}
+#panel{position:fixed;inset:0;background:#000e;z-index:30;display:none;flex-direction:column;padding:15px;overflow:auto;color:#fff}
+#panel input, #panel select{width:100%;padding:10px;border-radius:8px;border:none;margin:5px 0;background:#222;color:#fff}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
 #res img{flex:1;width:100%;object-fit:contain;background:#111}
-#resBtns{display:flex;gap:10px;padding:12px}
 </style>
 </head>
 <body>
 <div id="shutter"></div>
 <video id="v" autoplay playsinline muted></video>
 <div id="focus"></div>
-<div id="msg">Toca el sticker para enfocar</div>
+<div id="watermarkPreview">🍰 Mis Pasteles</div>
+<div id="msg">Toca para enfocar</div>
+
 <div id="ctrl">
   <div id="row">
     <button onclick="setModo('lejos')">Lejos</button>
-    <button id="bMacro" class="active" onclick="setModo('macro')">📸 Macro</button>
-    <button onclick="setModo('pastel')">🎂 Pastel</button>
+    <button id="bMacro" class="active" onclick="setModo('macro')">Macro</button>
     <button onclick="cambiarLente()">↻ Lente</button>
+    <button onclick="abrirPanel()" style="background:#444">✏️ Marca</button>
   </div>
-  <button id="foto" onclick="tomarPro()">📸 Tomar Foto PRO HD</button>
+  <button id="foto" onclick="tomarPro()">📸 Tomar con Marca</button>
 </div>
+
+<div id="panel">
+  <h3 style="margin:0">✏️ Editar Marca de Agua</h3>
+  <label>Texto de marca:</label>
+  <input id="wmText" placeholder="Ej: Pasteles Lupita - Jacona" oninput="guardarWM()">
+  <label>Posición:</label>
+  <select id="wmPos" onchange="guardarWM()">
+    <option value="bottom-right">Abajo Derecha</option>
+    <option value="bottom-left">Abajo Izquierda</option>
+    <option value="top-right">Arriba Derecha</option>
+    <option value="top-left">Arriba Izquierda</option>
+    <option value="center">Centro (diagonal)</option>
+  </select>
+  <label>Tamaño:</label>
+  <select id="wmSize" onchange="guardarWM()">
+    <option value="small">Chico</option>
+    <option value="medium" selected>Mediano</option>
+    <option value="large">Grande</option>
+  </select>
+  <label>Color:</label>
+  <select id="wmColor" onchange="guardarWM()">
+    <option value="white">Blanco</option>
+    <option value="gold">Dorado</option>
+    <option value="pink">Rosa Pastel</option>
+    <option value="black">Negro</option>
+  </select>
+  <label><input type="checkbox" id="wmOn" checked onchange="guardarWM()"> Activar marca de agua</label>
+  <label>Subir Logo (opcional):</label>
+  <input type="file" id="logoFile" accept="image/*" onchange="subirLogo(event)">
+  <div style="display:flex;gap:10px;margin-top:15px">
+    <button onclick="cerrarPanel()" style="flex:1;padding:12px;background:#fff;color:#000;border:none;border-radius:10px;font-weight:bold">Guardar y Cerrar</button>
+    <button onclick="borrarLogo()" style="padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Quitar Logo</button>
+  </div>
+  <p style="font-size:11px;color:#888;margin-top:10px">Se guarda automático. La próxima foto ya sale con lo que pongas aquí.</p>
+</div>
+
 <div id="res">
   <img id="out">
-  <div id="resBtns">
-    <a id="down" download="pastel-PRO-FLASH.jpg" style="flex:1;padding:15px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar HD</a>
-    <button onclick="document.getElementById('res').style.display='none'; document.getElementById('shutter').style.display='none'" style="flex:1;padding:15px;background:#333;color:#fff;border-radius:10px;border:none">Cerrar</button>
+  <div style="display:flex;gap:10px;padding:12px">
+    <a id="down" download="pastel-con-marca.jpg" style="flex:1;padding:15px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar HD</a>
+    <button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:15px;background:#333;color:#fff;border-radius:10px;border:none">Cerrar</button>
   </div>
 </div>
+
 <script>
-let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0;
+let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0, logoImg=null;
+let wm={text:'🍰 Mis Pasteles',pos:'bottom-right',size:'medium',color:'white',on:true};
+
+function cargarWM(){
+  let s=localStorage.getItem('pastelWM'); if(s) wm=JSON.parse(s);
+  let l=localStorage.getItem('pastelLogo'); if(l){ logoImg=new Image(); logoImg.src=l; }
+  document.getElementById('wmText').value=wm.text.replace('🍰 ','');
+  document.getElementById('wmPos').value=wm.pos; document.getElementById('wmSize').value=wm.size;
+  document.getElementById('wmColor').value=wm.color; document.getElementById('wmOn').checked=wm.on;
+  actualizarPreview();
+}
+function guardarWM(){
+  wm.text=document.getElementById('wmText').value? '🍰 '+document.getElementById('wmText').value : '🍰 Mis Pasteles';
+  wm.pos=document.getElementById('wmPos').value; wm.size=document.getElementById('wmSize').value;
+  wm.color=document.getElementById('wmColor').value; wm.on=document.getElementById('wmOn').checked;
+  localStorage.setItem('pastelWM',JSON.stringify(wm)); actualizarPreview();
+}
+function actualizarPreview(){
+  let p=document.getElementById('watermarkPreview'); p.innerText=wm.text;
+  if(!wm.on){ p.style.display='none'; return; } p.style.display='block';
+  let sizes={small:'14px',medium:'18px',large:'24px'}; let colors={white:'#fff',gold:'#FFD700',pink:'#FF69B4',black:'#000'};
+  p.style.fontSize=sizes[wm.size]; p.style.color=colors[wm.color];
+  p.style.textShadow=wm.color=='white'?'1px 1px 4px #000':'1px 1px 2px #fff8';
+  let pos={ 'bottom-right':{bottom:'85px',right:'12px'},'bottom-left':{bottom:'85px',left:'12px'},'top-right':{top:'55px',right:'12px'},'top-left':{top:'55px',left:'12px'},'center':{top:'50%',left:'50%',transform:'translate(-50%,-50%) rotate(-25deg)',fontSize:'32px',opacity:'0.15'} };
+  Object.assign(p.style,pos[wm.pos]);
+}
+function abrirPanel(){ document.getElementById('panel').style.display='flex'; }
+function cerrarPanel(){ document.getElementById('panel').style.display='none'; }
+function subirLogo(e){
+  let r=new FileReader(); r.onload=()=>{ localStorage.setItem('pastelLogo',r.result); logoImg=new Image(); logoImg.src=r.result; actualizarPreview(); };
+  r.readAsDataURL(e.target.files[0]);
+}
+function borrarLogo(){ localStorage.removeItem('pastelLogo'); logoImg=null; }
+
 async function iniciar(d=null){
   if(stream) stream.getTracks().forEach(t=>t.stop());
   try{
-    let c={video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}};
-    if(d) c.video={deviceId:{exact:d}};
-    stream=await navigator.mediaDevices.getUserMedia(c);
-    v.srcObject=stream; await v.play();
-    track=stream.getVideoTracks()[0];
-    try{ imageCapture=new ImageCapture(track); }catch{}
-    document.getElementById('msg').innerText='HD listo - Toca para enfocar';
-    let all=await navigator.mediaDevices.enumerateDevices();
-    devices=all.filter(x=>x.kind=='videoinput');
-  }catch(e){ document.getElementById('msg').innerText='Permite la cámara 🔒'; }
+    let c={video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}}; if(d) c.video={deviceId:{exact:d}};
+    stream=await navigator.mediaDevices.getUserMedia(c); v.srcObject=stream; await v.play();
+    track=stream.getVideoTracks()[0]; try{ imageCapture=new ImageCapture(track);}catch{}
+    let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(x=>x.kind=='videoinput');
+  }catch{}
 }
-iniciar();
+iniciar(); cargarWM();
 function cambiarLente(){ if(devices.length<=1) return; idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); }
-async function setModo(m){
-  document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active'));
-  if(m=='macro') document.getElementById('bMacro').classList.add('active');
-  try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch{}
-}
+async function setModo(m){ document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active')); if(m=='macro') document.getElementById('bMacro').classList.add('active'); }
 v.addEventListener('click', async(e)=>{
-  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1000);
-  try{
-    let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight;
-    await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}],focusMode:'manual'}]});
-    document.getElementById('msg').innerText='Enfocando...';
-    setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); document.getElementById('msg').innerText='Enfocado ✓'; }catch{} },900);
-  }catch{}
+  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',900);
+  try{ let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight; await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}],focusMode:'manual'}]}); setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{} },800);}catch{}
 });
+
 async function tomarPro(){
-  let s=document.getElementById('shutter'), msg=document.getElementById('msg');
-  // EFECTO SE APAGA Y PRENDE
-  s.style.display='block';
-  s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
+  let s=document.getElementById('shutter'); s.style.display='block'; s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
   if(navigator.vibrate) navigator.vibrate([30,40,30]);
+  document.getElementById('msg').innerText='📸 ¡FLASH!'; await new Promise(r=>setTimeout(r,260));
   try{
-    let ctx=new (window.AudioContext||window.webkitAudioContext)();
-    let o=ctx.createOscillator(), g=ctx.createGain();
-    o.frequency.value=1200; o.connect(g); g.connect(ctx.destination);
-    g.gain.setValueAtTime(0.8,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.2);
-    o.start(); o.stop(ctx.currentTime+0.2);
-  }catch{}
-  msg.innerText='📸 ¡FLASH!';
-  await new Promise(r=>setTimeout(r,280));
-  try{
-    let blob;
-    if(imageCapture && imageCapture.takePhoto){ blob=await imageCapture.takePhoto(); }
+    let blob; if(imageCapture && imageCapture.takePhoto){ blob=await imageCapture.takePhoto(); }
     else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.95)); }
-    let url=URL.createObjectURL(blob);
-    let img=new Image(); img.src=url; await img.decode();
-    let c2=document.createElement('canvas'); c2.width=img.width*1.5; c2.height=img.height*1.5;
-    let ctx2=c2.getContext('2d'); ctx2.imageSmoothingQuality='high'; ctx2.drawImage(img,0,0,c2.width,c2.height);
+    let url=URL.createObjectURL(blob); let img=new Image(); img.src=url; await img.decode();
+    let c2=document.createElement('canvas'); c2.width=img.width; c2.height=img.height; let ctx=c2.getContext('2d');
+    ctx.drawImage(img,0,0);
+    // MARCA DE AGUA
+    if(wm.on){
+      let fs={small:c2.width*0.03,medium:c2.width*0.045,large:c2.width*0.06}[wm.size];
+      ctx.font='bold '+fs+'px sans-serif'; ctx.fillStyle={white:'#ffffff',gold:'#FFD700',pink:'#FF69B4',black:'#000000'}[wm.color];
+      ctx.shadowColor='#000'; ctx.shadowBlur=8; ctx.textBaseline='bottom';
+      let text=wm.text; let pad=fs*0.8;
+      if(wm.pos=='bottom-right'){ ctx.textAlign='right'; ctx.fillText(text,c2.width-pad,c2.height-pad); if(logoImg) ctx.drawImage(logoImg,c2.width-pad-fs*2,c2.height-pad-fs*2,fs*1.8,fs*1.8); }
+      else if(wm.pos=='bottom-left'){ ctx.textAlign='left'; ctx.fillText(text,pad,c2.height-pad); }
+      else if(wm.pos=='top-right'){ ctx.textAlign='right'; ctx.fillText(text,c2.width-pad,pad+fs); }
+      else if(wm.pos=='top-left'){ ctx.textAlign='left'; ctx.fillText(text,pad,pad+fs); }
+      else { ctx.textAlign='center'; ctx.save(); ctx.translate(c2.width/2,c2.height/2); ctx.rotate(-0.4); ctx.globalAlpha=0.15; ctx.font='bold '+(fs*2)+'px sans-serif'; ctx.fillText(text,0,0); ctx.restore(); }
+    }
     let hd=c2.toDataURL('image/jpeg',0.92);
     document.getElementById('out').src=hd; document.getElementById('down').href=hd;
-    document.getElementById('res').style.display='flex';
-    msg.innerText='¡Foto PRO '+Math.round(c2.width)+'x'+Math.round(c2.height)+'!';
-    setTimeout(()=>{ s.style.display='none'; },500);
-  }catch(e){ msg.innerText='Error: '+e.message; s.style.display='none'; }
+    document.getElementById('res').style.display='flex'; document.getElementById('msg').innerText='Foto con marca lista ✓';
+    setTimeout(()=>{ s.style.display='none'; },400);
+  }catch(e){ document.getElementById('msg').innerText='Error: '+e.message; s.style.display='none'; }
 }
 </script>
 </body>
-</html>
+</html> 
