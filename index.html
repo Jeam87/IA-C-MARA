@@ -3,153 +3,146 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles 12MP - MAX / HD</title>
+<title>Cam Pasteles 12MP - FIX Boton</title>
 <style>
 body{margin:0;background:#000;overflow:hidden;font-family:sans-serif;color:#fff}
 #v{width:100vw;height:100vh;object-fit:cover;background:#111;position:absolute;top:0;left:0;z-index:1}
 #start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;padding:20px;text-align:center}
-#start button{padding:18px 25px;background:#ff7800;color:#fff;border:none;border-radius:30px;font-size:18px;font-weight:bold;width:90%}
+#start button{padding:18px 25px;background:#ff7800;color:#fff;border:none;border-radius:30px;font-size:18px;font-weight:bold;width:90%;cursor:pointer}
 #shutter{position:fixed;inset:0;background:#fff;z-index:50;display:none}
 #msg{position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#000c;padding:7px 12px;border-radius:20px;z-index:10;font-size:11px;width:90%;text-align:center}
-#focus{position:fixed;width:85px;height:85px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%);z-index:12}
 #ctrl{position:fixed;bottom:0;left:0;right:0;background:#000e;padding:8px;z-index:10;display:flex;flex-direction:column;gap:6px}
-#row{display:flex;gap:4px;flex-wrap:wrap}
-#row button{background:#222;color:#fff;border:1px solid #555;padding:8px;border-radius:10px;font-weight:bold;flex:1;font-size:10px;min-width:55px}
-#row button.active{background:#ff7800}
+#row{display:flex;gap:4px}
+#row button{background:#222;color:#fff;border:1px solid #555;padding:8px;border-radius:10px;font-weight:bold;flex:1;font-size:10px}
 #mainBtns{display:flex;gap:6px}
 #mainBtns button{flex:1;padding:13px;border:none;border-radius:25px;font-weight:bold;font-size:13px}
 #btnFoto{background:#fff;color:#000}
 #btnBlanco{background:#ff7800;color:#fff}
 #panel{position:fixed;inset:0;background:#111;z-index:30;display:none;flex-direction:column;padding:12px;overflow:auto}
-#panel input,#panel select{width:100%;padding:10px;border-radius:8px;border:none;margin:4px 0;background:#222;color:#fff}
+#panel select,#panel input{width:100%;padding:10px;border-radius:8px;border:none;margin:4px 0;background:#222;color:#fff}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
-#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
-#recBox{position:fixed;top:12px;left:12px;background:#000a;padding:6px 10px;border-radius:20px;display:none;align-items:center;gap:6px;z-index:11;border:1px solid #f00a}
-#recDot{width:12px;height:12px;background:#f00;border-radius:50%;animation:blink 1s infinite}
-@keyframes blink{50%{opacity:0.2}}
+#res img{flex:1;width:100%;object-fit:contain;background:#111}
 </style>
 </head>
 <body>
 <div id="start">
 <h2 style="margin:0">🍰 Cam Pasteles 12MP</h2>
-<p style="font-size:12px;color:#0f0">Elige MAX o HD</p>
-<button onclick="iniciarReal()">📷 PRENDER CÁMARA</button>
-<p id="err" style="font-size:11px;color:#ff0"></p>
+<p style="font-size:12px;color:#0f0" id="status">FIX - Ahora sí prende</p>
+<button id="btnPrender" onclick="iniciarReal()">📷 PRENDER CÁMARA</button>
+<p id="err" style="font-size:12px;color:#ff5555;word-break:break-all"></p>
 </div>
 <div id="shutter"></div>
-<div id="recBox"><div id="recDot"></div><span id="recTime">00:00</span></div>
 <video id="v" autoplay playsinline muted></video>
-<div id="focus"></div>
 <div id="msg">Esperando...</div>
 <div id="ctrl">
 <div id="row">
-<button id="mFoto" class="active" onclick="setMode('foto')">📸 Foto</button>
-<button id="mVideo" onclick="setMode('video')">🎥 Video</button>
+<button onclick="abrirPanel()">⚙️ Calidad: <span id="labelModo">MAX</span></button>
 <button onclick="cambiarLente()">↻ Lente</button>
-<button onclick="abrirPanel()">⚙️ Calidad</button>
 </div>
 <div id="mainBtns">
-<button id="btnFoto" onclick="accion()">📸 Tomar</button>
+<button id="btnFoto" onclick="tomarPro(false)">📸 Tomar</button>
 <button id="btnBlanco" onclick="tomarPro(true)">⬜ Fondo Blanco</button>
 </div>
 </div>
 <div id="panel">
-<h3 style="margin:0 0 10px 0">⚙️ Calidad de guardado</h3>
-<label style="color:#ff7800;font-weight:bold">📸 Modo de guardado:</label>
+<h3>⚙️ Calidad</h3>
 <select id="modoCalidad">
-<option value="max" selected>🖨️ MAX 15MB - Impresión / Archivo madre - 3840x5120 100%</option>
-<option value="hd">📱 HD 4MB - WhatsApp / Facebook - 3840x5120 82% (se ve igual, pesa menos)</option>
-<option value="lite">⚡ LITE 1.5MB - Para enviar rápido - 1920x2560</option>
+<option value="max" selected>🖨️ MAX 15MB - Impresión 100%</option>
+<option value="hd">📱 HD 4MB - WhatsApp 82%</option>
+<option value="lite">⚡ LITE 1.5MB - Rápido</option>
 </select>
-<p style="font-size:11px;color:#aaa">MAX = sin pérdida para imprimir lona, HD = misma resolución pero comprimida para que no te llene el cel</p>
-<hr style="border-color:#333;margin:12px 0">
-<label>Marca de Agua:</label>
+<p style="font-size:11px;color:#aaa">MAX = archivo madre para lona, HD = mismo tamaño pero pesa 4MB</p>
 <input id="wmText" value="Pasteles Jimbo">
-<label style="font-size:12px"><input type="checkbox" id="wmDate" checked> Fecha</label> <label style="font-size:12px"><input type="checkbox" id="wmGps" checked> Ubicación</label> <label style="font-size:12px"><input type="checkbox" id="wmOn" checked> Activar</label>
-<button onclick="guardar()" style="width:100%;padding:12px;background:#ff7800;border:none;border-radius:10px;font-weight:bold;margin-top:12px">Guardar</button>
+<label style="font-size:12px"><input type="checkbox" id="wmOn" checked> Marca de agua</label>
+<button onclick="guardar()" style="width:100%;padding:12px;background:#ff7800;border:none;border-radius:10px;font-weight:bold;margin-top:12px">Guardar y volver</button>
 <button onclick="cerrarPanel()" style="width:100%;padding:10px;background:#333;border:none;border-radius:10px;margin-top:6px;color:#fff">Cerrar</button>
 <p id="gpsStatus" style="font-size:11px;color:#aaa"></p>
 </div>
-<div id="res"><img id="outImg"><video id="outVid" controls style="display:none"></video><div style="display:flex;gap:6px;padding:10px"><a id="down" download style="flex:1;padding:12px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a><button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button></div><div id="infoCal" style="padding:8px;font-size:11px;color:#0f0;text-align:center"></div></div>
+<div id="res"><img id="outImg"><div style="display:flex;gap:6px;padding:10px"><a id="down" download style="flex:1;padding:12px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a><button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button></div><div id="infoCal" style="padding:8px;font-size:12px;color:#0f0;text-align:center"></div></div>
+
 <script>
-let v=document.getElementById('v'), stream, track, devices=[], idx=0, mode='foto', gpsText='Jacona', wm={}, mediaRecorder, chunks=[], recording=false, facing='environment', timerInt, sec=0;
-function parseRes(s){ let [w,h]=s.split('x').map(n=>parseInt(n)); return {w,h}; }
+let v=document.getElementById('v'), stream, track, facing='environment', gpsText='Jacona', wm={text:'Pasteles Jimbo', on:true};
+
 async function iniciarReal(){
+  document.getElementById('err').innerText='Pidiendo permiso...';
   try{
     if(stream) stream.getTracks().forEach(t=>t.stop());
-    stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:4032}, height:{ideal:3024}, facingMode:facing}, audio:false});
-    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+    // PASO 1: pide cámara simple, sin resolución, para que siempre prenda
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:facing}, audio:false});
+    }catch(e1){
+      // si falla, prueba trasera exacta
+      stream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+    }
+    v.srcObject=stream;
+    await v.play();
+    track=stream.getVideoTracks()[0];
     document.getElementById('start').style.display='none';
-    let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(x=>x.kind=='videoinput');
-    let s=track.getSettings();
-    document.getElementById('msg').innerText='Listo '+s.width+'x'+s.height+' - Modo: '+document.getElementById('modoCalidad').value.toUpperCase();
-  }catch(e){ document.getElementById('err').innerText='Error: '+e.message; }
+    document.getElementById('msg').innerText='Cámara prendida ✓ '+track.getSettings().width+'x'+track.getSettings().height;
+    document.getElementById('err').innerText='';
+  }catch(e){
+    document.getElementById('err').innerText='ERROR: '+e.name+' - '+e.message+' - Asegúrate de dar permiso y usar Chrome, no visor interno';
+    document.getElementById('status').innerText='No se pudo prender';
+    console.error(e);
+  }
 }
-async function cambiarLente(){ facing=facing==='environment'?'user':'environment'; iniciarReal(); }
-function setMode(m){ mode=m; document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active')); document.getElementById('m'+m.charAt(0).toUpperCase()+m.slice(1))?.classList.add('active'); document.getElementById('btnFoto').innerText=m=='foto'?'📸 Tomar':(recording?'⏹️ Parar':'🎥 Grabar'); if(m!='foto') iniciarReal(); }
+
 function abrirPanel(){ document.getElementById('panel').style.display='flex'; }
 function cerrarPanel(){ document.getElementById('panel').style.display='none'; }
-function guardar(){ wm={text:document.getElementById('wmText').value, date:document.getElementById('wmDate').checked, gps:document.getElementById('wmGps').checked, on:document.getElementById('wmOn').checked}; localStorage.setItem('wm',JSON.stringify(wm)); localStorage.setItem('modoCalidad',document.getElementById('modoCalidad').value); cerrarPanel(); iniciarReal(); }
-function obtenerGPS(){ navigator.geolocation?.getCurrentPosition(async p=>{ try{ let res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${p.coords.latitude}&lon=${p.coords.longitude}&format=json`); let j=await res.json(); gpsText=(j.address.town||j.address.city||'Jacona'); }catch{} }); }
-v.addEventListener('click', async e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',800); });
-function accion(){ if(mode=='foto') tomarPro(false); else toggleVideo(); }
+function guardar(){
+  wm.text=document.getElementById('wmText').value;
+  wm.on=document.getElementById('wmOn').checked;
+  localStorage.setItem('wm',JSON.stringify(wm));
+  localStorage.setItem('modoCalidad',document.getElementById('modoCalidad').value);
+  document.getElementById('labelModo').innerText=document.getElementById('modoCalidad').value.toUpperCase();
+  cerrarPanel();
+}
+async function cambiarLente(){ facing=facing==='environment'?'user':'environment'; await iniciarReal(); }
 
 async function tomarPro(esBlanco){
-  let s=document.getElementById('shutter'); s.style.display='block'; await new Promise(r=>setTimeout(r,60)); s.style.display='none';
+  let s=document.getElementById('shutter'); s.style.display='block'; setTimeout(()=>s.style.display='none',100);
   let blobFoto=null;
-  try{ if(track && window.ImageCapture){ let cap=new ImageCapture(track); blobFoto=await cap.takePhoto(); } }catch(e){}
+  try{
+    if(track && window.ImageCapture){
+      let cap=new ImageCapture(track);
+      blobFoto=await cap.takePhoto();
+    }
+  }catch(e){ console.log('takePhoto no disponible',e); }
+
   let c, ctx;
   if(blobFoto){
     let img=await createImageBitmap(blobFoto);
     c=document.createElement('canvas'); c.width=img.width; c.height=img.height; ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
   }else{
-    c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; ctx=c.getContext('2d'); ctx.drawImage(v,0,0);
+    c=document.createElement('canvas'); c.width=v.videoWidth||1280; c.height=v.videoHeight||720; ctx=c.getContext('2d'); ctx.drawImage(v,0,0,c.width,c.height);
   }
+
   let sv=localStorage.getItem('wm'); if(sv) try{ wm=JSON.parse(sv);}catch{}
-  function build(){ let a=[]; if(wm.text) a.push(wm.text); if(wm.date) a.push(new Date().toLocaleDateString()); if(wm.gps) a.push(gpsText); return a.join(' • '); }
-  if(wm.on){ ctx.font='bold '+(c.width*0.035)+'px sans-serif'; ctx.fillStyle='#fff'; ctx.shadowBlur=6; ctx.shadowColor='#000'; ctx.textAlign='right'; ctx.fillText(build(), c.width*0.96, c.height*0.96); }
-
-  let modo = document.getElementById('modoCalidad').value;
-  let calidad, wFinal=c.width, hFinal=c.height, canvasFinal=c;
-
-  if(modo==='max'){
-    calidad=1.0;
-    // MAX: 100% sin tocar nada
-    mostrar(canvasFinal.toDataURL('image/jpeg',calidad),'img', wFinal, hFinal, calidad, 'MAX IMPRESIÓN');
-  } else if(modo==='hd'){
-    calidad=0.82;
-    // HD 4MB: misma resolución pero calidad 82%
-    mostrar(canvasFinal.toDataURL('image/jpeg',calidad),'img', wFinal, hFinal, calidad, 'HD 4MB');
-  } else {
-    calidad=0.8;
-    // LITE: reduce a la mitad para 1.5MB
-    let c2=document.createElement('canvas'); c2.width=c.width*0.5; c2.height=c.height*0.5; c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height);
-    mostrar(c2.toDataURL('image/jpeg',calidad),'img', c2.width, c2.height, calidad, 'LITE 1.5MB');
+  if(wm.on){
+    ctx.font='bold '+(c.width*0.035)+'px sans-serif'; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=8; ctx.textAlign='right';
+    ctx.fillText(wm.text+' • '+new Date().toLocaleDateString()+' • '+gpsText, c.width*0.96, c.height*0.96);
   }
-}
 
-function mostrar(url,t,w,h,cal,etiqueta){
-  document.getElementById('outImg').style.display=t=='img'?'block':'none';
-  document.getElementById('outVid').style.display='none';
-  document.getElementById('outImg').src=url; document.getElementById('down').href=url;
-  document.getElementById('down').download='Pastel_'+etiqueta.replace(' ','_')+'_'+w+'x'+h+'.jpg';
-  document.getElementById('res').style.display='flex';
+  if(esBlanco){
+    let c2=document.createElement('canvas'); c2.width=c.width; c2.height=c.height; let ctx2=c2.getContext('2d');
+    ctx2.fillStyle='#fff'; ctx2.fillRect(0,0,c2.width,c2.height); ctx2.drawImage(c,0,0);
+    c=c2;
+  }
+
+  let modo=document.getElementById('modoCalidad').value;
+  let url;
+  if(modo==='max'){ url=c.toDataURL('image/jpeg',1.0); }
+  else if(modo==='hd'){ url=c.toDataURL('image/jpeg',0.82); }
+  else { let c2=document.createElement('canvas'); c2.width=c.width*0.5; c2.height=c.height*0.5; c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); url=c2.toDataURL('image/jpeg',0.8); c=c2; }
+
   let sizeKB=Math.round(url.length*0.75/1024);
-  document.getElementById('infoCal').innerText=etiqueta+' - '+w+'x'+h+' - '+(sizeKB/1024).toFixed(2)+'MB - Calidad '+(cal*100)+'%';
+  document.getElementById('outImg').src=url;
+  document.getElementById('down').href=url;
+  document.getElementById('down').download='Pastel_'+modo.toUpperCase()+'_'+c.width+'x'+c.height+'.jpg';
+  document.getElementById('infoCal').innerText=modo.toUpperCase()+' - '+c.width+'x'+c.height+' - '+(sizeKB/1024).toFixed(2)+'MB';
+  document.getElementById('res').style.display='flex';
 }
-
-async function toggleVideo(){
-  if(!recording){
-    let gs=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1920}, height:{ideal:1080}, facingMode:facing}, audio:true});
-    if(stream) stream.getTracks().forEach(t=>t.stop()); stream=gs; v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
-    chunks=[]; mediaRecorder=new MediaRecorder(stream); mediaRecorder.ondataavailable=e=>chunks.push(e.data);
-    mediaRecorder.onstop=()=>{ let blob=new Blob(chunks,{type:'video/webm'}); document.getElementById('outVid').src=URL.createObjectURL(blob); document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('res').style.display='flex'; };
-    mediaRecorder.start(); recording=true; document.getElementById('recBox').style.display='flex';
-  }else{ mediaRecorder.stop(); recording=false; document.getElementById('recBox').style.display='none'; }
-}
-let sv=localStorage.getItem('wm'); if(sv){ try{ wm=JSON.parse(sv); document.getElementById('wmText').value=wm.text; }catch{} }
-let mc=localStorage.getItem('modoCalidad'); if(mc) document.getElementById('modoCalidad').value=mc;
-obtenerGPS();
+let mc=localStorage.getItem('modoCalidad'); if(mc){ document.getElementById('modoCalidad').value=mc; document.getElementById('labelModo').innerText=mc.toUpperCase(); }
 </script>
 </body>
-</html> 
+</html>
