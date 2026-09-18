@@ -1,169 +1,197 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles PRO</title>
+<title>Cam Pasteles ULTRA</title>
 <style>
-body{margin:0;background:#000;overflow:hidden;font-family:sans-serif}
+body{margin:0;background:#000;overflow:hidden;font-family:sans-serif;color:#fff}
 #v{width:100vw;height:100vh;object-fit:cover;background:#111}
-#shutter{position:fixed;inset:0;background:#000;z-index:50;display:none;pointer-events:none}
-#shutter.flash{animation:shutterFlash 0.45s ease-out}
-@keyframes shutterFlash{0%{background:#000;opacity:0}20%{background:#000;opacity:1}45%{background:#fff;opacity:1}100%{background:#fff;opacity:0}}
-#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px;text-align:center;width:85%}
-#focus{position:fixed;width:90px;height:90px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%)}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000f);padding:10px;display:flex;flex-direction:column;gap:8px;z-index:10}
-#row{display:flex;gap:5px}
-#row button{background:#222;color:#fff;border:1px solid #555;padding:10px;border-radius:10px;font-weight:bold;flex:1;font-size:12px}
+#shutter{position:fixed;inset:0;background:#000;z-index:50;display:none}
+#shutter.flash{animation:flash 0.45s ease-out}
+@keyframes flash{0%{background:#000;opacity:0}20%{background:#000;opacity:1}45%{background:#fff;opacity:1}100%{background:#fff;opacity:0}}
+#msg{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#000d;padding:8px 14px;border-radius:20px;z-index:10;font-size:12px;width:90%;text-align:center}
+#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%)}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000f);padding:10px;z-index:10;display:flex;flex-direction:column;gap:6px}
+#row{display:flex;gap:4px;flex-wrap:wrap}
+#row button{background:#222;color:#fff;border:1px solid #555;padding:9px;border-radius:10px;font-weight:bold;flex:1;font-size:11px}
 #row button.active{background:#ff7800}
-#foto{width:100%;padding:15px;background:#fff;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
-#watermarkPreview{position:fixed;z-index:9;pointer-events:none;font-weight:bold;text-shadow:1px 1px 3px #000;opacity:0.8}
-#panel{position:fixed;inset:0;background:#000e;z-index:30;display:none;flex-direction:column;padding:15px;overflow:auto;color:#fff}
-#panel input, #panel select{width:100%;padding:10px;border-radius:8px;border:none;margin:5px 0;background:#222;color:#fff}
+#foto{width:100%;padding:14px;background:#fff;color:#000;border:none;border-radius:30px;font-size:17px;font-weight:bold}
+#panel{position:fixed;inset:0;background:#000f;z-index:30;display:none;flex-direction:column;padding:12px;overflow:auto}
+#panel input,#panel select{width:100%;padding:9px;border-radius:8px;border:none;margin:4px 0;background:#222;color:#fff}
+#wmPreview{position:fixed;z-index:9;pointer-events:none;font-weight:bold;text-shadow:1px 1px 3px #000;font-size:13px;line-height:1.2}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
-#res img{flex:1;width:100%;object-fit:contain;background:#111}
+#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
+#recDot{position:fixed;top:50px;left:12px;background:#f00;width:12px;height:12px;border-radius:50%;display:none;z-index:11;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:0}}
 </style>
 </head>
 <body>
-<div id="shutter"></div>
+<div id="shutter"></div><div id="recDot"></div>
 <video id="v" autoplay playsinline muted></video>
-<div id="focus"></div>
-<div id="watermarkPreview">🍰 Mis Pasteles</div>
-<div id="msg">Toca para enfocar</div>
+<div id="focus"></div><div id="wmPreview"></div>
+<div id="msg">Toca para enfocar • Panorámica y Video listos</div>
 
 <div id="ctrl">
   <div id="row">
-    <button onclick="setModo('lejos')">Lejos</button>
-    <button id="bMacro" class="active" onclick="setModo('macro')">Macro</button>
+    <button id="bFoto" class="active" onclick="setMode('foto')">📸 Foto</button>
+    <button id="bVideo" onclick="setMode('video')">🎥 Video</button>
+    <button id="bPano" onclick="setMode('pano')">🌄 Pano</button>
     <button onclick="cambiarLente()">↻ Lente</button>
     <button onclick="abrirPanel()" style="background:#444">✏️ Marca</button>
   </div>
-  <button id="foto" onclick="tomarPro()">📸 Tomar con Marca</button>
+  <button id="foto" onclick="accionPrincipal()">📸 Tomar con Marca</button>
+  <div id="panoBar" style="display:none;text-align:center;font-size:11px">Pano: <span id="panoCount">0/3</span> - mueve a la derecha</div>
 </div>
 
 <div id="panel">
-  <h3 style="margin:0">✏️ Editar Marca de Agua</h3>
-  <label>Texto de marca:</label>
-  <input id="wmText" placeholder="Ej: Pasteles Lupita - Jacona" oninput="guardarWM()">
-  <label>Posición:</label>
-  <select id="wmPos" onchange="guardarWM()">
-    <option value="bottom-right">Abajo Derecha</option>
-    <option value="bottom-left">Abajo Izquierda</option>
-    <option value="top-right">Arriba Derecha</option>
-    <option value="top-left">Arriba Izquierda</option>
-    <option value="center">Centro (diagonal)</option>
-  </select>
-  <label>Tamaño:</label>
-  <select id="wmSize" onchange="guardarWM()">
-    <option value="small">Chico</option>
-    <option value="medium" selected>Mediano</option>
-    <option value="large">Grande</option>
-  </select>
-  <label>Color:</label>
-  <select id="wmColor" onchange="guardarWM()">
-    <option value="white">Blanco</option>
-    <option value="gold">Dorado</option>
-    <option value="pink">Rosa Pastel</option>
-    <option value="black">Negro</option>
-  </select>
-  <label><input type="checkbox" id="wmOn" checked onchange="guardarWM()"> Activar marca de agua</label>
-  <label>Subir Logo (opcional):</label>
-  <input type="file" id="logoFile" accept="image/*" onchange="subirLogo(event)">
-  <div style="display:flex;gap:10px;margin-top:15px">
-    <button onclick="cerrarPanel()" style="flex:1;padding:12px;background:#fff;color:#000;border:none;border-radius:10px;font-weight:bold">Guardar y Cerrar</button>
-    <button onclick="borrarLogo()" style="padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Quitar Logo</button>
+  <h3 style="margin:0">✏️ Marca de Agua PRO</h3>
+  <input id="wmText" placeholder="Texto: Ej Pasteles Lupita">
+  <label style="font-size:12px"><input type="checkbox" id="wmDate"> Incluir Fecha</label>
+  <label style="font-size:12px"><input type="checkbox" id="wmTime"> Incluir Hora</label>
+  <label style="font-size:12px"><input type="checkbox" id="wmGps"> Incluir Ubicación GPS</label>
+  <label style="font-size:12px"><input type="checkbox" id="wmOn" checked> Activar marca</label>
+  <select id="wmPos"><option value="bottom-right">Abajo Derecha</option><option value="bottom-left">Abajo Izq</option><option value="top-right">Arriba Der</option><option value="top-left">Arriba Izq</option><option value="center">Centro diagonal</option></select>
+  <select id="wmSize"><option value="small">Chico</option><option value="medium" selected>Mediano</option><option value="large">Grande</option></select>
+  <select id="wmColor"><option value="white">Blanco</option><option value="gold">Dorado</option><option value="pink">Rosa</option><option value="black">Negro</option></select>
+  <input type="file" id="logoFile" accept="image/*">
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button onclick="guardarWM();cerrarPanel()" style="flex:1;padding:12px;background:#fff;color:#000;border:none;border-radius:10px;font-weight:bold">Guardar</button>
+    <button onclick="cerrarPanel()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
   </div>
-  <p style="font-size:11px;color:#888;margin-top:10px">Se guarda automático. La próxima foto ya sale con lo que pongas aquí.</p>
+  <p id="gpsStatus" style="font-size:10px;color:#888"></p>
 </div>
 
 <div id="res">
-  <img id="out">
+  <img id="outImg"><video id="outVid" controls style="display:none"></video>
   <div style="display:flex;gap:10px;padding:12px">
-    <a id="down" download="pastel-con-marca.jpg" style="flex:1;padding:15px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar HD</a>
-    <button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:15px;background:#333;color:#fff;border-radius:10px;border:none">Cerrar</button>
+    <a id="down" download style="flex:1;padding:13px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a>
+    <button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:13px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
   </div>
 </div>
 
 <script>
-let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0, logoImg=null;
-let wm={text:'🍰 Mis Pasteles',pos:'bottom-right',size:'medium',color:'white',on:true};
-
-function cargarWM(){
-  let s=localStorage.getItem('pastelWM'); if(s) wm=JSON.parse(s);
-  let l=localStorage.getItem('pastelLogo'); if(l){ logoImg=new Image(); logoImg.src=l; }
-  document.getElementById('wmText').value=wm.text.replace('🍰 ','');
-  document.getElementById('wmPos').value=wm.pos; document.getElementById('wmSize').value=wm.size;
-  document.getElementById('wmColor').value=wm.color; document.getElementById('wmOn').checked=wm.on;
-  actualizarPreview();
-}
-function guardarWM(){
-  wm.text=document.getElementById('wmText').value? '🍰 '+document.getElementById('wmText').value : '🍰 Mis Pasteles';
-  wm.pos=document.getElementById('wmPos').value; wm.size=document.getElementById('wmSize').value;
-  wm.color=document.getElementById('wmColor').value; wm.on=document.getElementById('wmOn').checked;
-  localStorage.setItem('pastelWM',JSON.stringify(wm)); actualizarPreview();
-}
-function actualizarPreview(){
-  let p=document.getElementById('watermarkPreview'); p.innerText=wm.text;
-  if(!wm.on){ p.style.display='none'; return; } p.style.display='block';
-  let sizes={small:'14px',medium:'18px',large:'24px'}; let colors={white:'#fff',gold:'#FFD700',pink:'#FF69B4',black:'#000'};
-  p.style.fontSize=sizes[wm.size]; p.style.color=colors[wm.color];
-  p.style.textShadow=wm.color=='white'?'1px 1px 4px #000':'1px 1px 2px #fff8';
-  let pos={ 'bottom-right':{bottom:'85px',right:'12px'},'bottom-left':{bottom:'85px',left:'12px'},'top-right':{top:'55px',right:'12px'},'top-left':{top:'55px',left:'12px'},'center':{top:'50%',left:'50%',transform:'translate(-50%,-50%) rotate(-25deg)',fontSize:'32px',opacity:'0.15'} };
-  Object.assign(p.style,pos[wm.pos]);
-}
-function abrirPanel(){ document.getElementById('panel').style.display='flex'; }
-function cerrarPanel(){ document.getElementById('panel').style.display='none'; }
-function subirLogo(e){
-  let r=new FileReader(); r.onload=()=>{ localStorage.setItem('pastelLogo',r.result); logoImg=new Image(); logoImg.src=r.result; actualizarPreview(); };
-  r.readAsDataURL(e.target.files[0]);
-}
-function borrarLogo(){ localStorage.removeItem('pastelLogo'); logoImg=null; }
+let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0, logoImg=null, mode='foto';
+let mediaRecorder, chunks=[], recording=false, panoImgs=[], gpsText='';
+let wm={text:'Mis Pasteles',date:false,time:false,gps:false,on:true,pos:'bottom-right',size:'medium',color:'white'};
 
 async function iniciar(d=null){
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  try{
-    let c={video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}}; if(d) c.video={deviceId:{exact:d}};
-    stream=await navigator.mediaDevices.getUserMedia(c); v.srcObject=stream; await v.play();
-    track=stream.getVideoTracks()[0]; try{ imageCapture=new ImageCapture(track);}catch{}
-    let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(x=>x.kind=='videoinput');
-  }catch{}
+  let c={video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}},audio: mode=='video'};
+  if(d) c.video={deviceId:{exact:d}};
+  stream=await navigator.mediaDevices.getUserMedia(c);
+  v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+  try{ imageCapture=new ImageCapture(track);}catch{}
+  let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(x=>x.kind=='videoinput');
+  if(mode=='video'){ mediaRecorder=new MediaRecorder(stream); mediaRecorder.ondataavailable=e=>chunks.push(e.data); mediaRecorder.onstop=onVideoStop; }
 }
-iniciar(); cargarWM();
-function cambiarLente(){ if(devices.length<=1) return; idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); }
-async function setModo(m){ document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active')); if(m=='macro') document.getElementById('bMacro').classList.add('active'); }
-v.addEventListener('click', async(e)=>{
-  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',900);
-  try{ let x=e.clientX/window.innerWidth, y=e.clientY/window.innerHeight; await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}],focusMode:'manual'}]}); setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{} },800);}catch{}
+function cambiarLente(){ if(devices.length>1){ idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); } }
+function setMode(m){
+  mode=m; document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('b'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
+  document.getElementById('panoBar').style.display=m=='pano'?'block':'none';
+  document.getElementById('foto').innerText=m=='foto'?'📸 Tomar con Marca':m=='video'?(recording?'⏹️ Parar Video':'🎥 Grabar Video'):'🌄 Tomar Pano (3 fotos)';
+  if(m!='pano){ panoImgs=[]; document.getElementById('panoCount').innerText='0/3'; }
+  iniciar();
+}
+function cargarWM(){
+  let s=localStorage.getItem('pastelWM2'); if(s) wm=JSON.parse(s);
+  let l=localStorage.getItem('pastelLogo'); if(l){ logoImg=new Image(); logoImg.src=l; }
+  document.getElementById('wmText').value=wm.text; document.getElementById('wmDate').checked=wm.date;
+  document.getElementById('wmTime').checked=wm.time; document.getElementById('wmGps').checked=wm.gps;
+  document.getElementById('wmOn').checked=wm.on; document.getElementById('wmPos').value=wm.pos;
+  document.getElementById('wmSize').value=wm.size; document.getElementById('wmColor').value=wm.color;
+  actualizarPreview(); obtenerGPS();
+}
+function guardarWM(){
+  wm.text=document.getElementById('wmText').value||'Mis Pasteles'; wm.date=document.getElementById('wmDate').checked;
+  wm.time=document.getElementById('wmTime').checked; wm.gps=document.getElementById('wmGps').checked;
+  wm.on=document.getElementById('wmOn').checked; wm.pos=document.getElementById('wmPos').value;
+  wm.size=document.getElementById('wmSize').value; wm.color=document.getElementById('wmColor').value;
+  localStorage.setItem('pastelWM2',JSON.stringify(wm)); actualizarPreview(); obtenerGPS();
+}
+function actualizarPreview(){
+  let p=document.getElementById('wmPreview'); if(!wm.on){ p.style.display='none'; return; } p.style.display='block';
+  p.innerText=buildWMText(true); let colors={white:'#fff',gold:'#FFD700',pink:'#FF69B4',black:'#000'}; p.style.color=colors[wm.color];
+  let sz={small:'12px',medium:'15px',large:'20px'}[wm.size]; p.style.fontSize=sz;
+  let map={'bottom-right':{bottom:'80px',right:'10px',textAlign:'right'},'bottom-left':{bottom:'80px',left:'10px'},'top-right':{top:'50px',right:'10px',textAlign:'right'},'top-left':{top:'50px',left:'10px'},'center':{top:'50%',left:'50%',transform:'translate(-50%,-50%) rotate(-25deg)',opacity:'0.2',fontSize:'26px'}};
+  Object.assign(p.style,map[wm.pos]);
+}
+function buildWMText(preview=false){
+  let parts=[]; if(wm.text) parts.push('🍰 '+wm.text);
+  if(wm.date) parts.push(new Date().toLocaleDateString());
+  if(wm.time) parts.push(new Date().toLocaleTimeString());
+  if(wm.gps && gpsText) parts.push(gpsText);
+  return parts.join(' • ');
+}
+function obtenerGPS(){
+  if(!wm.gps) return; document.getElementById('gpsStatus').innerText='Obteniendo ubicación...';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try{
+      let r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
+      let j=await r.json(); gpsText=j.address.town||j.address.city||'Jacona';
+      if(j.address.state) gpsText+=', '+j.address.state;
+      document.getElementById('gpsStatus').innerText='Ubicación: '+gpsText; actualizarPreview();
+    }catch{ gpsText='Jacona, Mich'; document.getElementById('gpsStatus').innerText=gpsText; }
+  },()=>{ gpsText='Jacona, Mich'; document.getElementById('gpsStatus').innerText='GPS no permitido, usando Jacona'; });
+}
+function abrirPanel(){ document.getElementById('panel').style.display='flex'; }
+function cerrarPanel(){ document.getElementById('panel').style.display='none'; }
+document.getElementById('logoFile').addEventListener('change',e=>{
+  let r=new FileReader(); r.onload=()=>{ localStorage.setItem('pastelLogo',r.result); logoImg=new Image(); logoImg.src=r.result; };
+  r.readAsDataURL(e.target.files[0]);
 });
-
+v.addEventListener('click', async e=>{
+  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',900);
+  try{ let x=e.clientX/innerWidth, y=e.clientY/innerHeight; await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}],focusMode:'manual'}]}); setTimeout(()=>track.applyConstraints({advanced:[{focusMode:'continuous'}]}),800);}catch{}
+});
+async function accionPrincipal(){
+  if(mode=='foto') tomarPro(); else if(mode=='video') toggleVideo(); else tomarPano();
+}
 async function tomarPro(){
   let s=document.getElementById('shutter'); s.style.display='block'; s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash');
-  if(navigator.vibrate) navigator.vibrate([30,40,30]);
-  document.getElementById('msg').innerText='📸 ¡FLASH!'; await new Promise(r=>setTimeout(r,260));
-  try{
-    let blob; if(imageCapture && imageCapture.takePhoto){ blob=await imageCapture.takePhoto(); }
-    else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.95)); }
-    let url=URL.createObjectURL(blob); let img=new Image(); img.src=url; await img.decode();
-    let c2=document.createElement('canvas'); c2.width=img.width; c2.height=img.height; let ctx=c2.getContext('2d');
-    ctx.drawImage(img,0,0);
-    // MARCA DE AGUA
-    if(wm.on){
-      let fs={small:c2.width*0.03,medium:c2.width*0.045,large:c2.width*0.06}[wm.size];
-      ctx.font='bold '+fs+'px sans-serif'; ctx.fillStyle={white:'#ffffff',gold:'#FFD700',pink:'#FF69B4',black:'#000000'}[wm.color];
-      ctx.shadowColor='#000'; ctx.shadowBlur=8; ctx.textBaseline='bottom';
-      let text=wm.text; let pad=fs*0.8;
-      if(wm.pos=='bottom-right'){ ctx.textAlign='right'; ctx.fillText(text,c2.width-pad,c2.height-pad); if(logoImg) ctx.drawImage(logoImg,c2.width-pad-fs*2,c2.height-pad-fs*2,fs*1.8,fs*1.8); }
-      else if(wm.pos=='bottom-left'){ ctx.textAlign='left'; ctx.fillText(text,pad,c2.height-pad); }
-      else if(wm.pos=='top-right'){ ctx.textAlign='right'; ctx.fillText(text,c2.width-pad,pad+fs); }
-      else if(wm.pos=='top-left'){ ctx.textAlign='left'; ctx.fillText(text,pad,pad+fs); }
-      else { ctx.textAlign='center'; ctx.save(); ctx.translate(c2.width/2,c2.height/2); ctx.rotate(-0.4); ctx.globalAlpha=0.15; ctx.font='bold '+(fs*2)+'px sans-serif'; ctx.fillText(text,0,0); ctx.restore(); }
-    }
-    let hd=c2.toDataURL('image/jpeg',0.92);
-    document.getElementById('out').src=hd; document.getElementById('down').href=hd;
-    document.getElementById('res').style.display='flex'; document.getElementById('msg').innerText='Foto con marca lista ✓';
-    setTimeout(()=>{ s.style.display='none'; },400);
-  }catch(e){ document.getElementById('msg').innerText='Error: '+e.message; s.style.display='none'; }
+  if(navigator.vibrate) navigator.vibrate(50); await new Promise(r=>setTimeout(r,250));
+  let blob; if(imageCapture?.takePhoto) blob=await imageCapture.takePhoto(); else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.95)); }
+  let img=new Image(); img.src=URL.createObjectURL(blob); await img.decode();
+  let c2=document.createElement('canvas'); c2.width=img.width; c2.height=img.height; let ctx=c2.getContext('2d'); ctx.drawImage(img,0,0);
+  aplicarMarca(ctx,c2.width,c2.height);
+  mostrarResultado(c2.toDataURL('image/jpeg',0.92),'jpg');
+  s.style.display='none';
 }
+function aplicarMarca(ctx,w,h){
+  if(!wm.on) return; let fs={small:w*0.03,medium:w*0.04,large:w*0.055}[wm.size];
+  ctx.font='bold '+fs+'px sans-serif'; ctx.fillStyle={white:'#fff',gold:'#FFD700',pink:'#FF69B4',black:'#000'}[wm.color];
+  ctx.shadowColor='#000'; ctx.shadowBlur=6; let txt=buildWMText(); let pad=fs;
+  if(wm.pos=='bottom-right'){ ctx.textAlign='right'; wrapText(ctx,txt,w-pad,h-pad,w*0.8,fs*1.3); if(logoImg) ctx.drawImage(logoImg,w-pad-fs*2,h-pad-fs*3,fs*2,fs*2); }
+  else if(wm.pos=='bottom-left'){ ctx.textAlign='left'; wrapText(ctx,txt,pad,h-pad,w*0.8,fs*1.3); }
+  else if(wm.pos.includes('top')){ let y=wm.pos.includes('top')?pad+fs:h-pad; ctx.textAlign=wm.pos.includes('right')?'right':'left'; let x=wm.pos.includes('right')?w-pad:pad; wrapText(ctx,txt,x,y,w*0.8,fs*1.3); }
+  else { ctx.textAlign='center'; ctx.save(); ctx.translate(w/2,h/2); ctx.rotate(-0.4); ctx.globalAlpha=0.15; ctx.font='bold '+(fs*1.8)+'px sans-serif'; wrapText(ctx,txt,0,0,w*0.7,fs*2); ctx.restore(); }
+}
+function wrapText(ctx,text,x,y,maxW,lineH){
+  let lines=text.split(' • '); let yy=y - (lines.length-1)*lineH; lines.forEach(l=>{ ctx.fillText(l,x,yy); yy+=lineH; });
+}
+function mostrarResultado(dataUrl,ext){
+  document.getElementById('outImg').style.display=ext=='jpg'?'block':'none'; document.getElementById('outVid').style.display=ext=='jpg'?'none':'block';
+  if(ext=='jpg'){ document.getElementById('outImg').src=dataUrl; } else { document.getElementById('outVid').src=dataUrl; }
+  document.getElementById('down').href=dataUrl; document.getElementById('down').download='pastel-'+Date.now()+'.'+ext; document.getElementById('res').style.display='flex';
+}
+function toggleVideo(){
+  if(!recording){ chunks=[]; mediaRecorder.start(); recording=true; document.getElementById('recDot').style.display='block'; document.getElementById('foto').innerText='⏹️ Parar Video'; document.getElementById('msg').innerText='🔴 Grabando...'; }
+  else { mediaRecorder.stop(); recording=false; document.getElementById('recDot').style.display='none'; document.getElementById('foto').innerText='🎥 Grabar Video'; }
+}
+function onVideoStop(){ let blob=new Blob(chunks,{type:'video/webm'}); mostrarResultado(URL.createObjectURL(blob),'webm'); document.getElementById('msg').innerText='Video listo ✓'; }
+async function tomarPano(){
+  let s=document.getElementById('shutter'); s.style.display='block'; s.classList.remove('flash'); void s.offsetWidth; s.classList.add('flash'); await new Promise(r=>setTimeout(r,150)); s.style.display='none';
+  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
+  panoImgs.push(c); document.getElementById('panoCount').innerText=panoImgs.length+'/3';
+  if(panoImgs.length<3){ document.getElementById('msg').innerText='Gira un poco a la derecha... '+panoImgs.length+'/3'; return; }
+  // unir 3
+  let W=panoImgs[0].width*3, H=panoImgs[0].height; let finalC=document.createElement('canvas'); finalC.width=W; finalC.height=H; let ctx=finalC.getContext('2d');
+  panoImgs.forEach((cc,i)=>ctx.drawImage(cc,i*cc.width,0));
+  aplicarMarca(ctx,W,H); mostrarResultado(finalC.toDataURL('image/jpeg',0.9),'jpg');
+  panoImgs=[]; document.getElementById('panoCount').innerText='0/3'; document.getElementById('msg').innerText='Panorámica lista ✓';
+}
+iniciar(); cargarWM();
 </script>
 </body>
 </html> 
