@@ -1,13 +1,15 @@
 {
-  "name": "Foto Pro IA Estudio",
-  "short_name": "Foto Pro IA",
+  "name": "Foto Pro V4.5",
+  "short_name": "Foto Pro",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#0a5eb0",
+  "theme_color": "#ff7800",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
