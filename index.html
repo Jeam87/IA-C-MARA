@@ -1,64 +1,31 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro IA V4.3.1 FIX</title>
-<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-512.png"><meta name="theme-color" content="#ff7800">
-<style>*{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}#v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}#flash{position:fixed;inset:0;background:#fff;z-index:60;opacity:0;pointer-events:none;transition:opacity.12s}#flash.on{opacity:1}#recDot{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:7px 18px;border-radius:22px;font-size:13px;font-weight:900;display:none;align-items:center;gap:8px}#start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:22px;text-align:center}#start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900;pointer-events:auto}#start button.sec{background:#222;border:1px solid #444}#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333;align-items:center}#zoomBar{position:fixed;left:50%;bottom:175px;transform:translateX(-50%);z-index:20;background:#000e;padding:7px 8px;border-radius:25px;display:flex;gap:6px;border:1px solid #444;backdrop-filter:blur(10px)}#zoomBar button{background:#222;color:#fff;border:1px solid #555;padding:7px 13px;border-radius:20px;font-size:12px}#zoomBar button.active{background:#fff;color:#000;font-weight:900}#ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 14px 20px;background:linear-gradient(transparent,#000d 20%,#000 90%)}#mainRow{display:flex;align-items:center;justify-content:space-between}#shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px}#shutter.rec{background:#f00;animation:pulse.8s infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}.btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:20px}#btnTorch.on{background:#ff7800!important}#tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#focus{position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:50%;pointer-events:none;z-index:10;display:none;transform:translate(-50%,-50%)}#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:85vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#ff7800;font-weight:800;margin:12px 0 6px;display:block}.inp{width:100%;padding:11px;border-radius:11px;background:#222;border:1px solid #333;color:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.chip{padding:8px 12px;border-radius:20px;border:1px solid #333;background:#222;color:#fff;font-size:11px;text-align:center}.chip.on{background:#fff;color:#000;font-weight:900}#res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Foto Pro IA TEST</title>
+<style>body{margin:0;background:#000;color:#fff;font-family:system-ui;display:flex;flex-direction:column;height:100vh}#v{flex:1;width:100%;object-fit:cover;background:#111}button{padding:20px;margin:10px;border-radius:30px;border:none;font-weight:900;font-size:18px}#b1{background:#ff7800;color:#fff}#b2{background:#222;color:#fff;border:1px solid #555}</style>
 </head>
 <body>
-<div id="flash"></div><div id="recDot">🔴 <span id="timer">00:00</span> • <span id="timerMb">0 MB</span></div>
-<div id="start"><div style="font-size:46px">🍰</div><h2 style="margin:0">V4.3.1 FIX BOTONES</h2><p style="color:#0f0;font-size:11px">Si no prende, dale permiso a la cámara arriba</p><button onclick="iniciar(false)">📷 PRENDER TRASERA</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px;margin-top:10px"></p><p style="font-size:10px;color:#666">¿No jala? Ve a ⚙️ de Chrome > Configuración del sitio > Cámara > Permitir</p></div>
-<video id="v" autoplay playsinline muted></video><div id="focus"></div>
-<div id="top"><span id="info">-</span><div style="display:flex;gap:6px;align-items:center"><button id="btnTorch" onclick="toggleTorch()" style="display:none;background:#222;border:1px solid #555;color:#fff;border-radius:12px;padding:3px 8px;font-size:12px">🔦 OFF</button><span id="camLabel">-</span></div><span id="modeTxt" style="background:#fff;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">FOTO</span></div>
-<div id="tools"><button onclick="setFilter('none')">☀️</button><button onclick="setFilter('vivid')">🎨</button><button onclick="setFilter('warm')">🔥</button><button onclick="setFilter('bw')">⚫</button></div>
-<div id="zoomBar"><button onclick="setZ(0.6)">0.6x</button><button onclick="setZ(1)" id="b1" class="active">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(5)">5x</button><button onclick="setZ(10)">10x</button></div>
-<div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="accion()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div><div style="display:flex;justify-content:center;gap:8px;margin-top:12px"><button id="mf" onclick="setModo('foto')" style="background:#fff;color:#000;padding:7px 20px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO</button><button id="mv" onclick="setModo('video')" style="background:#222;color:#fff;padding:7px 20px;border-radius:20px;border:1px solid #555;font-size:12px">VIDEO</button><button onclick="setRecorte()" id="recBtn" style="background:#222;color:#fff;padding:7px 14px;border-radius:20px;border:1px solid #555;font-size:12px">⬜ 1:1</button></div></div>
-<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">⚙️ Config</h3><span class="label">FLASH</span><div class="grid2"><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="flashOn" checked> Flash pantalla</label><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="ledOn" checked> LED real</label></div><span class="label">CALIDAD</span><div class="grid2"><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="pngOn" checked> PNG 40MB</label></div><span class="label">FONDO</span><div class="grid2"><button class="chip on" id="bg0" onclick="setBg('none')">Original</button><button class="chip" id="bg1" onclick="setBg('blur')">Blur</button><button class="chip" id="bg2" onclick="setBg('white')">Blanco</button><button class="chip" id="bg3" onclick="setBg('black')">Negro</button></div><span class="label">MARCA</span><input id="wm" class="inp" value="Foto Pro IA - Jacona"><div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div><div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px">-</div><button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
-<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
+<video id="v" autoplay playsinline muted></video>
+<button id="b1">📷 PRENDER CAMARA TRASERA</button>
+<button id="b2">🤳 PRENDER FRONTAL</button>
+<p id="msg" style="text-align:center;font-size:12px;color:#ff0"></p>
 <script>
-let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, isRec=false, curBg='none', recorte='none', curZoom=1, torchOn=false, hasTorch=false, sec=0, timerInt, recorder, chunks=[];
-async function iniciar(wantFront){
-  let err=document.getElementById('err');
-  err.innerText='Pidiendo permiso...';
-  try{
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    let constraints = wantFront? {video:{facingMode:'user'}, audio:true} : {video:{facingMode:{ideal:'environment'}}, audio:true};
-    try{
-      let devices=await navigator.mediaDevices.enumerateDevices();
-      cams=devices.filter(d=>d.kind=='videoinput');
-    }catch{}
-    stream=await navigator.mediaDevices.getUserMedia(constraints);
-    v.srcObject=stream; await v.play();
-    track=stream.getVideoTracks()[0];
-    document.getElementById('start').style.display='none';
-    document.getElementById('info').innerText=track.getSettings().width+'x'+track.getSettings().height;
-    try{ hasTorch = track.getCapabilities && track.getCapabilities().torch? true : false; document.getElementById('btnTorch').style.display = hasTorch? 'block' : 'none'; }catch{ hasTorch=false; }
-  }catch(e){
-    err.innerText='Error: '+e.name+' - '+e.message + '\nVe a candado 🔒 arriba > Permisos > Cámara Permitir';
-    alert('No dio permiso de cámara. Dale al candado 🔒 de arriba en la barra de Chrome y pon Cámara en Permitir, luego recarga.');
-  }
+let v=document.getElementById('v');
+async function start(front){
+ document.getElementById('msg').innerText='Pidiendo permiso...';
+ try{
+  let s=await navigator.mediaDevices.getUserMedia({video:{facingMode: front?'user':'environment'}, audio:false});
+  v.srcObject=s; await v.play();
+  document.getElementById('msg').innerText='¡JALANDO! Si ves esto, ya sirve. Ahora si sube el V4.3.1';
+ }catch(e){
+  document.getElementById('msg').innerText='ERROR: '+e.message+' - Dale al candado y permite camara';
+  alert(e.message);
+ }
 }
-async function voltear(){ try{ if(stream) stream.getTracks().forEach(t=>t.stop()); camIndex=(camIndex+1)%Math.max(cams.length,2); let facing=cams.length?undefined:(camIndex==0?'environment':'user'); let dev=cams[camIndex]?.deviceId; let cons=dev?{video:{deviceId:{exact:dev}}}:{video:{facingMode:facing||'environment'}}; stream=await navigator.mediaDevices.getUserMedia({...cons,audio:true}); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; hasTorch=track.getCapabilities?.torch||false; document.getElementById('btnTorch').style.display=hasTorch?'block':'none'; }catch{ iniciar(false); } }
-async function toggleTorch(){ if(!track) return; try{ torchOn=!torchOn; await track.applyConstraints({advanced:[{torch:torchOn}]}); let b=document.getElementById('btnTorch'); b.innerText=torchOn?'🔦 ON'; b.classList.toggle('on',torchOn); }catch(e){ alert('Tu cel no deja prender LED desde web: '+e.message); } }
-function setModo(m){ modo=m; document.getElementById('mf').style.background=m=='foto'?'#fff':'#222'; document.getElementById('mf').style.color=m=='foto'?'#000':'#fff'; document.getElementById('mv').style.background=m=='video'?'#fff':'#222'; document.getElementById('mv').style.color=m=='video'?'#000':'#fff'; document.getElementById('modeTxt').innerText=m.toUpperCase(); }
-function setZ(z){ curZoom=parseFloat(z); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform='scale('+(1+(curZoom-1)*0.15)+')'; } document.querySelectorAll('#zoomBar button').forEach(b=>b.classList.remove('active')); if(z==1) document.getElementById('b1').classList.add('active'); }
-function setFilter(f){ v.style.filter=f=='vivid'?'saturate(1.6) contrast(1.1)':f=='warm'?'sepia(0.3) saturate(1.4)':f=='bw'?'grayscale(1)':''; }
-function setBg(b){ curBg=b; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); document.getElementById(b=='none'?'bg0':b=='blur'?'bg1':b=='white'?'bg2':'bg3').classList.add('on'); }
-function setRecorte(){ let o=['none','1:1','4:5']; recorte=o[(o.indexOf(recorte)+1)%o.length]; document.getElementById('recBtn').innerText=recorte=='none'?'⬜ Orig':recorte; }
-function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
-function cerrarRes(){ document.getElementById('res').style.display='none'; }
-function accion(){ if(modo=='foto') foto(); else video(); }
-async function foto(){
-  let useLED=document.getElementById('ledOn')?.checked && hasTorch &&!torchOn;
-  try{ if(useLED){ await track.applyConstraints({advanced:[{torch:true}]}); await new Promise(r=>setTimeout(r,300)); } }catch{}
-  if(document.getElementById('flashOn').checked){ let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),150); }
-  let blob; try{ let ic=new ImageCapture(track); blob=await ic.takePhoto(); }catch{ let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/png',1)); }
-  try{ if(useLED){ await track.applyConstraints({advanced:[{torch:false}]}); } }catch{}
-  let url=URL.createObjectURL(blob); document.getElementById('outImg').src=url; document.getElementById('outImg').style.display='block'; document.getElementById('outVid').style.display='none'; document.getElementById('dl').href=url; document.getElementById('dl').download='FOTO_'+Date.now()+'.png'; document.getElementById('res').style.display='flex';
-}
-function video(){ let sh=document.getElementById('shutter'), dot=document.getElementById('recDot'), t=document.getElementById('timer'); if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm'}); recorder.ondataavailable=e=>chunks.push(e.data); recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('dl').href=u; document.getElementById('dl').download='VIDEO_'+Date.now()+'.webm'; document.getElementById('res').style.display='flex'; }; recorder.start(200); isRec=true; sh.classList.add('rec'); dot.style.display='flex'; sec=0; timerInt=setInterval(()=>{ sec++; t.innerText=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); },1000); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); dot.style.display='none'; clearInterval(timerInt); } }
-v.addEventListener('click',e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',800); });
+document.getElementById('b1').addEventListener('click',()=>start(false));
+document.getElementById('b2').addEventListener('click',()=>start(true));
 </script>
 </body>
 </html> 
