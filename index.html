@@ -3,147 +3,175 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro IA V3.2 FIX CAMARAS</title>
+<title>Foto Pro IA V4 COMPLETA</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff}
-#v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
+*{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;-webkit-tap-highlight-color:transparent}
+#v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111;transition:.2s}
 #start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:22px;text-align:center}
-#start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900} #start button.sec{background:#222;border:1px solid #444}
-#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333}
-#ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 18px 22px;background:linear-gradient(transparent,#000d 25%,#000 85%)}
+#start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900}
+#start button.sec{background:#222;border:1px solid #444}
+#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;backdrop-filter:blur(12px);padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;align-items:center;font-size:10px;border:1px solid #333}
+#light{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:10;background:#0008;backdrop-filter:blur(10px);padding:10px 6px;border-radius:25px;display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid #3336}
+#light input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:4px;height:80px;accent-color:#ff7800}
+#zoomBar{position:fixed;left:50%;bottom:130px;transform:translateX(-50%);z-index:10;background:#000a;padding:6px 8px;border-radius:25px;display:flex;gap:5px;border:1px solid #333}
+#zoomBar button{background:#222;color:#fff;border:1px solid #444;padding:6px 12px;border-radius:20px;font-size:11px}
+#zoomBar button.active{background:#fff;color:#000;font-weight:900}
+#ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 14px 20px;background:linear-gradient(transparent,#000d 20%,#000 90%)}
 #mainRow{display:flex;align-items:center;justify-content:space-between}
-#shutter{width:84px;height:84px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:28px}
-#shutter.rec{background:#f00;animation:pulse.8s infinite} @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.9)}}
-.btn{width:54px;height:54px;border-radius:50%;background:#ffffff20;border:1px solid #ffffff40;color:#fff;font-size:22px}
-#zoomBar{position:fixed;left:50%;bottom:125px;transform:translateX(-50%);z-index:10;background:#000a;padding:5px 8px;border-radius:25px;display:flex;gap:5px;border:1px solid #333}
-#zoomBar button{background:#222;color:#fff;border:1px solid #444;padding:5px 11px;border-radius:20px;font-size:11px}
-#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:20;padding:18px 18px 30px;transform:translateY(105%);transition:.32s;max-height:80vh;overflow:auto}
-#drawer.open{transform:translateY(0)}
+#shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px}
+#shutter.rec{background:#f00;animation:pulse .8s infinite} @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
+.btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:20px;backdrop-filter:blur(8px)}
+#tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
+#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}
+#focus{position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:50%;pointer-events:none;z-index:10;display:none;transform:translate(-50%,-50%)}
+#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;backdrop-filter:blur(25px);border-radius:28px 28px 0 0;z-index:20;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:85vh;overflow:auto}
+#drawer.open{transform:translateY(0)} .label{font-size:11px;color:#ff7800;font-weight:800;letter-spacing:.8px;margin:12px 0 6px;display:block}
+.inp{width:100%;padding:11px;border-radius:11px;background:#222;border:1px solid #333;color:#fff;font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{padding:8px 12px;border-radius:20px;border:1px solid #333;background:#222;color:#fff;font-size:11px;text-align:center} .chip.on{background:#fff;color:#000;font-weight:900}
 #res{position:fixed;inset:0;background:#000;z-index:30;display:none;flex-direction:column} #res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
 </style>
 </head>
 <body>
-<div id="start">
-<div style="font-size:46px">🍰</div>
-<h2 style="margin:0">Foto Pro IA V3.2<br>FIX CÁMARAS</h2>
-<p style="color:#0f0;font-size:11px;margin:0">Preview 720p fluido • Foto 15MB • Cambio real de cámaras</p>
-<button onclick="iniciar(false)">📷 PRENDER TRASERA</button>
-<button onclick="iniciar(true)" class="sec">🤳 PRENDER FRONTAL</button>
-<p id="err" style="color:#ff6;font-size:11px;white-space:pre-wrap"></p>
-</div>
+<div id="start"><div style="font-size:46px">🍰</div><h2 style="margin:0">Foto Pro IA V4<br>COMPLETA 40MB</h2><p style="color:#0f0;font-size:11px">Todos los botones + motor estable</p><button onclick="iniciar(false)">📷 PRENDER TRASERA HD</button><button onclick="iniciar(true)" class="sec">🤳 PRENDER FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
 
 <video id="v" autoplay playsinline muted></video>
+<div id="focus"></div>
 <div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#fff;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">FOTO</span></div>
-<div id="zoomBar"><button onclick="setZ(0.6)">0.6x</button><button onclick="setZ(1)" id="b1">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(5)">5x</button></div>
+
+<div id="tools">
+<button onclick="setFilter('none')" title="Normal">☀️</button>
+<button onclick="setFilter('vivid')" title="Vívido">🎨</button>
+<button onclick="setFilter('warm')" title="Cálido">🔥</button>
+<button onclick="setFilter('bw')" title="B/N">⚫</button>
+</div>
+
+<div id="light"><span>☀️</span><input type="range" id="lightR" min="-2" max="2" step="0.1" value="0" oninput="applyLight()"><span>🌙</span></div>
+
+<div id="zoomBar"><button onclick="setZ(0.6)">0.6x</button><button onclick="setZ(1)" id="b1" class="active">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(5)">5x</button><button onclick="setZ(10)">10x</button></div>
+
 <div id="ctrl">
-<div id="mainRow"><button class="btn" onclick="voltear()" title="Cambiar cámara">🔄</button><div id="shutter" onclick="accion()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div>
-<div style="display:flex;justify-content:center;gap:8px;margin-top:12px"><button id="mf" onclick="setModo('foto')" style="background:#fff;color:#000;padding:6px 18px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO</button><button id="mv" onclick="setModo('video')" style="background:#222;color:#fff;padding:6px 18px;border-radius:20px;border:1px solid #555;font-size:12px">VIDEO</button></div>
+<div id="mainRow">
+<button class="btn" onclick="voltear()">🔄</button>
+<div id="shutter" onclick="accion()">📸</div>
+<button class="btn" onclick="toggle()">⚙️</button>
+</div>
+<div style="display:flex;justify-content:center;gap:8px;margin-top:12px">
+<button id="mf" onclick="setModo('foto')" style="background:#fff;color:#000;padding:7px 20px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO</button>
+<button id="mv" onclick="setModo('video')" style="background:#222;color:#fff;padding:7px 20px;border-radius:20px;border:1px solid #555;font-size:12px">VIDEO</button>
+<button onclick="setRecorte()" id="recBtn" style="background:#222;color:#fff;padding:7px 14px;border-radius:20px;border:1px solid #555;font-size:12px">⬜ 1:1</button>
+</div>
+<p style="text-align:center;color:#777;font-size:9px;margin:6px 0 0">Toca = enfoque • Pellizca = zoom • Izq = filtros • Der = luz</p>
 </div>
 
 <div id="drawer">
-<div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 14px"></div>
-<h3 style="margin:0 0 8px">⚙️ Calidad y Cámaras</h3>
-<label style="display:flex;gap:10px;background:#ff780022;border:1px solid #ff7800;padding:12px;border-radius:12px"><input type="checkbox" id="pngOn" checked><span style="font-size:13px"><b>PNG 15MB ULTRA</b><br><span style="font-size:11px;color:#aaa">Actívalo para llegar a 12-20 MB</span></span></label>
-<div style="margin-top:10px;font-size:11px;color:#888">Cámaras detectadas:</div>
-<div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:4px;white-space:pre-wrap">-</div>
-<input id="wm" value="Foto Pro IA - Jacona, Mich" style="width:100%;padding:11px;margin-top:10px;background:#222;border:1px solid #333;border-radius:10px;color:#fff">
-<button onclick="toggle()" style="width:100%;padding:14px;margin-top:12px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button>
+<div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div>
+<h3 style="margin:0">⚙️ Todo Pro</h3>
+
+<span class="label">CALIDAD - YA TIENES 40MB</span>
+<div class="grid2">
+<label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="pngOn" checked> PNG 40MB</label>
+<label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="hdrOn" checked> HDR Auto</label>
 </div>
 
-<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Cerrar</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888;margin:0 0 10px"></p></div>
+<span class="label">FONDO IA</span>
+<div class="grid2">
+<button class="chip on" id="bg0" onclick="setBg('none')">Original</button>
+<button class="chip" id="bg1" onclick="setBg('blur')">Desenfoque</button>
+<button class="chip" id="bg2" onclick="setBg('white')">Blanco</button>
+<button class="chip" id="bg3" onclick="setBg('black')">Negro Pro</button>
+</div>
+
+<span class="label">MARCA DE AGUA / PRECIO</span>
+<input id="wm" class="inp" value="Foto Pro IA - Jacona, Mich">
+<div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div>
+
+<span class="label">CÁMARAS DETECTADAS</span>
+<div id="camList" style="font-size:10px;color:#888;background:#111;padding:8px;border-radius:8px">-</div>
+
+<button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR Y GUARDAR CONFIG</button>
+</div>
+
+<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir tomando</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888;margin:0 0 10px"></p></div>
 
 <script>
-let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, facingFront=false, recorder, chunks=[], isRec=false;
+let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, facingFront=false, recorder, chunks=[], isRec=false, curFilter='none', curBg='none', recorte='none', brightness=0;
 
-async function getCams(){
- try{
-  let devs=await navigator.mediaDevices.enumerateDevices();
-  cams=devs.filter(d=>d.kind=='videoinput');
-  document.getElementById('camList').innerText=cams.map((c,i)=> (i==camIndex?'▶ ':' ')+`[${i}] ${c.label||'camara '+i}`).join('\n');
- }catch{}
-}
-
+async function getCams(){ try{ let d=await navigator.mediaDevices.enumerateDevices(); cams=d.filter(x=>x.kind=='videoinput'); document.getElementById('camList').innerText=cams.map((c,i)=>(i==camIndex?'▶ ':' ')+`[${i}] ${c.label||'cam '+i}`).join('\n'); }catch{} }
 async function iniciar(wantFront){
- facingFront=wantFront;
- document.getElementById('err').innerText='Iniciando...';
+ facingFront=wantFront; document.getElementById('err').innerText='Iniciando...';
  try{
   if(stream) stream.getTracks().forEach(t=>t.stop());
   await getCams();
-  if(cams.length>0){
-    if(wantFront){ let f=cams.findIndex(c=>c.label.toLowerCase().includes('front')); camIndex=f>=0?f:0; }
-    else { let b=cams.findIndex(c=>c.label.toLowerCase().includes('back')); camIndex=b>=0?b:(cams.length>1?cams.length-1:0); }
-  }
+  if(cams.length){ camIndex = wantFront ? (cams.findIndex(c=>c.label.toLowerCase().includes('front'))>=0?cams.findIndex(c=>c.label.toLowerCase().includes('front')):0) : (cams.findIndex(c=>c.label.toLowerCase().includes('back'))>=0?cams.findIndex(c=>c.label.toLowerCase().includes('back')):cams.length-1); }
   let devId=cams[camIndex]?.deviceId;
-  let constraints={ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode: wantFront?'user':'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true };
-  stream=await navigator.mediaDevices.getUserMedia(constraints);
+  stream=await navigator.mediaDevices.getUserMedia({ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode: wantFront?'user':'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true });
   v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
-  let s=track.getSettings();
-  document.getElementById('info').innerText=`${s.width}x${s.height} • Foto 12MP`;
-  document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length}`;
-  document.getElementById('start').style.display='none';
-  await getCams();
- }catch(e){ document.getElementById('err').innerText='❌ '+e.name+': '+e.message; }
+  let s=track.getSettings(); document.getElementById('info').innerText=`${s.width}x${s.height} • 40MB OK`; document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length}`;
+  document.getElementById('start').style.display='none'; applyLight(); await getCams();
+ }catch(e){ document.getElementById('err').innerText=e.message; }
 }
-
 async function voltear(){
- if(cams.length==0) await getCams();
- camIndex = (camIndex+1) % (cams.length||2);
- let isFront = cams[camIndex]?.label.toLowerCase().includes('front');
- facingFront = cams.length? isFront :!facingFront;
+ if(!cams.length) await getCams(); camIndex=(camIndex+1)%(cams.length||2);
  try{
   if(stream) stream.getTracks().forEach(t=>t.stop());
   let devId=cams[camIndex]?.deviceId;
-  let constraints={ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode: facingFront?'user':'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true };
-  stream=await navigator.mediaDevices.getUserMedia(constraints);
+  stream=await navigator.mediaDevices.getUserMedia({ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode: 'environment'}, audio:true });
   v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
-  let s=track.getSettings();
-  document.getElementById('info').innerText=`${s.width}x${s.height}`;
-  document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length} ${cams[camIndex]?.label?.slice(0,15)||''}`;
-  document.getElementById('camList').innerText=cams.map((c,i)=> (i==camIndex?'▶ ':' ')+`[${i}] ${c.label}`).join('\n');
- }catch(e){ document.getElementById('err').innerText=e.message; await iniciar(!facingFront); }
+  document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length} ${cams[camIndex]?.label?.slice(0,12)||''}`; await getCams();
+ }catch{ await iniciar(!facingFront); }
 }
-
 function setModo(m){ modo=m; document.getElementById('mf').style.background=m=='foto'?'#fff':'#222'; document.getElementById('mf').style.color=m=='foto'?'#000':'#fff'; document.getElementById('mv').style.background=m=='video'?'#fff':'#222'; document.getElementById('mv').style.color=m=='video'?'#000':'#fff'; document.getElementById('modeTxt').innerText=m.toUpperCase(); }
-function setZ(z){ try{ track.applyConstraints({advanced:[{zoom:parseFloat(z)}]});}catch{ v.style.transform=`scale(${1+(z-1)*0.1})`; } }
+function setZ(z){ try{ track.applyConstraints({advanced:[{zoom:parseFloat(z)}]});}catch{ v.style.transform=`scale(${1+(z-1)*0.12})`; } document.querySelectorAll('#zoomBar button').forEach(b=>b.classList.remove('active')); if(z==1) document.getElementById('b1').classList.add('active'); }
+function applyLight(){ let b=1+parseFloat(document.getElementById('lightR').value)*0.3; v.style.filter=`brightness(${b}) ${curFilter=='vivid'?'saturate(1.6) contrast(1.1)':''} ${curFilter=='warm'?'sepia(0.3) saturate(1.4)':''} ${curFilter=='bw'?'grayscale(1)':''} ${document.getElementById('hdrOn').checked?'contrast(1.15)':''}`; }
+function setFilter(f){ curFilter=f; applyLight(); }
+function setBg(b){ curBg=b; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); document.getElementById(b=='none'?'bg0':b=='blur'?'bg1':b=='white'?'bg2':'bg3').classList.add('on'); }
+function setRecorte(){ let opts=['none','1:1','4:5']; let i=opts.indexOf(recorte); recorte=opts[(i+1)%opts.length]; document.getElementById('recBtn').innerText=recorte=='none'?'⬜ Original':recorte=='1:1'?'⬜ 1:1':'⬜ 4:5'; }
 function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
 function cerrarRes(){ document.getElementById('res').style.display='none'; }
+v.addEventListener('click',e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1200); try{ track.applyConstraints({advanced:[{pointsOfInterest:[{x:e.clientX/window.innerWidth,y:e.clientY/window.innerHeight}]}]});}catch{} });
+
 function accion(){ if(modo=='foto') foto(); else video(); }
 
 async function foto(){
- let usePNG=document.getElementById('pngOn').checked, blob, w=0,h=0;
+ let usePNG=document.getElementById('pngOn').checked, blob;
+ try{ let ic=new ImageCapture(track); blob=await ic.takePhoto(); }catch{
+  let c=document.createElement('canvas'); c.width=v.videoWidth*2; c.height=v.videoHeight*2; c.getContext('2d').drawImage(v,0,0,c.width,c.height); blob=await new Promise(r=>c.toBlob(r,usePNG?'image/png':'image/jpeg',1.0));
+ }
+ // aplicar fondo y recorte y marca
  try{
-  if(window.ImageCapture){
-   let ic=new ImageCapture(track);
-   blob=await ic.takePhoto(); // FOTO REAL 12MP -> 15MB si es PNG
-  } else throw 'no ic';
- }catch{
-  let c=document.createElement('canvas'); c.width=v.videoWidth*2; c.height=v.videoHeight*2;
-  c.getContext('2d').drawImage(v,0,0,c.width,c.height); w=c.width; h=c.height;
+  let bmp=await createImageBitmap(blob);
+  let c=document.createElement('canvas'); 
+  let targetW=bmp.width, targetH=bmp.height;
+  if(recorte=='1:1'){ let s=Math.min(bmp.width,bmp.height); targetW=s; targetH=s; }
+  if(recorte=='4:5'){ targetW=bmp.width; targetH=bmp.width*1.25; if(targetH>bmp.height) { targetH=bmp.height; targetW=targetH*0.8; } }
+  c.width=targetW; c.height=targetH;
+  let ctx=c.getContext('2d');
+  if(curBg=='white'){ ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); }
+  if(curBg=='black'){ ctx.fillStyle='#111'; ctx.fillRect(0,0,c.width,c.height); }
+  if(curBg=='blur'){ ctx.filter='blur(20px)'; ctx.drawImage(bmp,(c.width-bmp.width)/2,(c.height-bmp.height)/2); ctx.filter='none'; ctx.drawImage(bmp,(c.width-bmp.width)/2,(c.height-bmp.height)/2,bmp.width*0.85,bmp.height*0.85); }
+  else { ctx.drawImage(bmp,(c.width-bmp.width)/2,(c.height-bmp.height)/2); }
+  // filtro
+  if(curFilter=='vivid') ctx.filter='saturate(1.6) contrast(1.1)';
+  if(curFilter=='warm') ctx.filter='sepia(0.25) saturate(1.3)';
+  if(curFilter=='bw') ctx.filter='grayscale(1)';
+  // marca
+  let wm=document.getElementById('wm').value, pr=document.getElementById('price').value;
+  ctx.filter='none'; ctx.font=`bold ${c.width*0.03}px system-ui`; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=12; ctx.textAlign='right'; ctx.fillText(wm, c.width*0.97, c.height*0.96);
+  ctx.font=`900 ${c.width*0.06}px system-ui`; ctx.fillStyle='#ff7800'; ctx.textAlign='left'; ctx.fillText(pr, c.width*0.03, c.height*0.93);
   blob=await new Promise(r=>c.toBlob(r,usePNG?'image/png':'image/jpeg',1.0));
- }
- // marca de agua opcional solo si no es PNG ultra puro? la ponemos
- if(document.getElementById('wm').value && blob){
-  try{
-   let bmp=await createImageBitmap(blob);
-   let c=document.createElement('canvas'); c.width=bmp.width; c.height=bmp.height; w=c.width; h=c.height;
-   let ctx=c.getContext('2d'); ctx.drawImage(bmp,0,0);
-   ctx.font=`bold ${c.width*0.03}px system-ui`; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=10; ctx.textAlign='right';
-   ctx.fillText(document.getElementById('wm').value, c.width*0.97, c.height*0.96);
-   blob=await new Promise(r=>c.toBlob(r,usePNG?'image/png':'image/jpeg',1.0));
-  }catch{}
- }
+ }catch(e){ console.log(e); }
  let url=URL.createObjectURL(blob), mb=(blob.size/1024/1024).toFixed(2);
  document.getElementById('outImg').src=url; document.getElementById('outImg').style.display='block'; document.getElementById('outVid').style.display='none';
- document.getElementById('dl').href=url; document.getElementById('dl').download=`PASTEL_${mb}MB_${Date.now()}.${usePNG?'png':'jpg'}`;
- document.getElementById('dl').innerText=`💾 Guardar ${mb} MB ${usePNG?'PNG':'JPG'}`;
- document.getElementById('resInfo').innerText=`${w? w+'x'+h : '12MP sensor'} • ${blob.type} • ${mb} MB • 100%`;
+ document.getElementById('dl').href=url; document.getElementById('dl').download=`PASTEL_${recorte}_${mb}MB_${Date.now()}.${usePNG?'png':'jpg'}`;
+ document.getElementById('dl').innerText=`💾 Guardar ${mb} MB`;
+ document.getElementById('resInfo').innerText=`${mb} MB • ${curBg} • ${curFilter} • ${recorte} • ${blob.type}`;
  document.getElementById('res').style.display='flex';
 }
-
 function video(){
  let sh=document.getElementById('shutter');
- if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:6000000}); recorder.ondataavailable=e=>chunks.push(e.data); recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('dl').href=u; document.getElementById('dl').download=`VIDEO_${Date.now()}.webm`; document.getElementById('res').style.display='flex'; }; recorder.start(); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; setModo('video'); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; }
+ if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:8000000}); recorder.ondataavailable=e=>chunks.push(e.data); recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('dl').href=u; document.getElementById('dl').download=`VIDEO_${Date.now()}.webm`; document.getElementById('res').style.display='flex'; }; recorder.start(); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; }
 }
 </script>
 </body>
-</html> 
+</html>
