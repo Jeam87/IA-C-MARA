@@ -3,74 +3,147 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro IA V3.1 ESTABLE</title>
+<title>Foto Pro IA V3.2 FIX CAMARAS</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff}
 #v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
 #start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:22px;text-align:center}
 #start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900} #start button.sec{background:#222;border:1px solid #444}
-#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000b;padding:7px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333}
+#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333}
 #ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 18px 22px;background:linear-gradient(transparent,#000d 25%,#000 85%)}
 #mainRow{display:flex;align-items:center;justify-content:space-between}
-#shutter{width:82px;height:82px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center}
-#shutter.rec{background:#f00;animation:pulse.8s infinite} @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
-.btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff30;color:#fff;font-size:20px}
-#zoomBar{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:10;background:#0009;padding:5px 8px;border-radius:25px;display:flex;gap:5px;border:1px solid #333}
-#zoomBar button{background:#222;color:#fff;border:1px solid #444;padding:5px 10px;border-radius:20px;font-size:11px} #zoomBar button.active{background:#fff;color:#000}
+#shutter{width:84px;height:84px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:28px}
+#shutter.rec{background:#f00;animation:pulse.8s infinite} @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.9)}}
+.btn{width:54px;height:54px;border-radius:50%;background:#ffffff20;border:1px solid #ffffff40;color:#fff;font-size:22px}
+#zoomBar{position:fixed;left:50%;bottom:125px;transform:translateX(-50%);z-index:10;background:#000a;padding:5px 8px;border-radius:25px;display:flex;gap:5px;border:1px solid #333}
+#zoomBar button{background:#222;color:#fff;border:1px solid #444;padding:5px 11px;border-radius:20px;font-size:11px}
+#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:20;padding:18px 18px 30px;transform:translateY(105%);transition:.32s;max-height:80vh;overflow:auto}
+#drawer.open{transform:translateY(0)}
 #res{position:fixed;inset:0;background:#000;z-index:30;display:none;flex-direction:column} #res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
 </style>
 </head>
 <body>
-<div id="start"><h2>🍰 V3.1 ESTABLE<br>Sin parpadeo</h2><p style="color:#0f0;font-size:12px">Preview 1080p fluido + Foto 15MB</p><button onclick="iniciar(false)">📷 PRENDER TRASERA</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff0;font-size:11px"></p></div>
+<div id="start">
+<div style="font-size:46px">🍰</div>
+<h2 style="margin:0">Foto Pro IA V3.2<br>FIX CÁMARAS</h2>
+<p style="color:#0f0;font-size:11px;margin:0">Preview 720p fluido • Foto 15MB • Cambio real de cámaras</p>
+<button onclick="iniciar(false)">📷 PRENDER TRASERA</button>
+<button onclick="iniciar(true)" class="sec">🤳 PRENDER FRONTAL</button>
+<p id="err" style="color:#ff6;font-size:11px;white-space:pre-wrap"></p>
+</div>
+
 <video id="v" autoplay playsinline muted></video>
-<div id="top"><span id="info">-</span><span id="modeTxt" style="background:#fff;color:#000;padding:2px 8px;border-radius:10px;font-weight:900">FOTO</span></div>
-<div id="zoomBar"><button onclick="setZ(0.6)">0.6x</button><button onclick="setZ(1)" id="b1" class="active">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(5)">5x</button></div>
-<div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="accion()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div><div style="display:flex;justify-content:center;gap:8px;margin-top:10px"><button id="mf" onclick="setModo('foto')" style="background:#fff;color:#000;padding:6px 18px;border-radius:20px;border:none;font-weight:900">FOTO</button><button id="mv" onclick="setModo('video')" style="background:#222;color:#fff;padding:6px 18px;border-radius:20px;border:1px solid #555">VIDEO</button></div></div>
-<div id="drawer" style="position:fixed;bottom:0;left:0;right:0;background:#161616f8;border-radius:28px 28px 0 0;z-index:20;padding:18px;transform:translateY(105%);transition:.3s"><div style="width:40px;height:5px;background:#555;border-radius:10px;margin:0 auto 14px"></div><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:12px;border-radius:12px"><input type="checkbox" id="pngOn" checked><span><b>PNG 15MB</b> - para IA</span></label><input id="wm" value="Foto Pro IA - Jacona" style="width:100%;padding:10px;margin-top:10px;background:#222;border:1px solid #333;border-radius:10px;color:#fff"><button onclick="toggle()" style="width:100%;padding:14px;margin-top:10px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">Cerrar</button><p id="debug" style="font-size:9px;color:#555"></p></div>
-<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Cerrar</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
+<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#fff;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">FOTO</span></div>
+<div id="zoomBar"><button onclick="setZ(0.6)">0.6x</button><button onclick="setZ(1)" id="b1">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(5)">5x</button></div>
+<div id="ctrl">
+<div id="mainRow"><button class="btn" onclick="voltear()" title="Cambiar cámara">🔄</button><div id="shutter" onclick="accion()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div>
+<div style="display:flex;justify-content:center;gap:8px;margin-top:12px"><button id="mf" onclick="setModo('foto')" style="background:#fff;color:#000;padding:6px 18px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO</button><button id="mv" onclick="setModo('video')" style="background:#222;color:#fff;padding:6px 18px;border-radius:20px;border:1px solid #555;font-size:12px">VIDEO</button></div>
+</div>
+
+<div id="drawer">
+<div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 14px"></div>
+<h3 style="margin:0 0 8px">⚙️ Calidad y Cámaras</h3>
+<label style="display:flex;gap:10px;background:#ff780022;border:1px solid #ff7800;padding:12px;border-radius:12px"><input type="checkbox" id="pngOn" checked><span style="font-size:13px"><b>PNG 15MB ULTRA</b><br><span style="font-size:11px;color:#aaa">Actívalo para llegar a 12-20 MB</span></span></label>
+<div style="margin-top:10px;font-size:11px;color:#888">Cámaras detectadas:</div>
+<div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:4px;white-space:pre-wrap">-</div>
+<input id="wm" value="Foto Pro IA - Jacona, Mich" style="width:100%;padding:11px;margin-top:10px;background:#222;border:1px solid #333;border-radius:10px;color:#fff">
+<button onclick="toggle()" style="width:100%;padding:14px;margin-top:12px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button>
+</div>
+
+<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Cerrar</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888;margin:0 0 10px"></p></div>
+
 <script>
-let v=document.getElementById('v'), stream, track, facingFront=false, modo='foto', recorder, chunks=[], isRec=false;
-async function iniciar(front){
- facingFront=front;
+let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, facingFront=false, recorder, chunks=[], isRec=false;
+
+async function getCams(){
+ try{
+  let devs=await navigator.mediaDevices.enumerateDevices();
+  cams=devs.filter(d=>d.kind=='videoinput');
+  document.getElementById('camList').innerText=cams.map((c,i)=> (i==camIndex?'▶ ':' ')+`[${i}] ${c.label||'camara '+i}`).join('\n');
+ }catch{}
+}
+
+async function iniciar(wantFront){
+ facingFront=wantFront;
+ document.getElementById('err').innerText='Iniciando...';
  try{
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  // PREVIEW LIGERO - ESTO EVITA EL PARPADEO
-  stream=await navigator.mediaDevices.getUserMedia({
-    video:{ facingMode: front?'user':'environment', width:{ideal:1280}, height:{ideal:720} },
-    audio:true
-  });
+  await getCams();
+  if(cams.length>0){
+    if(wantFront){ let f=cams.findIndex(c=>c.label.toLowerCase().includes('front')); camIndex=f>=0?f:0; }
+    else { let b=cams.findIndex(c=>c.label.toLowerCase().includes('back')); camIndex=b>=0?b:(cams.length>1?cams.length-1:0); }
+  }
+  let devId=cams[camIndex]?.deviceId;
+  let constraints={ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode: wantFront?'user':'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true };
+  stream=await navigator.mediaDevices.getUserMedia(constraints);
   v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
   let s=track.getSettings();
-  document.getElementById('info').innerText=`${s.width}x${s.height} preview • ${front?'FRONTAL':'TRASERA'} • Foto 12MP`;
+  document.getElementById('info').innerText=`${s.width}x${s.height} • Foto 12MP`;
+  document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length}`;
   document.getElementById('start').style.display='none';
- }catch(e){ document.getElementById('err').innerText=e.message; }
+  await getCams();
+ }catch(e){ document.getElementById('err').innerText='❌ '+e.name+': '+e.message; }
 }
-async function voltear(){ await iniciar(!facingFront); }
-function setModo(m){ modo=m; document.getElementById('mf').style.background=m=='foto'?'#fff':'#222'; document.getElementById('mf').style.color=m=='foto'?'#000':'#fff'; document.getElementById('mv').style.background=m=='video'?'#fff':'#222'; document.getElementById('mv').style.color=m=='video'?'#000':'#fff'; document.getElementById('modeTxt').innerText=m.toUpperCase(); }
-function setZ(z){ try{ track.applyConstraints({advanced:[{zoom:parseFloat(z)}]});}catch{ v.style.transform=`scale(${z})`; } }
-function toggle(){ let d=document.getElementById('drawer'); d.style.transform=d.style.transform=='translateY(0%)'?'translateY(105%)':'translateY(0%)'; }
-async function accion(){ if(modo=='foto') await foto(); else video(); }
-async function foto(){
- let usePNG=document.getElementById('pngOn').checked, blob;
+
+async function voltear(){
+ if(cams.length==0) await getCams();
+ camIndex = (camIndex+1) % (cams.length||2);
+ let isFront = cams[camIndex]?.label.toLowerCase().includes('front');
+ facingFront = cams.length? isFront :!facingFront;
  try{
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  let devId=cams[camIndex]?.deviceId;
+  let constraints={ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode: facingFront?'user':'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true };
+  stream=await navigator.mediaDevices.getUserMedia(constraints);
+  v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+  let s=track.getSettings();
+  document.getElementById('info').innerText=`${s.width}x${s.height}`;
+  document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length} ${cams[camIndex]?.label?.slice(0,15)||''}`;
+  document.getElementById('camList').innerText=cams.map((c,i)=> (i==camIndex?'▶ ':' ')+`[${i}] ${c.label}`).join('\n');
+ }catch(e){ document.getElementById('err').innerText=e.message; await iniciar(!facingFront); }
+}
+
+function setModo(m){ modo=m; document.getElementById('mf').style.background=m=='foto'?'#fff':'#222'; document.getElementById('mf').style.color=m=='foto'?'#000':'#fff'; document.getElementById('mv').style.background=m=='video'?'#fff':'#222'; document.getElementById('mv').style.color=m=='video'?'#000':'#fff'; document.getElementById('modeTxt').innerText=m.toUpperCase(); }
+function setZ(z){ try{ track.applyConstraints({advanced:[{zoom:parseFloat(z)}]});}catch{ v.style.transform=`scale(${1+(z-1)*0.1})`; } }
+function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
+function cerrarRes(){ document.getElementById('res').style.display='none'; }
+function accion(){ if(modo=='foto') foto(); else video(); }
+
+async function foto(){
+ let usePNG=document.getElementById('pngOn').checked, blob, w=0,h=0;
+ try{
+  if(window.ImageCapture){
    let ic=new ImageCapture(track);
-   blob=await ic.takePhoto(); // FOTO NATIVA 12MP - NO VIDEO
- }catch(e){
-   let c=document.createElement('canvas'); c.width=v.videoWidth*2; c.height=v.videoHeight*2;
-   let ctx=c.getContext('2d'); ctx.drawImage(v,0,0,c.width,c.height);
+   blob=await ic.takePhoto(); // FOTO REAL 12MP -> 15MB si es PNG
+  } else throw 'no ic';
+ }catch{
+  let c=document.createElement('canvas'); c.width=v.videoWidth*2; c.height=v.videoHeight*2;
+  c.getContext('2d').drawImage(v,0,0,c.width,c.height); w=c.width; h=c.height;
+  blob=await new Promise(r=>c.toBlob(r,usePNG?'image/png':'image/jpeg',1.0));
+ }
+ // marca de agua opcional solo si no es PNG ultra puro? la ponemos
+ if(document.getElementById('wm').value && blob){
+  try{
+   let bmp=await createImageBitmap(blob);
+   let c=document.createElement('canvas'); c.width=bmp.width; c.height=bmp.height; w=c.width; h=c.height;
+   let ctx=c.getContext('2d'); ctx.drawImage(bmp,0,0);
+   ctx.font=`bold ${c.width*0.03}px system-ui`; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=10; ctx.textAlign='right';
+   ctx.fillText(document.getElementById('wm').value, c.width*0.97, c.height*0.96);
    blob=await new Promise(r=>c.toBlob(r,usePNG?'image/png':'image/jpeg',1.0));
+  }catch{}
  }
  let url=URL.createObjectURL(blob), mb=(blob.size/1024/1024).toFixed(2);
  document.getElementById('outImg').src=url; document.getElementById('outImg').style.display='block'; document.getElementById('outVid').style.display='none';
  document.getElementById('dl').href=url; document.getElementById('dl').download=`PASTEL_${mb}MB_${Date.now()}.${usePNG?'png':'jpg'}`;
- document.getElementById('dl').innerText=`💾 Guardar ${mb} MB - ${usePNG?'PNG 15MB':'JPG MAX'}`;
- document.getElementById('resInfo').innerText=`${mb} MB • ${blob.type} • Calidad 100%`;
+ document.getElementById('dl').innerText=`💾 Guardar ${mb} MB ${usePNG?'PNG':'JPG'}`;
+ document.getElementById('resInfo').innerText=`${w? w+'x'+h : '12MP sensor'} • ${blob.type} • ${mb} MB • 100%`;
  document.getElementById('res').style.display='flex';
 }
+
 function video(){
  let sh=document.getElementById('shutter');
- if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:5000000}); recorder.ondataavailable=e=>chunks.push(e.data); recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('dl').href=u; document.getElementById('dl').download=`VIDEO_${Date.now()}.webm`; document.getElementById('res').style.display='flex'; }; recorder.start(); isRec=true; sh.classList.add('rec'); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); }
+ if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm',videoBitsPerSecond:6000000}); recorder.ondataavailable=e=>chunks.push(e.data); recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('dl').href=u; document.getElementById('dl').download=`VIDEO_${Date.now()}.webm`; document.getElementById('res').style.display='flex'; }; recorder.start(); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; setModo('video'); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; }
 }
 </script>
 </body>
-</html>
+</html> 
