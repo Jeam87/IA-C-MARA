@@ -1,31 +1,93 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Foto Pro IA TEST</title>
-<style>body{margin:0;background:#000;color:#fff;font-family:system-ui;display:flex;flex-direction:column;height:100vh}#v{flex:1;width:100%;object-fit:cover;background:#111}button{padding:20px;margin:10px;border-radius:30px;border:none;font-weight:900;font-size:18px}#b1{background:#ff7800;color:#fff}#b2{background:#222;color:#fff;border:1px solid #555}</style>
-</head>
-<body>
-<video id="v" autoplay playsinline muted></video>
-<button id="b1">📷 PRENDER CAMARA TRASERA</button>
-<button id="b2">🤳 PRENDER FRONTAL</button>
-<p id="msg" style="text-align:center;font-size:12px;color:#ff0"></p>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Foto Pro IA Estudio V4.4</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-512.png">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}
+#v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
+#flash{position:fixed;inset:0;background:#fff;z-index:60;opacity:0;pointer-events:none;transition:opacity .12s}#flash.on{opacity:1}
+#recDot{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:7px 18px;border-radius:22px;font-size:13px;font-weight:900;display:none;gap:8px;align-items:center}
+#start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:22px;text-align:center}
+#start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900}
+#start button.sec{background:#222;border:1px solid #444}
+#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333;align-items:center}
+#zoomBar{position:fixed;left:50%;bottom:175px;transform:translateX(-50%);z-index:20;background:#000e;padding:7px 8px;border-radius:25px;display:flex;gap:6px;border:1px solid #444;backdrop-filter:blur(10px)}
+#zoomBar button{background:#222;color:#fff;border:1px solid #555;padding:7px 13px;border-radius:20px;font-size:12px}
+#zoomBar button.active{background:#fff;color:#000;font-weight:900}
+#ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 14px 20px;background:linear-gradient(transparent,#000d 20%,#000 90%)}
+#mainRow{display:flex;align-items:center;justify-content:space-between}
+#shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px}
+#shutter.rec{background:#f00;animation:pulse .8s infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
+.btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:20px}
+.btn.on{background:#ff7800!important}
+#tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
+#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}
+#focus{position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:50%;pointer-events:none;z-index:10;display:none;transform:translate(-50%,-50%)}
+#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(110%);transition:.32s;max-height:85vh;overflow:auto}#drawer.open{transform:translateY(0)}
+.label{font-size:11px;color:#ff7800;font-weight:800;margin:12px 0 6px;display:block}.inp{width:100%;padding:11px;border-radius:11px;background:#222;border:1px solid #333;color:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.chip{padding:8px 12px;border-radius:20px;border:1px solid #333;background:#222;color:#fff;font-size:11px;text-align:center}.chip.on{background:#fff;color:#000;font-weight:900}
+#res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
+</style></head><body>
+<div id="flash"></div><div id="recDot">🔴 <span id="timer">00:00</span> • <span id="timerMb">0 MB</span></div>
+<div id="start"><div style="font-size:46px">🍰</div><h2 style="margin:0">FOTO PRO IA ESTUDIO V4.4</h2><p style="color:#0f0;font-size:11px">Con todo lo que ya teníamos + flash LED</p><button id="btnBack">📷 PRENDER TRASERA</button><button id="btnFront" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
+<video id="v" autoplay playsinline muted></video><div id="focus"></div>
+<div id="top"><span id="info">-</span><div style="display:flex;gap:6px;align-items:center"><button id="btnTorch" style="display:none;background:#222;border:1px solid #555;color:#fff;border-radius:12px;padding:4px 10px;font-size:12px">🔦 OFF</button><span id="camLabel">-</span></div><span id="modeTxt" style="background:#fff;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">FOTO</span></div>
+<div id="tools"><button id="f0">☀️</button><button id="f1">🎨</button><button id="f2">🔥</button><button id="f3">⚫</button></div>
+<div id="zoomBar"><button data-z="0.6">0.6x</button><button data-z="1" id="b1" class="active">1x</button><button data-z="2">2x</button><button data-z="5">5x</button><button data-z="10">10x</button></div>
+<div id="ctrl"><div id="mainRow"><button class="btn" id="btnFlip">🔄</button><div id="shutter">📸</div><button class="btn" id="btnSet">⚙️</button></div><div style="display:flex;justify-content:center;gap:8px;margin-top:12px"><button id="mf" style="background:#fff;color:#000;padding:7px 20px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO</button><button id="mv" style="background:#222;color:#fff;padding:7px 20px;border-radius:20px;border:1px solid #555;font-size:12px">VIDEO</button><button id="recBtn" style="background:#222;color:#fff;padding:7px 14px;border-radius:20px;border:1px solid #555;font-size:12px">⬜ 1:1</button></div></div>
+<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">⚙️ Config Pro</h3><span class="label">FLASH</span><div class="grid2"><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="flashOn" checked> Flash pantalla</label><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="ledOn" checked> LED real</label></div><span class="label">CALIDAD</span><div class="grid2"><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="pngOn" checked> PNG 40MB</label></div><span class="label">FONDO</span><div class="grid2"><button class="chip on" id="bg0">Original</button><button class="chip" id="bg1">Blur</button><button class="chip" id="bg2">Blanco</button><button class="chip" id="bg3">Negro</button></div><span class="label">MARCA</span><input id="wm" class="inp" value="Foto Pro IA - Jacona"><div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div><button id="btnClose" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
+<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button id="btnCont" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div></div>
 <script>
-let v=document.getElementById('v');
-async function start(front){
- document.getElementById('msg').innerText='Pidiendo permiso...';
+let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, isRec=false, curBg='none', recorte='none', curZoom=1, torchOn=false, hasTorch=false, sec=0, timerInt, recorder, chunks=[];
+const $=id=>document.getElementById(id);
+
+async function iniciar(wantFront){
+ $('err').innerText='Iniciando...';
  try{
-  let s=await navigator.mediaDevices.getUserMedia({video:{facingMode: front?'user':'environment'}, audio:false});
-  v.srcObject=s; await v.play();
-  document.getElementById('msg').innerText='¡JALANDO! Si ves esto, ya sirve. Ahora si sube el V4.3.1';
- }catch(e){
-  document.getElementById('msg').innerText='ERROR: '+e.message+' - Dale al candado y permite camara';
-  alert(e.message);
- }
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  // SIN audio para evitar rayas en algunos Motorolas/Xiaomi
+  let cons = {video:{facingMode: wantFront?'user':{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}}, audio:false};
+  stream=await navigator.mediaDevices.getUserMedia(cons);
+  v.srcObject=stream; await v.play();
+  track=stream.getVideoTracks()[0];
+  $('start').style.display='none';
+  $('info').innerText=track.getSettings().width+'x'+track.getSettings().height;
+  try{ let cap=track.getCapabilities(); hasTorch=cap.torch||false; $('btnTorch').style.display=hasTorch?'block':'none'; }catch{ hasTorch=false; }
+  try{ let devs=await navigator.mediaDevices.enumerateDevices(); cams=devs.filter(d=>d.kind=='videoinput'); $('camLabel').innerText='CAM '+(camIndex+1); }catch{}
+ }catch(e){ $('err').innerText=e.name+': '+e.message+' - Dale permiso en el candado 🔒'; }
 }
-document.getElementById('b1').addEventListener('click',()=>start(false));
-document.getElementById('b2').addEventListener('click',()=>start(true));
-</script>
-</body>
-</html> 
+$('btnBack').addEventListener('click',()=>iniciar(false));
+$('btnFront').addEventListener('click',()=>iniciar(true));
+$('btnFlip').addEventListener('click',async()=>{ camIndex=(camIndex+1)%(cams.length||2); try{ if(stream) stream.getTracks().forEach(t=>t.stop()); let dev=cams[camIndex]?.deviceId; let cons=dev?{video:{deviceId:{exact:dev}}}:{video:{facingMode:'environment'}}; stream=await navigator.mediaDevices.getUserMedia({...cons,audio:false}); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; hasTorch=track.getCapabilities?.torch||false; $('btnTorch').style.display=hasTorch?'block':'none'; }catch{ iniciar(false); }});
+$('btnTorch').addEventListener('click',async()=>{ if(!track) return; try{ torchOn=!torchOn; await track.applyConstraints({advanced:[{torch:torchOn}]}); $('btnTorch').innerText=torchOn?'🔦 ON'; $('btnTorch').classList.toggle('on',torchOn); }catch(e){ alert('Este cel no permite LED: '+e.message); }});
+function setModo(m){ modo=m; $('mf').style.background=m=='foto'?'#fff':'#222'; $('mf').style.color=m=='foto'?'#000':'#fff'; $('mv').style.background=m=='video'?'#fff':'#222'; $('mv').style.color=m=='video'?'#000':'#fff'; $('modeTxt').innerText=m.toUpperCase(); }
+$('mf').addEventListener('click',()=>setModo('foto')); $('mv').addEventListener('click',()=>setModo('video'));
+document.querySelectorAll('#zoomBar button').forEach(b=>{ b.addEventListener('click',()=>{ curZoom=parseFloat(b.dataset.z); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform='scale('+(1+(curZoom-1)*0.12)+')'; } document.querySelectorAll('#zoomBar button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }); });
+$('f0').addEventListener('click',()=>v.style.filter=''); $('f1').addEventListener('click',()=>v.style.filter='saturate(1.6) contrast(1.1)'); $('f2').addEventListener('click',()=>v.style.filter='sepia(0.3) saturate(1.4)'); $('f3').addEventListener('click',()=>v.style.filter='grayscale(1)');
+['bg0','bg1','bg2','bg3'].forEach((id,i)=>{ $(id).addEventListener('click',()=>{ curBg=['none','blur','white','black'][i]; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); $(id).classList.add('on'); }); });
+$('recBtn').addEventListener('click',()=>{ let o=['none','1:1','4:5']; recorte=o[(o.indexOf(recorte)+1)%o.length]; $('recBtn').innerText=recorte=='none'?'⬜ Orig':recorte; });
+$('btnSet').addEventListener('click',()=>$('drawer').classList.add('open')); $('btnClose').addEventListener('click',()=>$('drawer').classList.remove('open')); $('btnCont').addEventListener('click',()=>$('res').style.display='none');
+$('shutter').addEventListener('click',()=>{ if(modo=='foto') foto(); else video(); });
+v.addEventListener('click',e=>{ let f=$('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',800); });
+
+async function foto(){
+ let useLED=$('ledOn').checked && hasTorch && !torchOn;
+ try{ if(useLED){ await track.applyConstraints({advanced:[{torch:true}]}); await new Promise(r=>setTimeout(r,250)); } }catch{}
+ if($('flashOn').checked){ $('flash').classList.add('on'); setTimeout(()=>$('flash').classList.remove('on'),140); }
+ let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
+ let blob=await new Promise(r=>c.toBlob(r,$('pngOn').checked?'image/png':'image/jpeg',1.0));
+ try{ if(useLED){ await track.applyConstraints({advanced:[{torch:false}]}); } }catch{}
+ let url=URL.createObjectURL(blob); $('outImg').src=url; $('outImg').style.display='block'; $('outVid').style.display='none'; $('dl').href=url; $('dl').download='FOTO_'+Date.now()+'.png'; $('res').style.display='flex';
+}
+function video(){
+ let sh=$('shutter'), dot=$('recDot'), t=$('timer'), mb=$('timerMb');
+ if(!isRec){
+  chunks=[]; // con audio falso para evitar el bug de rayas
+  let finalStream = stream; try{ let ac=new AudioContext(); let dest=ac.createMediaStreamDestination(); finalStream=new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]); }catch{}
+  recorder=new MediaRecorder(finalStream,{mimeType:'video/webm'});
+  recorder.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); mb.innerText=(chunks.reduce((a,b)=>a+b.size,0)/1024/1024).toFixed(1)+' MB'; };
+  recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); $('outVid').src=u; $('outVid').style.display='block'; $('outImg').style.display='none'; $('dl').href=u; $('dl').download='VIDEO_'+Date.now()+'.webm'; $('res').style.display='flex'; };
+  recorder.start(200); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; dot.style.display='flex'; sec=0; timerInt=setInterval(()=>{ sec++; t.innerText=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); },1000);
+ }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; dot.style.display='none'; clearInterval(timerInt); }
+}
+</script></body></html>
