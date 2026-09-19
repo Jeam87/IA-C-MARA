@@ -1,22 +1,17 @@
-<!DOCTYPE html>
-<html lang="es"><head>
+<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro IA V4.8</title>
+<title>Foto Pro IA V4.9 MultiCam</title>
 <link rel="icon" href="icon-512.png">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#000;color:#fff;font-family:system-ui;overflow:hidden}
 #v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
-#bgLayer{position:fixed;inset:0;z-index:1;pointer-events:none;display:none}
-#bgLayer.white{background:#fff}
-#bgLayer.black{background:#000}
-#bgLayer.blur{backdrop-filter:blur(22px);background:#0006}
+#bgLayer{position:fixed;inset:0;z-index:1;pointer-events:none;display:none}#bgLayer.white{background:#fff}#bgLayer.black{background:#000}#bgLayer.blur{backdrop-filter:blur(22px);background:#0006}
 #flash{position:fixed;inset:0;background:#fff;z-index:60;opacity:0;pointer-events:none}#flash.on{opacity:1}
-#top{position:fixed;top:10px;left:10px;right:10px;z-index:20;background:#000c;padding:8px 12px;border-radius:22px;display:flex;justify-content:space-between;font-size:11px;border:1px solid #333}
-#tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:15;display:flex;flex-direction:column;gap:8px}
-#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff}
+#top{position:fixed;top:10px;left:10px;right:10px;z-index:20;background:#000c;padding:8px 12px;border-radius:22px;display:flex;justify-content:space-between;align-items:center;font-size:11px;border:1px solid #333;backdrop-filter:blur(8px)}
+#camList{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:20;background:#000e;padding:6px;border-radius:22px;display:flex;gap:6px;border:1px solid #444;max-width:95vw;overflow:auto}
+#camList button{background:#222;color:#fff;border:1px solid #555;padding:6px 12px;border-radius:20px;font-size:11px;white-space:nowrap}#camList button.on{background:#fff;color:#000;font-weight:900}
 #zoomBar{position:fixed;left:50%;bottom:175px;transform:translateX(-50%);z-index:15;background:#000e;padding:6px;border-radius:25px;display:flex;gap:6px;border:1px solid #444}
-#zoomBar button{background:#222;color:#fff;border:1px solid #555;padding:7px 13px;border-radius:20px;font-size:12px}
-#zoomBar button.active{background:#fff;color:#000;font-weight:900}
+#zoomBar button{background:#222;color:#fff;border:1px solid #555;padding:7px 13px;border-radius:20px;font-size:12px}#zoomBar button.active{background:#fff;color:#000;font-weight:900}
 #ctrl{position:fixed;bottom:0;left:0;right:0;z-index:15;padding:12px 14px 20px;background:linear-gradient(transparent,#000)}
 #shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:32px}
 #shutter.rec{background:#f00;animation:pulse.8s infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.9)}}
@@ -24,59 +19,109 @@
 #drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(110%);transition:.32s;max-height:90vh;overflow:auto}#drawer.open{transform:translateY(0)}
 .label{font-size:11px;color:#ff7800;font-weight:800;margin:14px 0 6px;display:block}.inp{width:100%;padding:11px;border-radius:12px;background:#222;border:1px solid #333;color:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.chip{padding:9px;border-radius:20px;border:1px solid #333;background:#222;color:#fff;font-size:11px}.chip.on{background:#fff;color:#000;font-weight:900}
 #res{position:fixed;inset:0;background:#000;z-index:50;display:none;flex-direction:column}#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
-#recDot{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:20;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:900;display:none}
+#recDot{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:20;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:900;display:none}
 </style></head><body>
 <div id="bgLayer"></div><div id="flash"></div><div id="recDot">🔴 REC <span id="timer">00:00</span></div>
 <video id="v" autoplay playsinline muted></video>
-<div id="top"><span id="info">Iniciando...</span><button id="btnTorch" style="display:none;background:#222;border:1px solid #555;color:#fff;border-radius:12px;padding:4px 10px">🔦</button><span id="modeTxt" style="background:#fff;color:#000;padding:2px 10px;border-radius:10px;font-weight:900">FOTO</span></div>
-<div id="tools"><button id="f0">☀️</button><button id="f1">🎨</button><button id="f2">🔥</button><button id="f3">⚫</button></div>
+<div id="top"><span id="info">Buscando cámaras...</span><button id="btnTorch" style="display:none;background:#222;border:1px solid #555;color:#fff;border-radius:12px;padding:4px 10px">🔦</button><span id="modeTxt" style="background:#fff;color:#000;padding:2px 10px;border-radius:10px;font-weight:900">FOTO</span></div>
+<div id="camList"></div>
 <div id="zoomBar"><button data-z="0.6">0.6x</button><button data-z="1" class="active">1x</button><button data-z="2">2x</button><button data-z="5">5x</button></div>
 <div id="ctrl"><div style="display:flex;align-items:center;justify-content:space-between"><button class="b" id="btnFlip">🔄</button><div id="shutter">📸</div><button class="b" id="btnSet">⚙️</button></div><div style="display:flex;justify-content:center;gap:8px;margin-top:12px"><button id="mf" style="background:#fff;color:#000;padding:7px 20px;border-radius:20px;border:none;font-weight:900">FOTO</button><button id="mv" style="background:#222;color:#fff;padding:7px 20px;border-radius:20px;border:1px solid #555">VIDEO</button><button id="recBtn" style="background:#222;color:#fff;padding:7px 14px;border-radius:20px;border:1px solid #555">⬜ 1:1</button></div></div>
-<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3>Config</h3>
-<span class="label">FLASH</span><div class="grid2"><label style="background:#222;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="flashOn" checked> Pantalla</label><label style="background:#222;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="ledOn" checked> LED</label></div>
-<span class="label">FONDO - AHORA SI SE VE EN VIVO</span><div class="grid2"><button class="chip on" id="bg0">Original</button><button class="chip" id="bg1">Blur</button><button class="chip" id="bg2">Blanco</button><button class="chip" id="bg3">Negro</button></div>
+<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3>Cámaras detectadas</h3><div id="camInfo" style="font-size:11px;color:#aaa;margin-bottom:10px">Dale permiso para ver los nombres</div>
+<span class="label">FONDO</span><div class="grid2"><button class="chip on" id="bg0">Original</button><button class="chip" id="bg1">Blur</button><button class="chip" id="bg2">Blanco</button><button class="chip" id="bg3">Negro</button></div>
 <span class="label">MARCA</span><input id="wm" class="inp" value="Foto Pro IA - Jacona"><div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div>
-<span class="label">CALIDAD</span><label style="background:#222;padding:10px;border-radius:12px;font-size:12px;display:flex;gap:8px"><input type="checkbox" id="pngOn"> PNG 40MB</label>
 <button id="btnClose" style="width:100%;padding:14px;margin-top:16px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
 <div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><a id="dl" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:14px;text-align:center;text-decoration:none;font-weight:900">💾 Guardar</a><button id="btnCont" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div></div>
 <script>
-let v=document.getElementById('v'), stream, track, modo='foto', curBg='none', recorte='none', curZoom=1, hasTorch=false, torchOn=false, isRec=false, useFront=false, chunks=[], recorder, sec=0, ti;
+let v=document.getElementById('v'), stream, track, modo='foto', curBg='none', recorte='none', hasTorch=false, torchOn=false, isRec=false, chunks=[], recorder, sec=0, ti;
+let allCams=[], rearCams=[], frontCams=[], currentId=null;
 const $=id=>document.getElementById(id);
-async function iniciar(front){ useFront=front; try{ if(stream) stream.getTracks().forEach(t=>t.stop()); let s=await navigator.mediaDevices.getUserMedia({video:{facingMode:front?'user':'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true}); stream=s; v.srcObject=s; await v.play(); track=s.getVideoTracks()[0]; $('info').innerText=(front?'FRONTAL ':'TRASERA ')+track.getSettings().width+'x'+track.getSettings().height; try{ hasTorch=track.getCapabilities()?.torch||false; $('btnTorch').style.display=hasTorch?'block':'none'; }catch{} }catch(e){ $('info').innerText=e.message; } }
-iniciar(false);
-$('btnFlip').onclick=()=>iniciar(!useFront);
+function niceName(label, idx, total){
+ label=label.toLowerCase();
+ if(label.includes('front')||label.includes('user')||label.includes('frontal')) return '🤳 Frontal';
+ if(label.includes('ultra')||label.includes('wide')||label.includes('0.5')||label.includes('0.6')) return '🌄 Gran Angular 0.6x';
+ if(label.includes('tele')||label.includes('2x')||label.includes('3x')) return '🔭 Tele '+ (label.match(/[0-9]+x/)||['2x'])[0];
+ if(label.includes('periscope')||label.includes('5x')||label.includes('10x')) return '🚀 Periscopio '+(label.match(/[0-9]+x/)||['5x'])[0];
+ if(total==3 && idx==0) return '🌄 Gran Angular 0.6x';
+ if(total==3 && idx==1) return '📷 Principal 1x';
+ if(total==3 && idx==2) return '🔭 Tele 2x';
+ if(total>=4 && idx==0) return '🌄 Gran Angular 0.6x';
+ if(total>=4 && idx==1) return '📷 Principal 1x';
+ if(total>=4 && idx==2) return '🔭 Tele 3x';
+ if(total>=4 && idx==3) return '🚀 Periscopio 5x';
+ return '📷 Trasera '+(idx+1);
+}
+async function listCams(){
+ let devs=await navigator.mediaDevices.enumerateDevices();
+ allCams=devs.filter(d=>d.kind=='videoinput');
+ rearCams=[]; frontCams=[];
+ allCams.forEach(d=>{
+   let l=d.label.toLowerCase();
+   if(l.includes('front')||l.includes('user')) frontCams.push(d);
+   else rearCams.push(d);
+ });
+ if(rearCams.length==0 && allCams.length>1) rearCams=allCams.slice(0, Math.ceil(allCams.length/2));
+ if(rearCams.length==0) rearCams=allCams;
+ let list=$('camList'); list.innerHTML='';
+ rearCams.forEach((c,i)=>{
+   let b=document.createElement('button'); b.innerText=niceName(c.label,i,rearCams.length); b.onclick=()=>iniciarPorId(c.deviceId);
+   b.id='camBtn_'+c.deviceId; list.appendChild(b);
+ });
+ if(frontCams.length){ let bf=document.createElement('button'); bf.innerText='🤳 Frontal'; bf.onclick=()=>iniciarPorId(frontCams[0].deviceId,true); bf.id='frontBtn'; list.appendChild(bf); }
+ $('camInfo').innerText='Detectadas: '+rearCams.length+' traseras + '+frontCams.length+' frontal';
+}
+async function iniciarPorId(deviceId, isFront=false){
+ try{
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  let s=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:deviceId}, width:{ideal:1920}, height:{ideal:1080}}, audio:true});
+  stream=s; v.srcObject=s; await v.play(); track=s.getVideoTracks()[0]; currentId=deviceId;
+  let camName=isFront?'FRONTAL': (document.getElementById('camBtn_'+deviceId)?.innerText || 'TRASERA');
+  $('info').innerText=camName+' • '+track.getSettings().width+'x'+track.getSettings().height;
+  document.querySelectorAll('#camList button').forEach(b=>b.classList.remove('on'));
+  let activeBtn=document.getElementById(isFront?'frontBtn':'camBtn_'+deviceId); if(activeBtn) activeBtn.classList.add('on');
+  try{ hasTorch=track.getCapabilities()?.torch||false; $('btnTorch').style.display=hasTorch?'block':'none'; }catch{}
+ }catch(e){ $('info').innerText='Error: '+e.message; }
+}
+async function iniciarDefault(){
+ try{
+  let s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1280}}, audio:true});
+  stream=s; v.srcObject=s; await v.play(); track=s.getVideoTracks()[0];
+  await listCams();
+  if(rearCams.length>0) iniciarPorId(rearCams[0].deviceId);
+  else $('info').innerText=track.getSettings().width+'x'+track.getSettings().height;
+ }catch(e){ $('info').innerText=e.message; }
+}
+iniciarDefault();
+$('btnFlip').onclick=async()=>{
+ if(!rearCams.length) return;
+ let idx=rearCams.findIndex(c=>c.deviceId==currentId);
+ let next=(idx+1)%rearCams.length;
+ iniciarPorId(rearCams[next].deviceId);
+};
 $('btnTorch').onclick=async()=>{ try{ torchOn=!torchOn; await track.applyConstraints({advanced:[{torch:torchOn}]}); $('btnTorch').innerText=torchOn?'🔦 ON':'🔦 OFF'; }catch{} };
 function setModo(m){ modo=m; $('mf').style.background=m=='foto'?'#fff':'#222'; $('mf').style.color=m=='foto'?'#000':'#fff'; $('mv').style.background=m=='video'?'#fff':'#222'; $('mv').style.color=m=='video'?'#000':'#fff'; $('modeTxt').innerText=m.toUpperCase(); }
 $('mf').onclick=()=>setModo('foto'); $('mv').onclick=()=>setModo('video');
-document.querySelectorAll('#zoomBar button').forEach(b=>{ b.onclick=()=>{ curZoom=parseFloat(b.dataset.z); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform='scale('+(1+(curZoom-1)*0.12)+')'; } document.querySelectorAll('#zoomBar button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }; });
-$('f0').onclick=()=>v.style.filter=''; $('f1').onclick=()=>v.style.filter='saturate(1.7) contrast(1.15)'; $('f2').onclick=()=>v.style.filter='sepia(0.35) saturate(1.5)'; $('f3').onclick=()=>v.style.filter='grayscale(1)';
-function applyBgPreview(){ let l=$('bgLayer'); l.className=''; l.style.display=curBg=='none'?'none':'block'; if(curBg=='blur'){ l.classList.add('blur'); v.style.filter=''; } else if(curBg=='white'){ l.className='white'; v.style.mixBlendMode=''; } else if(curBg=='black'){ l.className='black'; } }
-['bg0','bg1','bg2','bg3'].forEach((id,i)=>{ $(id).onclick=()=>{ curBg=['none','blur','white','black'][i]; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); $(id).classList.add('on'); applyBgPreview(); }; });
+document.querySelectorAll('#zoomBar button').forEach(b=>{ b.onclick=()=>{ let z=parseFloat(b.dataset.z); try{ track.applyConstraints({advanced:[{zoom:z}]});}catch{ v.style.transform='scale('+(1+(z-1)*0.12)+')'; } document.querySelectorAll('#zoomBar button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }; });
+function applyBg(){ let l=$('bgLayer'); l.style.display=curBg=='none'?'none':'block'; l.className=curBg=='none'?'':curBg; }
+['bg0','bg1','bg2','bg3'].forEach((id,i)=>{ $(id).onclick=()=>{ curBg=['none','blur','white','black'][i]; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); $(id).classList.add('on'); applyBg(); }; });
 $('recBtn').onclick=()=>{ let o=['none','1:1','4:5']; recorte=o[(o.indexOf(recorte)+1)%o.length]; $('recBtn').innerText=recorte=='none'?'⬜ Orig':recorte; };
 $('btnSet').onclick=()=>$('drawer').classList.add('open'); $('btnClose').onclick=()=>$('drawer').classList.remove('open'); $('btnCont').onclick=()=>$('res').style.display='none';
 $('shutter').onclick=async()=>{
  if(modo=='foto'){
-  let useLED=$('ledOn').checked&&hasTorch&&!torchOn; try{ if(useLED){ await track.applyConstraints({advanced:[{torch:true}]}); await new Promise(r=>setTimeout(r,200)); } }catch{}
-  if($('flashOn').checked){ $('flash').classList.add('on'); setTimeout(()=>$('flash').classList.remove('on'),130); }
+  let useLED=$('ledOn')?.checked&&hasTorch; try{ if(useLED){ await track.applyConstraints({advanced:[{torch:true}]}); await new Promise(r=>setTimeout(r,200)); } }catch{}
+  if($('flashOn')?.checked){ $('flash').classList.add('on'); setTimeout(()=>$('flash').classList.remove('on'),130); }
   let tmp=document.createElement('canvas'); tmp.width=v.videoWidth; tmp.height=v.videoHeight; tmp.getContext('2d').drawImage(v,0,0);
   try{ if(useLED){ await track.applyConstraints({advanced:[{torch:false}]}); } }catch{}
-  // procesar fondo final
-  let c=document.createElement('canvas'); let w=tmp.width, h=tmp.height; let sw=w, sh=h, sx=0, sy=0;
+  let c=document.createElement('canvas'); let w=tmp.width, h=tmp.height, sw=w, sh=h, sx=0, sy=0;
   if(recorte=='1:1'){ let s=Math.min(w,h); sw=s; sh=s; sx=(w-s)/2; sy=(h-s)/2; } else if(recorte=='4:5'){ sw=w; sh=sw*5/4; if(sh>h){ sh=h; sw=sh*4/5; } sx=(w-sw)/2; sy=(h-sh)/2; }
   c.width=sw; c.height=sh; let ctx=c.getContext('2d');
-  if(curBg=='white'){ ctx.fillStyle='#fff'; ctx.fillRect(0,0,sw,sh); }
-  else if(curBg=='black'){ ctx.fillStyle='#000'; ctx.fillRect(0,0,sw,sh); }
-  else if(curBg=='blur'){ ctx.filter='blur(18px)'; ctx.drawImage(tmp,sx,sy,sw,sh,0,0,sw,sh); ctx.filter='none'; ctx.globalAlpha=0.85; }
-  ctx.drawImage(tmp,sx,sy,sw,sh,0,0,sw,sh); ctx.globalAlpha=1;
-  ctx.font=(sw*0.035)+'px system-ui'; ctx.fillStyle='#fffc'; ctx.strokeStyle='#000'; ctx.lineWidth=3; let txt=$('wm').value+' | '+$('price').value+' | '+$('gps').value; ctx.strokeText(txt,18,sh-18); ctx.fillText(txt,18,sh-18);
-  let blob=await new Promise(r=>c.toBlob(r,$('pngOn').checked?'image/png':'image/jpeg',$('pngOn').checked?1:0.92));
-  let url=URL.createObjectURL(blob); $('outImg').src=url; $('outImg').style.display='block'; $('outVid').style.display='none'; $('dl').href=url; $('dl').download='FOTO_'+Date.now()+($('pngOn').checked?'.png':'.jpg'); $('res').style.display='flex';
+  if(curBg=='white'){ ctx.fillStyle='#fff'; ctx.fillRect(0,0,sw,sh); } else if(curBg=='black'){ ctx.fillStyle='#000'; ctx.fillRect(0,0,sw,sh); } else if(curBg=='blur'){ ctx.filter='blur(18px)'; ctx.drawImage(tmp,sx,sy,sw,sh,0,0,sw,sh); ctx.filter='none'; ctx.globalAlpha=0.85; }
+  ctx.drawImage(tmp,sx,sy,sw,sh,0,0,sw,sh);
+  ctx.globalAlpha=1; ctx.font=(sw*0.035)+'px system-ui'; ctx.fillStyle='#fffc'; ctx.strokeStyle='#000'; ctx.lineWidth=3; let txt=$('wm').value+' | '+$('price').value; ctx.strokeText(txt,18,sh-18); ctx.fillText(txt,18,sh-18);
+  let blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.92)); let url=URL.createObjectURL(blob); $('outImg').src=url; $('outImg').style.display='block'; $('outVid').style.display='none'; $('dl').href=url; $('dl').download='FOTO_'+Date.now()+'.jpg'; $('res').style.display='flex';
  }else{
-  if(!isRec){
-   chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp8,opus'}); recorder.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
-   recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); $('outVid').src=u; $('outVid').style.display='block'; $('outImg').style.display='none'; $('dl').href=u; $('dl').download='VIDEO_'+Date.now()+'.webm'; $('res').style.display='flex'; };
-   recorder.start(200); isRec=true; $('shutter').classList.add('rec'); $('shutter').innerText='⬛'; $('recDot').style.display='block'; sec=0; ti=setInterval(()=>{ sec++; $('timer').innerText=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); },1000);
-  }else{ recorder.stop(); isRec=false; $('shutter').classList.remove('rec'); $('shutter').innerText='📸'; $('recDot').style.display='none'; clearInterval(ti); }
+  if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp8,opus'}); recorder.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); }; recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); $('outVid').src=u; $('outVid').style.display='block'; $('outImg').style.display='none'; $('dl').href=u; $('dl').download='VIDEO_'+Date.now()+'.webm'; $('res').style.display='flex'; }; recorder.start(200); isRec=true; $('shutter').classList.add('rec'); $('shutter').innerText='⬛'; $('recDot').style.display='block'; sec=0; ti=setInterval(()=>{ sec++; $('timer').innerText=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); },1000); }
+  else{ recorder.stop(); isRec=false; $('shutter').classList.remove('rec'); $('shutter').innerText='📸'; $('recDot').style.display='none'; clearInterval(ti); }
  }
 };
 </script></body></html> 
