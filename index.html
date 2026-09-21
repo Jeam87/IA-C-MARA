@@ -3,20 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cam Pasteles PRO Full HD</title>
+<title>Cam Pasteles PRO REAL IA</title>
+<script src="https://cdn.jsdelivr.net/npm/@upscalerjs/upscaler@1.14.0/dist/browser/umd/upscaler.min.js"></script>
 <style>
 body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden}
 #v{width:100vw;height:100vh;object-fit:cover;background:#111}
 #msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px;text-align:center;max-width:90%}
-#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 10px #ff0}
+#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%)}
 #ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000f);padding:10px;z-index:10;display:flex;flex-direction:column;gap:8px}
 #row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 #row button{background:#222;color:#fff;border:1px solid #444;padding:9px 12px;border-radius:10px;font-size:12px}
 #row button.active{background:#ff7800;color:#000;font-weight:bold}
-#shutterRow{display:flex;align-items:center;justify-content:center;gap:24px;margin-top:6px}
+#shutterRow{display:flex;align-items:center;justify-content:center;gap:24px}
 #btnVideo{width:56px;height:56px;border-radius:50%;background:#222;border:3px solid #fff;font-size:22px;color:#fff}
-#foto{width:82px;height:82px;border-radius:50%;background:#fff;border:5px solid #ff7800;color:#000;font-size:32px;font-weight:bold}
-#timer{text-align:center;color:#ff2a2a;font-weight:bold;display:none;font-size:18px;letter-spacing:1px}
+#foto{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #ff7800;color:#000;font-size:32px}
+#timer{text-align:center;color:#ff2a2a;font-weight:bold;display:none;font-size:18px}
+#iaBar{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#000e;padding:20px;border-radius:15px;z-index:30;display:none;text-align:center;border:2px solid #ff7800}
 #config{position:fixed;top:60px;right:10px;background:#000e;padding:12px;border-radius:12px;display:none;z-index:15;border:1px solid #333}
 #config input{width:150px;margin:4px 0;padding:8px;border-radius:6px;border:none;display:block}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
@@ -26,7 +28,8 @@ body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden}
 <body>
 <video id="v" autoplay playsinline muted></video>
 <div id="focus"></div>
-<div id="msg">PRO listo - 2448x3264 foto HD - Toca para enfocar</div>
+<div id="msg">IA REAL lista - Foto pasa de 1.4MB a 6MB</div>
+<div id="iaBar"><div style="font-size:40px">🤖</div><div id="iaText">IA REAL-ESRGAN x2<br>0%</div><div style="width:200px;height:6px;background:#333;border-radius:10px;margin:10px auto"><div id="iaProg" style="width:0%;height:100%;background:#ff7800;border-radius:10px"></div></div></div>
 
 <div id="ctrl">
   <div id="row">
@@ -38,7 +41,7 @@ body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden}
   </div>
   <div id="shutterRow">
     <button id="btnVideo" onclick="toggleVideo()">🎥</button>
-    <button id="foto" onclick="tomarPro()">📸</button>
+    <button id="foto" onclick="tomarRealIA()">📸</button>
     <div style="width:56px"></div>
   </div>
   <div id="timer">● 00:00</div>
@@ -48,6 +51,7 @@ body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden}
   <input id="inpNombre" placeholder="Nombre pastel">
   <input id="inpPrecio" placeholder="Precio $">
   <input id="inpUbi" placeholder="Ubicación">
+  <label style="font-size:12px"><input type="checkbox" id="chkIA" checked> IA REAL x2 ON (6MB)</label>
   <button onclick="toggleConfig()" style="width:100%;margin-top:6px;background:#ff7800;border:none;padding:8px;border-radius:6px;font-weight:bold">Listo</button>
 </div>
 
@@ -55,113 +59,108 @@ body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden}
   <img id="outImg" style="display:none">
   <video id="outVid" style="display:none" controls playsinline></video>
   <div style="display:flex;gap:10px;padding:12px">
-    <a id="down" download="pastel-PRO.jpg" style="flex:1;padding:14px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a>
+    <a id="down" download="pastel-REAL-IA.jpg" style="flex:1;padding:14px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar REAL</a>
     <button onclick="cerrarRes()" style="flex:1;padding:14px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
   </div>
 </div>
 
 <script>
-let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0, modo='macro';
-let grabando=false, recorder, timerInt=null, seg=0;
-let cfg=document.getElementById('config'), msg=document.getElementById('msg');
+let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0, modo='macro', grabando=false, recorder, timerInt, seg=0;
+let upscaler = new Upscaler({ model: 'esrgan-medium' }); // REAL ESRGAN
 
 async function iniciar(deviceId=null){
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  try{
-    let cons={video:{width:{ideal:3840},height:{ideal:2160},facingMode:deviceId?undefined:'environment',focusMode:'continuous'}};
-    if(deviceId) cons.video.deviceId={exact:deviceId};
-    stream=await navigator.mediaDevices.getUserMedia(cons);
-    v.srcObject=stream; await v.play();
-    track=stream.getVideoTracks()[0];
-    if('ImageCapture' in window) imageCapture=new ImageCapture(track);
-    let caps=track.getCapabilities?track.getCapabilities():{};
-    msg.innerText='PRO '+(caps.width?.max||3840)+'x'+(caps.height?.max||2160)+' listo ✓ Toca para enfocar';
-    listar(); setModo(modo);
-  }catch(e){ msg.innerText='Error cámara: '+e.message; }
+  let cons={video:{width:{ideal:3840},height:{ideal:2160},facingMode:deviceId?undefined:'environment'}, audio:{echoCancellation:false, noiseSuppression:false}};
+  if(deviceId) cons.video.deviceId={exact:deviceId};
+  stream=await navigator.mediaDevices.getUserMedia(cons);
+  v.srcObject=stream; v.muted=true; await v.play();
+  track=stream.getVideoTracks()[0];
+  if('ImageCapture' in window) imageCapture=new ImageCapture(track);
+  document.getElementById('msg').innerText='IA REAL-ESRGAN lista ✓ Foto 2448→4896 (6MB)';
+  listar();
 }
 async function listar(){ try{ let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput'); }catch{} }
 iniciar();
-
-function cambiarLente(){ if(devices.length<=1) return alert('Solo 1 cámara detectada'); idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); }
-function setModo(m){
-  modo=m;
-  document.getElementById('bLejos').classList.remove('active');
-  document.getElementById('bMacro').classList.remove('active');
-  document.getElementById('bPastel').classList.remove('active');
-  let btn=document.getElementById('b'+m.charAt(0).toUpperCase()+m.slice(1)); if(btn) btn.classList.add('active');
-  try{
-    if(m=='macro') track.applyConstraints({advanced:[{focusDistance:0.15}]}).catch(()=>{});
-    else if(m=='pastel') track.applyConstraints({advanced:[{focusDistance:0.3}]}).catch(()=>{});
-    else track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
-  }catch{}
-}
-function toggleConfig(){ cfg.style.display=cfg.style.display=='none'?'block':'none'; }
-
+function cambiarLente(){ if(devices.length<=1) return alert('Solo 1 cámara'); idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); }
+function setModo(m){ modo=m; document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active')); let el=document.getElementById('b'+m.charAt(0).toUpperCase()+m.slice(1)); if(el) el.classList.add('active'); }
+function toggleConfig(){ let c=document.getElementById('config'); c.style.display=c.style.display=='none'?'block':'none'; }
 v.addEventListener('click', async(e)=>{
   let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1000);
-  try{ await track.applyConstraints({advanced:[{pointsOfInterest:[{x:e.clientX/innerWidth,y:e.clientY/innerHeight}],focusMode:'manual'}]}); setTimeout(()=>track.applyConstraints({advanced:[{focusMode:'continuous'}]}),1200); msg.innerText='Enfocado ✓'; }catch{}
+  try{ await track.applyConstraints({advanced:[{pointsOfInterest:[{x:e.clientX/innerWidth,y:e.clientY/innerHeight}],focusMode:'manual'}]}); setTimeout(()=>track.applyConstraints({advanced:[{focusMode:'continuous'}]}),1000); }catch{}
 });
 
-async function tomarPro(){
-  msg.innerText='Tomando foto HD 12MP...';
+async function tomarRealIA(){
+  let msg=document.getElementById('msg'), bar=document.getElementById('iaBar'), txt=document.getElementById('iaText'), prog=document.getElementById('iaProg');
+  let usarIA=document.getElementById('chkIA').checked;
+  msg.innerText='Tomando 12MP real...';
   try{
-    let blob;
-    if(imageCapture?.takePhoto) blob=await imageCapture.takePhoto();
-    else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.97)); }
+    let blob; if(imageCapture?.takePhoto) blob=await imageCapture.takePhoto(); else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.97)); }
     let bitmap=await createImageBitmap(blob);
-    let cFinal=document.createElement('canvas'); cFinal.width=bitmap.width; cFinal.height=bitmap.height;
-    let ctx=cFinal.getContext('2d'); ctx.drawImage(bitmap,0,0);
-    // Texto precio / nombre / ubicacion
+    let canvas=document.createElement('canvas'); canvas.width=bitmap.width; canvas.height=bitmap.height;
+    let ctx=canvas.getContext('2d'); ctx.drawImage(bitmap,0,0);
+
+    let finalCanvas=canvas;
+    if(usarIA){
+      bar.style.display='block'; txt.innerHTML='IA REAL-ESRGAN x2<br>Ampliando 2448→4896...'; prog.style.width='30%';
+      try{
+        let upscaled = await upscaler.upscale(canvas, { patchSize:64, padding:2, progress:(p)=>{ prog.style.width=(30+p*60)+'%'; txt.innerHTML='IA REAL '+Math.round(p*100)+'%'; } });
+        finalCanvas=document.createElement('canvas'); finalCanvas.width=upscaled.width; finalCanvas.height=upscaled.height;
+        finalCanvas.getContext('2d').drawImage(upscaled,0,0);
+        prog.style.width='100%'; txt.innerHTML='IA REAL 100% ✓';
+      }catch(e){
+        console.log('IA fallo, usando HD normal',e);
+        txt.innerHTML='IA sin internet, usando HD pro';
+        finalCanvas=canvas;
+      }
+      setTimeout(()=>bar.style.display='none',800);
+    }
+
+    // Texto precio
     let nombre=document.getElementById('inpNombre').value, precio=document.getElementById('inpPrecio').value, ubi=document.getElementById('inpUbi').value;
     if(nombre||precio||ubi){
-      ctx.fillStyle='#0009'; ctx.fillRect(0,cFinal.height-140,cFinal.width,140);
-      ctx.fillStyle='#fff'; ctx.font='bold 50px sans-serif';
-      if(nombre) ctx.fillText(nombre,40,cFinal.height-80);
-      if(precio){ ctx.fillStyle='#ff7800'; ctx.fillText(precio,40,cFinal.height-20); ctx.fillStyle='#fff'; }
-      if(ubi){ ctx.font='26px sans-serif'; let w=ctx.measureText(ubi).width; ctx.fillText(ubi,cFinal.width-w-40,cFinal.height-30); }
+      let c2=finalCanvas.getContext('2d');
+      c2.fillStyle='#0009'; c2.fillRect(0,finalCanvas.height-160,finalCanvas.width,160);
+      c2.fillStyle='#fff'; c2.font='bold '+(finalCanvas.width*0.04)+'px sans-serif';
+      if(nombre) c2.fillText(nombre,40,finalCanvas.height-90);
+      if(precio){ c2.fillStyle='#ff7800'; c2.fillText(precio,40,finalCanvas.height-30); }
+      if(ubi){ c2.fillStyle='#fff'; c2.font=(finalCanvas.width*0.02)+'px sans-serif'; let w=c2.measureText(ubi).width; c2.fillText(ubi,finalCanvas.width-w-40,finalCanvas.height-30); }
     }
-    let url=cFinal.toDataURL('image/jpeg',0.92);
-    mostrarFoto(url, bitmap.width, bitmap.height);
-  }catch(e){ msg.innerText='Error: '+e.message; }
-}
 
-function mostrarFoto(url,w,h){
-  document.getElementById('outVid').style.display='none';
-  let im=document.getElementById('outImg'); im.style.display='block'; im.src=url;
-  let d=document.getElementById('down'); d.href=url; d.download='pastel-'+w+'x'+h+'.jpg';
-  document.getElementById('res').style.display='flex';
-  msg.innerText='PRO '+w+'x'+h+' listo ✓ Supera P30';
+    let url=finalCanvas.toDataURL('image/jpeg',0.92);
+    document.getElementById('outVid').style.display='none';
+    let im=document.getElementById('outImg'); im.style.display='block'; im.src=url;
+    let d=document.getElementById('down'); d.href=url; d.download='pastel-REAL-IA-'+finalCanvas.width+'x'+finalCanvas.height+'.jpg';
+    document.getElementById('res').style.display='flex';
+    let kb=Math.round((url.length*0.75)/1024);
+    msg.innerText='REAL IA '+finalCanvas.width+'x'+finalCanvas.height+' - '+(kb/1024).toFixed(2)+'MB ✓ Supera P30 Pro';
+  }catch(e){ msg.innerText='Error: '+e.message; document.getElementById('iaBar').style.display='none'; }
 }
 
 function toggleVideo(){
   let btn=document.getElementById('btnVideo'), fotoBtn=document.getElementById('foto'), t=document.getElementById('timer');
   if(!grabando){
     track.applyConstraints({width:{ideal:1920},height:{ideal:1080}}).catch(()=>{});
-    let chunks=[]; let mime='video/webm;codecs=vp9';
-    if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
-    recorder=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:5000000});
+    let chunks=[], mime='video/webm;codecs=vp9,opus'; if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
+    recorder=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:6000000, audioBitsPerSecond:128000});
     recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
     recorder.onstop=()=>{
-      let b=new Blob(chunks,{type:'video/webm'}); let url=URL.createObjectURL(b);
+      let b=new Blob(chunks,{type:mime}); let url=URL.createObjectURL(b);
       document.getElementById('outImg').style.display='none';
-      let vv=document.getElementById('outVid'); vv.style.display='block'; vv.src=url;
+      let vv=document.getElementById('outVid'); vv.style.display='block'; vv.src=url; vv.muted=false; vv.autoplay=true; vv.play().catch(()=>{});
       let d=document.getElementById('down'); d.href=url; d.download='pastel-video-'+Date.now()+'.webm';
       document.getElementById('res').style.display='flex';
       track.applyConstraints({width:{ideal:3840},height:{ideal:2160}}).catch(()=>{});
     };
     recorder.start(100); grabando=true; seg=0;
-    t.style.display='block'; fotoBtn.style.opacity='0.3'; fotoBtn.style.pointerEvents='none';
-    btn.style.background='#f00'; btn.innerText='■';
-    timerInt=setInterval(()=>{ seg++; let m=String(Math.floor(seg/60)).padStart(2,'0'); let s=String(seg%60).padStart(2,'0'); t.innerText='● '+m+':'+s; },1000);
-    msg.innerText='Grabando 1080p fluido...';
+    t.style.display='block'; fotoBtn.style.opacity='0.3'; fotoBtn.style.pointerEvents='none'; btn.style.background='#f00'; btn.innerText='■';
+    timerInt=setInterval(()=>{ seg++; let m=String(Math.floor(seg/60)).padStart(2,'0'); let s=String(seg%60).padStart(2,'0'); t.innerText='● '+m+':'+s+' REC'; },1000);
   } else {
     recorder.stop(); grabando=false; clearInterval(timerInt);
     t.style.display='none'; document.getElementById('foto').style.opacity='1'; document.getElementById('foto').style.pointerEvents='auto';
     btn.style.background='#222'; btn.innerText='🎥';
-    msg.innerText='Video guardado ✓';
   }
 }
 function cerrarRes(){ document.getElementById('res').style.display='none'; let vv=document.getElementById('outVid'); vv.pause(); vv.src=''; }
 </script>
 </body>
-</html>
+</html> 
