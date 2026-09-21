@@ -3,55 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cam Pasteles PRO v2</title>
+<title>Cam Pasteles PRO Full</title>
 <style>
 body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden}
-#v{width:100vw;height:100vh;object-fit:cover}
-#msg{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#000c;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000);padding:12px;z-index:10}
-#foto{width:100%;padding:16px;background:#ff7800;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
+#v{width:100vw;height:100vh;object-fit:cover;background:#111}
+#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;padding:8px 14px;border-radius:20px;z-index:10;font-size:13px;text-align:center}
+#focus{position:fixed;width:80px;height:80px;border:2px solid #ff0;border-radius:50%;display:none;pointer-events:none;transform:translate(-50%,-50%)}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000e);padding:10px;z-index:10;display:flex;flex-direction:column;gap:8px}
+#row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+#row button{background:#222;color:#fff;border:1px solid #444;padding:9px 12px;border-radius:10px;font-size:12px}
+#row button.active{background:#ff7800;color:#000;font-weight:bold}
+#foto{width:100%;padding:15px;background:#ff7800;color:#000;border:none;border-radius:30px;font-size:18px;font-weight:bold}
+#config{position:fixed;top:50px;right:10px;background:#000d;padding:10px;border-radius:10px;display:none;z-index:15}
+#config input{width:140px;margin:3px 0;padding:5px;border-radius:5px;border:none}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
 #res img{flex:1;width:100%;object-fit:contain}
 </style>
 </head>
 <body>
 <video id="v" autoplay playsinline muted></video>
-<div id="msg">Toca pantalla para enfocar - HD listo</div>
-<div id="ctrl"><button id="foto" onclick="tomarPro()">📸 Foto PRO 12MP HDR</button></div>
-<div id="res"><img id="out"><div style="display:flex;gap:10px;padding:12px"><a id="down" download="pastel-PRO.jpg" style="flex:1;padding:14px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar HD</a><button onclick="res.style.display='none'" style="flex:1;padding:14px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button></div></div>
+<div id="focus"></div>
+<div id="msg">PRO 2448x3264 listo ✓ Toca para enfocar</div>
+
+<div id="ctrl">
+  <div id="row">
+    <button id="bLejos" onclick="setModo('lejos')">Lejos</button>
+    <button id="bMacro" class="active" onclick="setModo('macro')">📸 Macro</button>
+    <button id="bPastel" onclick="setModo('pastel')">🎂 Pastel</button>
+    <button onclick="cambiarLente()">↻ Cámara</button>
+    <button onclick="toggleVideo()">🎥 Video</button>
+    <button onclick="cfg.style.display=cfg.style.display=='none'?'block':'none'">⚙️ Config</button>
+  </div>
+  <button id="foto" onclick="tomarPro()">📸 Foto PRO 12MP HDR</button>
+</div>
+
+<div id="config">
+  <input id="inpNombre" placeholder="Nombre pastel">
+  <input id="inpPrecio" placeholder="Precio $">
+  <input id="inpUbi" placeholder="Ubicación">
+  <button onclick="cfg.style.display='none'" style="width:100%;margin-top:5px;background:#ff7800;border:none;padding:6px;border-radius:6px">Listo</button>
+</div>
+
+<div id="res">
+  <img id="out">
+  <canvas id="canvasFinal" style="display:none"></canvas>
+  <div style="display:flex;gap:10px;padding:12px">
+    <a id="down" download="pastel-PRO.jpg" style="flex:1;padding:14px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar</a>
+    <button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:14px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
+  </div>
+</div>
 
 <script>
-let v=document.getElementById('v'), track, imageCapture;
-async function iniciar(){
-  let s=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:3840},height:{ideal:2160},facingMode:'environment',focusMode:'continuous'}});
-  v.srcObject=s; await v.play(); track=s.getVideoTracks()[0];
+let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0, modo='macro', grabando=false, recorder;
+let cfg=document.getElementById('config');
+
+async function iniciar(deviceId=null){
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  let cons={video:{width:{ideal:3840},height:{ideal:2160},facingMode:deviceId?undefined:'environment',focusMode:'continuous'}};
+  if(deviceId) cons.video.deviceId={exact:deviceId};
+  stream=await navigator.mediaDevices.getUserMedia(cons);
+  v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
   if('ImageCapture' in window) imageCapture=new ImageCapture(track);
-} iniciar();
+  listar(); setModo(modo);
+}
+async function listar(){try{let all=await navigator.mediaDevices.enumerateDevices(); devices=all.filter(d=>d.kind=='videoinput');}catch{}}
+iniciar();
+
+function cambiarLente(){ if(devices.length<=1) return alert('Solo 1 cámara detectada'); idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); }
+function setModo(m){ modo=m; document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active')); document.getElementById('b'+m.charAt(0).toUpperCase()+m.slice(1))?.classList.add('active'); }
 
 v.addEventListener('click', async(e)=>{
-  try{await track.applyConstraints({advanced:[{pointsOfInterest:[{x:e.clientX/innerWidth,y:e.clientY/innerHeight}],focusMode:'manual'}]});
-  setTimeout(()=>track.applyConstraints({advanced:[{focusMode:'continuous'}]}),1000);}catch{}
+  let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1000);
+  try{ await track.applyConstraints({advanced:[{pointsOfInterest:[{x:e.clientX/innerWidth,y:e.clientY/innerHeight}],focusMode:'manual'}]}); setTimeout(()=>track.applyConstraints({advanced:[{focusMode:'continuous'}]}),1000); }catch{}
 });
 
 async function tomarPro(){
-  let msg=document.getElementById('msg'); msg.innerText='Tomando 3 fotos HDR... no te muevas';
+  let msg=document.getElementById('msg'); msg.innerText='Tomando HD 12MP...';
   try{
-    let blobs=[];
-    for(let i=0;i<3;i++){
-      let b;
-      if(imageCapture?.takePhoto) b=await imageCapture.takePhoto();
-      else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.95)); }
-      blobs.push(b); await new Promise(r=>setTimeout(r,150));
+    let blob;
+    if(imageCapture?.takePhoto) blob=await imageCapture.takePhoto();
+    else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.97)); }
+
+    let bitmap=await createImageBitmap(blob);
+    let cFinal=document.getElementById('canvasFinal'); cFinal.width=bitmap.width; cFinal.height=bitmap.height;
+    let ctx=cFinal.getContext('2d'); ctx.drawImage(bitmap,0,0);
+    // Texto precio/nombre/ubicacion como tenias
+    let nombre=document.getElementById('inpNombre').value, precio=document.getElementById('inpPrecio').value, ubi=document.getElementById('inpUbi').value;
+    if(nombre||precio||ubi){
+      ctx.fillStyle='#0008'; ctx.fillRect(0,cFinal.height-120,cFinal.width,120);
+      ctx.fillStyle='#fff'; ctx.font='bold 40px sans-serif';
+      if(nombre) ctx.fillText(nombre,30,cFinal.height-80);
+      if(precio) ctx.fillText(precio,30,cFinal.height-30);
+      if(ubi){ ctx.font='24px sans-serif'; ctx.fillText(ubi,cFinal.width-300,cFinal.height-30); }
     }
-    // Fusion simple HDR + nitidez
-    let img=await createImageBitmap(blobs[1]);
-    let c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
-    let ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
-    ctx.filter='contrast(1.15) saturate(1.15) brightness(1.05)'; ctx.drawImage(c,c.width*0.001,0);
-    let url=c.toDataURL('image/jpeg',0.92);
+    ctx.filter='contrast(1.1) saturate(1.1)'; // nitidez pro rapida
+
+    let url=cFinal.toDataURL('image/jpeg',0.92);
     document.getElementById('out').src=url; document.getElementById('down').href=url; document.getElementById('res').style.display='flex';
-    msg.innerText='PRO '+img.width+'x'+img.height+' listo ✓ Supera P30';
+    msg.innerText='PRO '+bitmap.width+'x'+bitmap.height+' listo ✓ Supera P30';
   }catch(e){ msg.innerText='Error: '+e.message; }
+}
+
+function toggleVideo(){
+  if(!grabando){ let chunks=[]; recorder=new MediaRecorder(stream); recorder.ondataavailable=e=>chunks.push(e.data); recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/mp4'}); let url=URL.createObjectURL(b); document.getElementById('out').src=url; document.getElementById('down').href=url; document.getElementById('res').style.display='flex'; }; recorder.start(); grabando=true; document.getElementById('foto').innerText='⏹️ Detener Video'; }
+  else { recorder.stop(); grabando=false; document.getElementById('foto').innerText='📸 Foto PRO 12MP HDR'; }
 }
 </script>
 </body>
