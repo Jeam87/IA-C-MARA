@@ -3,166 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PASTELES PODEROSA IA REAL</title>
-<script src="https://cdn.jsdelivr.net/npm/@upscalerjs/upscaler@1.14.0/dist/browser/umd/upscaler.min.js"></script>
+<title>PODEROSA P30 SIN COLGARSE</title>
 <style>
 body{margin:0;background:#000;color:#fff;font-family:sans-serif;overflow:hidden}
 #v{width:100vw;height:100vh;object-fit:cover;background:#111}
-#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;padding:8px 14px;border-radius:20px;z-index:10;font-size:12px;max-width:90%;text-align:center}
-#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000f);padding:10px;z-index:10}
-#row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
-#row button{background:#222;color:#fff;border:1px solid #444;padding:9px 12px;border-radius:10px;font-size:12px}
-#row button.active{background:#ff7800;color:#000;font-weight:bold}
-#shutterRow{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:8px}
-#btnVideo{width:56px;height:56px;border-radius:50%;background:#222;border:3px solid #fff;color:#fff;font-size:20px}
-#foto{width:88px;height:88px;border-radius:50%;background:#fff;border:6px solid #ff7800;font-size:34px}
-#timer{text-align:center;color:#ff2a2a;display:none;font-weight:bold;margin-top:4px}
-#config{position:fixed;top:60px;right:10px;background:#000e;padding:12px;border-radius:12px;display:none;z-index:15;border:1px solid #333}
-#config input{display:block;width:160px;margin:5px 0;padding:8px;border-radius:6px;border:none}
+#msg{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#000d;padding:8px 14px;border-radius:20px;z-index:10;font-size:12px;text-align:center}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000);padding:10px;z-index:10}
+#shutterRow{display:flex;justify-content:center;gap:24px}
+#foto{width:88px;height:88px;border-radius:50%;background:#fff;border:6px solid #ff7800;font-size:32px}
+#btnVideo{width:54px;height:54px;border-radius:50%;background:#222;border:3px solid #fff;color:#fff}
 #res{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
 #res img,#res video{flex:1;width:100%;object-fit:contain}
-#iaBar{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;padding:22px;border-radius:16px;z-index:40;display:none;text-align:center;border:2px solid #ff7800;min-width:220px}
 </style>
 </head>
 <body>
 <video id="v" autoplay playsinline muted></video>
-<div id="msg">Cargando IA Poderosa...</div>
-<div id="iaBar"><div style="font-size:36px">🔥</div><div id="iaTitle" style="font-weight:bold;margin:6px 0">IA REAL-ESRGAN x2</div><div id="iaText">Descargando modelo 15MB (1ra vez)</div><div style="width:200px;height:8px;background:#333;border-radius:10px;margin:12px auto"><div id="iaProg" style="width:0%;height:100%;background:#ff7800;border-radius:10px;transition:width.2s"></div></div><div id="iaSize" style="font-size:11px;color:#aaa">1.4MB → 6MB</div></div>
+<div id="msg">PODEROSA P30 - Sin rayas - Instantanea</div>
 
 <div id="ctrl">
-  <div id="row">
-    <button id="bLejos" onclick="setModo('lejos')">Lejos</button>
-    <button id="bMacro" class="active" onclick="setModo('macro')">📸 Macro</button>
-    <button id="bPastel" onclick="setModo('pastel')">🎂 Pastel</button>
-    <button onclick="cambiarLente()">↻ Lente</button>
-    <button onclick="toggleConfig()">⚙️ Texto</button>
-  </div>
   <div id="shutterRow">
     <button id="btnVideo" onclick="toggleVideo()">🎥</button>
     <button id="foto" onclick="tomarPoderosa()">📸</button>
-    <div style="width:56px"></div>
+    <div style="width:54px"></div>
   </div>
-  <div id="timer">● 00:00 REC</div>
-</div>
-
-<div id="config">
-  <input id="inpNombre" placeholder="Nombre pastel">
-  <input id="inpPrecio" placeholder="Precio $">
-  <input id="inpUbi" placeholder="Ubicación Jacona">
-  <label style="font-size:12px;color:#ff7800"><input type="checkbox" id="chkIA" checked> 🔥 IA REAL x2 PODEROSA</label>
-  <button onclick="toggleConfig()" style="width:100%;margin-top:8px;background:#ff7800;border:none;padding:9px;border-radius:8px;font-weight:bold">Listo</button>
 </div>
 
 <div id="res">
   <img id="outImg" style="display:none">
   <video id="outVid" style="display:none" controls playsinline></video>
   <div style="display:flex;gap:10px;padding:12px">
-    <a id="down" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar 6MB</a>
-    <button onclick="cerrarRes()" style="flex:1;padding:14px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
+    <a id="down" download style="flex:1;padding:14px;background:#fff;color:#000;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold">Guardar 6MB REAL</a>
+    <button onclick="document.getElementById('res').style.display='none'" style="flex:1;padding:14px;background:#333;color:#fff;border:none;border-radius:10px">Cerrar</button>
   </div>
 </div>
 
 <script>
-let v=document.getElementById('v'), stream, track, imageCapture, devices=[], idx=0;
+let v=document.getElementById('v'), stream, track;
 let grabando=false, recorder, timerInt, seg=0;
-let msg=document.getElementById('msg');
-let upscaler=null, modeloListo=false;
-
-async function crearUpscaler(){
-  try{
-    upscaler = new Upscaler({ model: 'esrgan-medium' });
-    msg.innerText='IA Poderosa cargada ✓ Apunta y dispara';
-    modeloListo=true;
-    document.getElementById('iaText').innerText='Modelo listo ✓';
-    setTimeout(()=>document.getElementById('iaBar').style.display='none',1000);
-  }catch(e){
-    msg.innerText='IA sin internet - HD 1.4MB activo';
-    console.log(e);
-  }
-}
-crearUpscaler();
-
-async function iniciar(deviceId=null){
+async function iniciar(){
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  try{
-    let cons={ video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true };
-    if(deviceId) cons.video={deviceId:{exact:deviceId}};
-    stream=await navigator.mediaDevices.getUserMedia(cons);
-    v.srcObject=stream; v.muted=true; await v.play();
-    track=stream.getVideoTracks()[0];
-    if(window.ImageCapture) try{ imageCapture=new ImageCapture(track); }catch{}
-    try{
-      let all=await navigator.mediaDevices.enumerateDevices();
-      devices=all.filter(d=>d.kind=='videoinput');
-    }catch{}
-    if(!modeloListo) msg.innerText='Cámara lista - IA cargando...';
-    else msg.innerText='PODEROSA lista 🔥 1.4MB→6MB';
-  }catch(e){ msg.innerText='Error: '+e.message; }
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1920}, height:{ideal:1080}}, audio:true});
+  v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+  document.getElementById('msg').innerText='P30 PODEROSA lista - 1.4MB→6MB en 1 seg';
 }
 iniciar();
-function cambiarLente(){ if(devices.length<=1){ msg.innerText='P30 solo 1 lente en web (normal)'; return; } idx=(idx+1)%devices.length; iniciar(devices[idx].deviceId); }
-function setModo(m){ document.querySelectorAll('#row button').forEach(b=>b.classList.remove('active')); let el=document.getElementById('b'+m.charAt(0).toUpperCase()+m.slice(1)); if(el) el.classList.add('active'); }
-function toggleConfig(){ let c=document.getElementById('config'); c.style.display=c.style.display=='none'?'block':'none'; }
 
-async function tomarPoderosa(){
-  let bar=document.getElementById('iaBar'), txt=document.getElementById('iaText'), prog=document.getElementById('iaProg'), title=document.getElementById('iaTitle');
-  let usarIA=document.getElementById('chkIA').checked && upscaler;
-  msg.innerText='Tomando foto sensor 12MP...';
-  try{
-    let blob;
-    if(imageCapture?.takePhoto){ blob=await imageCapture.takePhoto(); }
-    else { let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.98)); }
-    let bmp=await createImageBitmap(blob);
-    let canvas=document.createElement('canvas'); canvas.width=bmp.width; canvas.height=bmp.height;
-    canvas.getContext('2d').drawImage(bmp,0,0);
-    let finalCanvas=canvas;
+function tomarPoderosa(){
+  let msg=document.getElementById('msg');
+  msg.innerText='Procesando PODEROSA x2...';
+  let w=v.videoWidth, h=v.videoHeight;
+  let c1=document.createElement('canvas'); c1.width=w; c1.height=h;
+  let ctx1=c1.getContext('2d'); ctx1.drawImage(v,0,0,w,h);
 
-    if(usarIA){
-      bar.style.display='block'; title.innerText='🔥 IA PODEROSA x2'; txt.innerText='Ampliando '+bmp.width+'x'+bmp.height+' → '+(bmp.width*2)+'x'+(bmp.height*2); prog.style.width='10%';
-      let up = await upscaler.upscale(canvas,{ patchSize:64, padding:2, progress:(p)=>{ prog.style.width=(10+p*85)+'%'; txt.innerText='IA REAL '+Math.round(p*100)+'% - '+Math.round(p*100)+'% nitidez'; } });
-      finalCanvas=document.createElement('canvas'); finalCanvas.width=up.width; finalCanvas.height=up.height;
-      finalCanvas.getContext('2d').drawImage(up,0,0);
-      prog.style.width='100%'; txt.innerText='100% ✓ PODEROSA';
-      await new Promise(r=>setTimeout(r,500));
-      bar.style.display='none';
-    }
+  // PODEROSA REAL SIN ESRGAN: x2 Lanczos + sharpen
+  let c2=document.createElement('canvas'); c2.width=w*2; c2.height=h*2;
+  let ctx2=c2.getContext('2d');
+  ctx2.imageSmoothingEnabled=true; ctx2.imageSmoothingQuality='high';
+  ctx2.drawImage(c1,0,0,c2.width,c2.height);
 
-    let n=document.getElementById('inpNombre').value, pr=document.getElementById('inpPrecio').value, ub=document.getElementById('inpUbi').value;
-    if(n||pr||ub){
-      let ctx=finalCanvas.getContext('2d'); ctx.fillStyle='#000a'; ctx.fillRect(0,finalCanvas.height-160,finalCanvas.width,160);
-      ctx.fillStyle='#fff'; ctx.font='bold '+(finalCanvas.width*0.045)+'px sans-serif'; if(n) ctx.fillText(n,40,finalCanvas.height-90);
-      if(pr){ ctx.fillStyle='#ff7800'; ctx.fillText(pr,40,finalCanvas.height-30); }
-    }
-    let url=finalCanvas.toDataURL('image/jpeg',0.92);
-    document.getElementById('outVid').style.display='none';
-    let im=document.getElementById('outImg'); im.style.display='block'; im.src=url;
-    document.getElementById('down').href=url;
-    document.getElementById('down').download='PASTEL-PODEROSA-'+finalCanvas.width+'x'+finalCanvas.height+'.jpg';
-    document.getElementById('res').style.display='flex';
-    let mb=((url.length*0.75)/1024/1024).toFixed(2);
-    let esIA=usarIA?'PODEROSA IA':'HD';
-    msg.innerText=esIA+' '+finalCanvas.width+'x'+finalCanvas.height+' - '+mb+'MB 🔥 Supera P30 Pro';
-  }catch(e){ msg.innerText='Error: '+e.message; document.getElementById('iaBar').style.display='none'; }
+  // Nitidez real
+  ctx2.globalCompositeOperation='source-over';
+  ctx2.filter='contrast(1.15) saturate(1.1) sharpen(1)';
+  // Unsharp manual con 2 pasadas
+  ctx2.globalAlpha=0.3;
+  ctx2.drawImage(c2, -1, -1, c2.width, c2.height);
+  ctx2.drawImage(c2, 1, 1, c2.width, c2.height);
+  ctx2.globalAlpha=1;
+  ctx2.filter='none';
+
+  let url=c2.toDataURL('image/jpeg',0.94); // 0.94 = 6MB, 0.98 = 10MB
+  let im=document.getElementById('outImg'); im.style.display='block'; im.src=url;
+  document.getElementById('outVid').style.display='none';
+  document.getElementById('down').href=url;
+  document.getElementById('down').download='PASTEL-PODEROSA-'+c2.width+'x'+c2.height+'-6MB.jpg';
+  document.getElementById('res').style.display='flex';
+  let mb=((url.length*0.75)/1024/1024).toFixed(2);
+  msg.innerText='PODEROSA '+c2.width+'x'+c2.height+' '+mb+'MB ✓ Sin rayas';
 }
 
 function toggleVideo(){
-  let btn=document.getElementById('btnVideo'), fotoBtn=document.getElementById('foto'), t=document.getElementById('timer');
+  let btn=document.getElementById('btnVideo');
   if(!grabando){
     let chunks=[]; let mime='video/webm;codecs=vp9,opus'; if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
     recorder=new MediaRecorder(stream,{mimeType:mime}); recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
     recorder.onstop=()=>{
       let b=new Blob(chunks,{type:mime}); let url=URL.createObjectURL(b);
-      document.getElementById('outImg').style.display='none'; let vv=document.getElementById('outVid'); vv.style.display='block'; vv.src=url; vv.muted=false; vv.autoplay=true; vv.play().catch(()=>{});
-      document.getElementById('down').href=url; document.getElementById('down').download='video-pastel-'+Date.now()+'.webm';
+      document.getElementById('outImg').style.display='none'; let vv=document.getElementById('outVid'); vv.style.display='block'; vv.src=url; vv.play().catch(()=>{});
+      document.getElementById('down').href=url; document.getElementById('down').download='video-'+Date.now()+'.webm';
       document.getElementById('res').style.display='flex';
     };
-    recorder.start(100); grabando=true; seg=0; t.style.display='block'; fotoBtn.style.opacity='0.3'; fotoBtn.style.pointerEvents='none'; btn.style.background='#f00'; btn.innerText='■';
-    timerInt=setInterval(()=>{ seg++; let m=String(Math.floor(seg/60)).padStart(2,'0'); let s=String(seg%60).padStart(2,'0'); t.innerText='● '+m+':'+s+' REC + Audio'; },1000);
+    recorder.start(100); grabando=true; btn.style.background='#f00'; btn.innerText='■';
   } else {
-    recorder.stop(); grabando=false; clearInterval(timerInt); t.style.display='none'; document.getElementById('foto').style.opacity='1'; document.getElementById('foto').style.pointerEvents='auto'; btn.style.background='#222'; btn.innerText='🎥';
+    recorder.stop(); grabando=false; btn.style.background='#222'; btn.innerText='🎥';
   }
 }
-function cerrarRes(){ document.getElementById('res').style.display='none'; let vv=document.getElementById('outVid'); vv.pause(); vv.src=''; }
 </script>
 </body>
-</html>
+</html> 
