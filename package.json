@@ -1,1 +1,13 @@
-{ "dependencies": { "@fal-ai/serverless-client": "^0.12.0" } }
+{
+  "name": "foto-pro-ia",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "replicate": "^1.0.1"
+  }
+}
