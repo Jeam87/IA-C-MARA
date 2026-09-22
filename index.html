@@ -1,187 +1,158 @@
 <!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro V5.3 CAM FIX COLOR V2</title>
-<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-512.png"><meta name="theme-color" content="#ff7800">
+<title>Foto Pro V5.4 MULTI CAM</title>
+<meta name="theme-color" content="#ff7800">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}
 #v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
 #flash{position:fixed;inset:0;background:#fff;z-index:60;opacity:0;pointer-events:none;transition:opacity.12s}#flash.on{opacity:1}
-#start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:22px;text-align:center}
+#start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px;text-align:center}
 #start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900}#start button.sec{background:#222;border:1px solid #444}
 #top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333}
-#light{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:10;background:#0008;padding:10px 6px;border-radius:25px;display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid #3336}
-#light input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:4px;height:80px;accent-color:#ff7800}
-#zoomBar{position:fixed;left:50%;bottom:175px;transform:translateX(-50%);z-index:20;background:#000e;padding:7px 8px;border-radius:25px;display:flex;gap:6px;border:1px solid #444}
-#zoomBar button{background:#222;color:#fff;border:1px solid #555;padding:7px 13px;border-radius:20px;font-size:12px}
-#zoomBar button.active{background:#fff;color:#000;font-weight:900}
 #ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 14px 20px;background:linear-gradient(transparent,#000d 20%,#000 90%);pointer-events:none}
 #mainRow{display:flex;align-items:center;justify-content:space-between;pointer-events:auto}
 #shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px}
-.btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:20px;pointer-events:auto}
+.btn{width:58px;height:58px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:22px;pointer-events:auto}
 #tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
-#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#tools button.active{border-color:#00ff88;background:#00ff88;color:#000}
-#focus{position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:50%;pointer-events:none;z-index:10;display:none;transform:translate(-50%,-50%)}
-#grid{position:fixed;inset:0;z-index:5;pointer-events:none;display:none;opacity:.25}#grid div{position:absolute;background:#fff}
+#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#tools button.active{background:#00ff88;color:#000;border-color:#00ff88}
+#zoomBar{position:fixed;left:50%;bottom:175px;transform:translateX(-50%);z-index:20;background:#000e;padding:7px 8px;border-radius:25px;display:flex;gap:6px;border:1px solid #444}
+#zoomBar button{background:#222;color:#fff;border:1px solid #555;padding:7px 13px;border-radius:20px;font-size:12px}
 #drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:88vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#ff7800;font-weight:800;margin:14px 0 6px;display:block}.inp{width:100%;padding:11px;border-radius:11px;background:#222;border:1px solid #333;color:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img{flex:1;width:100%;object-fit:contain;background:#111}
 #autoBadge{position:fixed;left:50%;top:85px;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:900;display:none}
-input[type=range]{width:100%;accent-color:#ff7800}
+#camDots{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:6px}
+#camDots div{width:8px;height:8px;border-radius:50%;background:#ffffff40;border:1px solid #fff3}#camDots div.active{background:#ff7800;width:22px}
 </style></head><body>
-<div id="flash"></div><div id="autoBadge">✨ AUTO</div>
-<div id="start"><div style="font-size:46px">🤖</div><h2 style="margin:0">V5.3 CAM FIX + COLOR V2</h2><p style="color:#0f0;font-size:12px">Cambio de cámara arreglado + Color comida PRO</p><button onclick="iniciar(false)">📷 TRASERA 4K</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p><p style="font-size:10px;color:#666">Si se queda en frontal, dale 2 veces a 🔄</p></div>
-<video id="v" autoplay playsinline muted></video><div id="focus"></div><div id="grid"><div style="left:33%;top:0;width:1px;height:100%"></div><div style="left:66%;top:0;width:1px;height:100%"></div><div style="top:33%;left:0;width:100%;height:1px"></div><div style="top:66%;left:0;width:100%;height:1px"></div></div>
-<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#00ff88;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">AUTO V2</span></div>
-<div id="tools"><button onclick="setFilter('auto')" id="fAuto" class="active">🤖</button><button onclick="setFilter('food')" id="fFood">🍰</button><button onclick="setFilter('truecolor')" id="fTrue">🎯</button><button onclick="toggleGrid()">⊞</button><button onclick="toggleTorch()" id="torchBtn">⚡</button></div>
-<div id="light"><span>☀️</span><input type="range" id="lightR" min="-1.5" max="1.5" step="0.1" value="0.3" oninput="applyLight()"><span>🌙</span></div>
-<div id="zoomBar"><button onclick="setZ(1)" id="b1" class="active">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(3)">3x</button></div>
+<div id="flash"></div><div id="camDots"></div><div id="autoBadge">✨ AUTO</div>
+<div id="start"><div style="font-size:46px">📸</div><h2 style="margin:0">V5.4 MULTI-CÁMARA</h2><p style="color:#0f0;font-size:12px">Las 3 traseras + frontal de tu P30</p><button onclick="iniciarPorIndice(0)">📷 INICIAR TODAS LAS CÁMARAS</button><p id="err" style="color:#ff6;font-size:11px"></p><div id="preList" style="font-size:10px;color:#555;background:#111;padding:8px;border-radius:8px;margin-top:8px;max-height:120px;overflow:auto"></div></div>
+<video id="v" autoplay playsinline muted></video>
+<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#00ff88;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">MULTI</span></div>
+<div id="tools"><button onclick="setFilter('auto')" id="fAuto" class="active">🤖</button><button onclick="setFilter('food')" id="fFood">🍰</button><button onclick="toggleTorch()">⚡</button></div>
 <div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="foto()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div>
 <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;pointer-events:auto">
-<button id="mf" style="background:#fff;color:#000;padding:7px 20px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO AUTO V2</button>
+<span id="camName" style="background:#000a;border:1px solid #333;padding:6px 14px;border-radius:20px;font-size:11px">Cargando cámaras...</span>
 </div></div>
-<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">⚙️ Color Pro V2</h3>
-<span class="label">🤖 AUTO INTELIGENTE</span><div class="grid2"><label style="display:flex;gap:8px;background:#00ff8822;border:1px solid #00ff88;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="autoOn" checked> Auto luz y color</label><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="sharpOn" checked> Auto nitidez</label></div>
-<span class="label">🎨 AJUSTE FINO MANUAL (si el auto no te convence)</span>
-<label style="font-size:10px">Temperatura (frío - cálido)</label><input type="range" id="tempR" min="-50" max="50" value="0" oninput="applyLight()"><div style="display:flex;justify-content:space-between;font-size:9px;color:#888"><span>❄️ Frío</span><span>🔥 Cálido</span></div>
-<label style="font-size:10px;margin-top:8px;display:block">Saturación comida</label><input type="range" id="satR" min="0" max="60" value="18" oninput="applyLight()"><div style="display:flex;justify-content:space-between;font-size:9px;color:#888"><span>Pálido</span><span>Vivo</span></div>
-<label style="font-size:10px;margin-top:8px;display:block">Nitidez impresión</label><input type="range" id="sharpR" min="0" max="100" value="40" oninput="applyLight()">
-<div class="grid2" style="margin-top:10px"><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="flashOn" checked> ⚡ Flash</label><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="pngOn" checked> PNG 4K</label></div>
-<span class="label">MARCA</span><input id="wm" class="inp" value="Foto Pro - Jacona"><div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div>
-<div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px">-</div>
+<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">📷 Tus 4 cámaras P30</h3><span class="label">ELIGE CÁMARA DIRECTA</span><div id="camButtons" style="display:flex;flex-direction:column;gap:8px"></div>
+<span class="label">COLOR V2</span><div class="grid2"><label style="display:flex;gap:8px;background:#00ff8822;border:1px solid #00ff88;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="autoOn" checked> Auto color</label><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="sharpOn" checked> Nitidez</label></div>
+<input type="range" id="satR" min="0" max="60" value="18" style="margin-top:10px;width:100%;accent-color:#ff7800">
+<div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px"></div>
 <button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
-<div id="res"><img id="outImg"><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR V2</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888;padding:0 10px"></p></div>
+<div id="res"><img id="outImg"><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
 <script>
-let v=document.getElementById('v'), stream, track, cams=[], camIndex=0, facingFront=false, curFilter='auto', curZoom=1, lastUrl=null, torchCapable=false, lastDist=0;
-async function getCams(){ try{ let d=await navigator.mediaDevices.enumerateDevices(); cams=d.filter(x=>x.kind=='videoinput'); document.getElementById('camList').innerText=`Frontal=${facingFront} | Cams=${cams.length} | ${cams.map((c,i)=>`[${i}]${c.label.slice(0,20)}`).join(' ')}`; }catch{} }
-async function iniciar(wantFront){
-  facingFront=wantFront;
+let v=document.getElementById('v'), stream, track, cams=[], camIndex=0, lastUrl=null, torchCapable=false, curFilter='auto';
+
+async function getCams(){
   try{
-    if(stream){ stream.getTracks().forEach(t=>{ try{t.stop();}catch{} }); stream=null; await new Promise(r=>setTimeout(r,500)); }
-    if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; } document.getElementById('outImg').src='';
-    await getCams();
-    // FIX CAMARAS P30 - usa facingMode directo, no deviceId
-    let constraints={ audio:false, video:{} };
-    if(wantFront){
-      constraints.video={ facingMode:{exact:"user"}, width:{ideal:1920}, height:{ideal:1080} };
+    let d=await navigator.mediaDevices.enumerateDevices();
+    cams=d.filter(x=>x.kind=='videoinput');
+    document.getElementById('camList').innerText=cams.map((c,i)=>`[${i}] ${c.label||'Cam '+i} ${i==camIndex?'<< ACTIVA':''}`).join('\n');
+    document.getElementById('preList').innerText=cams.length? cams.map((c,i)=>`[${i}] ${c.label}`).join('\n') : 'Dale a INICIAR para detectar';
+    // dibuja puntitos
+    let dots=document.getElementById('camDots'); dots.innerHTML='';
+    cams.forEach((_,i)=>{ let dot=document.createElement('div'); if(i==camIndex) dot.classList.add('active'); dots.appendChild(dot); });
+    // botones directos
+    let cont=document.getElementById('camButtons'); cont.innerHTML='';
+    cams.forEach((c,i)=>{
+      let isFront=c.label.toLowerCase().includes('front')||c.label.toLowerCase().includes('facing front');
+      let isWide=c.label.toLowerCase().includes('wide')||c.label.toLowerCase().includes('angular');
+      let name=isFront?'🤳 Frontal': isWide? '📷 Trasera Gran Angular' : `📷 Trasera ${i+1}`;
+      let b=document.createElement('button'); b.innerText=name + (i==camIndex?' ✅':'');
+      b.style.cssText='padding:12px;background:'+(i==camIndex?'#ff7800':'#222')+';color:#fff;border:1px solid #444;border-radius:12px;text-align:left';
+      b.onclick=()=>iniciarPorIndice(i);
+      cont.appendChild(b);
+    });
+    document.getElementById('camName').innerText=`CÁMARA ${camIndex+1}/${cams.length} ${cams[camIndex]?.label?.slice(0,25)||''}`;
+  }catch{}
+}
+
+async function iniciarPorIndice(idx){
+  camIndex=idx;
+  try{
+    if(stream){ stream.getTracks().forEach(t=>{ try{t.stop();}catch{} }); stream=null; await new Promise(r=>setTimeout(r,400)); }
+    if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; }
+    document.getElementById('outImg').src='';
+    if(cams.length==0) await getCams();
+    let devId=cams[camIndex]?.deviceId;
+    let constraints;
+    if(devId){
+      constraints={ video:{ deviceId:{exact:devId}, width:{ideal:3024}, height:{ideal:3024} }, audio:false };
     } else {
-      constraints.video={ facingMode:{exact:"environment"}, width:{ideal:3024}, height:{ideal:3024}, advanced:[{width:{min:1280}}] };
+      constraints={ video:{ facingMode: camIndex==0?'environment':'user', width:{ideal:1920} }, audio:false };
     }
     try{
       stream=await navigator.mediaDevices.getUserMedia(constraints);
-    }catch(e1){
+    }catch(e){
       // fallback sin exact
-      try{ constraints.video={ facingMode: wantFront?"user":"environment", width:{ideal:1920} }; stream=await navigator.mediaDevices.getUserMedia(constraints); }
-      catch(e2){ constraints.video=true; stream=await navigator.mediaDevices.getUserMedia(constraints); }
+      stream=await navigator.mediaDevices.getUserMedia({ video:{ deviceId: devId? {exact:devId} : true, width:{ideal:1920} }, audio:false });
     }
     v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
     try{ let caps=track.getCapabilities(); torchCapable=!!caps.torch; }catch{ torchCapable=false; }
-    let s=track.getSettings(); document.getElementById('info').innerText=`${s.width}x${s.height} ${facingFront?'FRONTAL':'TRASERA'}`;
-    document.getElementById('camLabel').innerText=facingFront?'🤳 FRONTAL':'📷 TRASERA';
-    document.getElementById('start').style.display='none'; applyLight(); getCams();
-  }catch(e){ document.getElementById('err').innerText='Error: '+e.message+' - Prueba con el otro botón'; }
+    let s=track.getSettings(); document.getElementById('info').innerText=`${s.width}x${s.height}`;
+    let label=cams[camIndex]?.label||''; let isFront=label.toLowerCase().includes('front');
+    document.getElementById('camLabel').innerText= isFront? `FRONTAL ${camIndex+1}` : `TRASERA ${camIndex+1} de ${cams.length}`;
+    document.getElementById('start').style.display='none'; getCams();
+  }catch(e){
+    document.getElementById('err').innerText='Error cam '+camIndex+': '+e.message;
+    // prueba siguiente automaticamente
+    if(cams.length>1){ camIndex=(camIndex+1)%cams.length; setTimeout(()=>iniciarPorIndice(camIndex),800); }
+  }
 }
+
 async function voltear(){
-  // FIX DEFINITIVO: invierte el boolean, no la lista
-  facingFront=!facingFront;
-  document.getElementById('camLabel').innerText='🔄 CAMBIANDO...';
-  await iniciar(facingFront);
+  if(cams.length==0) await getCams();
+  if(cams.length==0){ await iniciarPorIndice(0); return; }
+  camIndex=(camIndex+1)%cams.length;
+  await iniciarPorIndice(camIndex);
 }
-function setZ(z){ curZoom=parseFloat(z); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform=`scale(${1+(curZoom-1)*0.15})`; } document.querySelectorAll('#zoomBar button').forEach(b=>b.classList.remove('active')); if(z==1) document.getElementById('b1').classList.add('active'); }
-function applyLight(){
-  let b=1+parseFloat(document.getElementById('lightR').value)*0.35;
-  let temp=parseInt(document.getElementById('tempR').value);
-  let sat=parseInt(document.getElementById('satR').value);
-  let f=`brightness(${b}) saturate(${100+sat}%)`;
-  if(curFilter=='food') f+=` contrast(1.15)`;
-  if(curFilter=='truecolor') f+=` contrast(1.08)`;
-  if(temp>0) f+=` sepia(${temp/200})`;
-  if(temp<0) f+=` hue-rotate(${temp/2}deg)`;
-  v.style.filter=f;
-}
-function setFilter(f){ curFilter=f; document.querySelectorAll('#tools button').forEach(btn=>btn.classList.remove('active')); if(f=='auto') document.getElementById('fAuto').classList.add('active'); if(f=='food') document.getElementById('fFood').classList.add('active'); if(f=='truecolor') document.getElementById('fTrue').classList.add('active'); applyLight(); }
-function toggleGrid(){ let g=document.getElementById('grid'); g.style.display=g.style.display=='none'||!g.style.display?'block':'none'; }
+function setFilter(f){ curFilter=f; document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('active')); document.getElementById(f=='auto'?'fAuto':'fFood').classList.add('active'); }
 function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
 function cerrarRes(){ document.getElementById('res').style.display='none'; if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; } document.getElementById('outImg').src=''; }
-async function setTorch(on){ if(!track ||!torchCapable) return false; try{ await track.applyConstraints({advanced:[{torch:on}]}); return true; }catch{ return false; } }
-async function toggleTorch(){ await setTorch(true); setTimeout(()=>setTorch(false),2000); }
-v.addEventListener('click',e=>{ let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1000); });
+async function toggleTorch(){ if(!track||!torchCapable) return; try{ await track.applyConstraints({advanced:[{torch:true}]}); setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{torch:false}]});}catch{} },2000); }catch{} }
 
 function autoEnhanceCanvasV2(canvas){
   let ctx=canvas.getContext('2d'); let w=canvas.width,h=canvas.height;
   let small=document.createElement('canvas'); small.width=200; small.height=200*h/w; let sCtx=small.getContext('2d'); sCtx.drawImage(canvas,0,0,small.width,small.height);
-  let data=sCtx.getImageData(0,0,small.width,small.height).data;
-  let sum=0,sumR=0,sumG=0,sumB=0,cnt=data.length/4; let hist=new Array(256).fill(0);
-  for(let i=0;i<data.length;i+=4){ let lum=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]; sum+=lum; hist[Math.floor(lum)]++; sumR+=data[i]; sumG+=data[i+1]; sumB+=data[i+2]; }
-  let avg=sum/cnt, avgR=sumR/cnt, avgG=sumG/cnt, avgB=sumB/cnt;
-  // percentiles para auto levels
-  let total=cnt, acc=0, low=0, high=255;
-  for(let i=0;i<256;i++){ acc+=hist[i]; if(acc/total>0.02 && low==0) low=i; if(acc/total>0.98){ high=i; break; } }
-  let range=high-low; let contrast = range<180? 255/range : 1;
-  let bright=0; if(avg<80) bright=50; else if(avg<115) bright=30; else if(avg<140) bright=12; else if(avg>200) bright=-18;
-  let avgAll=(avgR+avgG+avgB)/3;
+  let data=sCtx.getImageData(0,0,small.width,small.height).data; let sum=0,sumR=0,sumG=0,sumB=0,cnt=data.length/4;
+  for(let i=0;i<data.length;i+=4){ sum+=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]; sumR+=data[i]; sumG+=data[i+1]; sumB+=data[i+2]; }
+  let avg=sum/cnt, avgR=sumR/cnt, avgG=sumG/cnt, avgB=sumB/cnt; let avgAll=(avgR+avgG+avgB)/3;
   let rGain=Math.max(0.75,Math.min(1.35,avgAll/avgR)), gGain=Math.max(0.75,Math.min(1.35,avgAll/avgG)), bGain=Math.max(0.75,Math.min(1.35,avgAll/avgB));
-  // aplica
+  let bright=avg<80?50:avg<115?30:avg<140?12:avg>200?-18:0;
+  let sat=parseInt(document.getElementById('satR').value)/100;
   let imgData=ctx.getImageData(0,0,w,h); let d=imgData.data;
-  // auto levels + bright + white balance
   for(let i=0;i<d.length;i+=4){
-    let r=(d[i]-low)*contrast + bright;
-    let g=(d[i+1]-low)*contrast + bright;
-    let b=(d[i+2]-low)*contrast + bright;
-    // food boost: realza azul y rojo sin tocar piel
-    if(curFilter=='food' || curFilter=='auto'){
-      // si es azulado (bote vainilla) boost azul
-      if(b>g+10 && b>r+5) b*=1.08;
-      // si es rojo LALA boost rojo
-      if(r>g+20 && r>b) r*=1.06;
-    }
-    d[i]=Math.min(255,Math.max(0,r*rGain));
+    let r=d[i]+bright, g=d[i+1]+bright, b=d[i+2]+bright;
+    if(curFilter=='food'){ if(b>g+10) b*=1.08; if(r>g+20) r*=1.06; }
+    d[i]=Math.min(255,Math.max(0,r*rGain*(1+sat*0.3)));
     d[i+1]=Math.min(255,Math.max(0,g*gGain));
-    d[i+2]=Math.min(255,Math.max(0,b*bGain));
+    d[i+2]=Math.min(255,Math.max(0,b*bGain*(1+sat*0.2)));
   }
   ctx.putImageData(imgData,0,0);
-  // nitidez adaptativa
   if(document.getElementById('sharpOn').checked){
-    let strength = parseInt(document.getElementById('sharpR').value)/100; // 0-1
-    let blurred=document.createElement('canvas'); blurred.width=w; blurred.height=h; let bCtx=blurred.getContext('2d'); bCtx.filter='blur(1.2px)'; bCtx.drawImage(canvas,0,0);
+    let blurred=document.createElement('canvas'); blurred.width=w; blurred.height=h; let bCtx=blurred.getContext('2d'); bCtx.filter='blur(1px)'; bCtx.drawImage(canvas,0,0);
     let bData=bCtx.getImageData(0,0,w,h).data; let oData=ctx.getImageData(0,0,w,h); let od=oData.data;
-    for(let i=0;i<od.length;i+=4){
-      od[i]=od[i]+ (od[i]-bData[i])* (0.7*strength);
-      od[i+1]=od[i+1]+ (od[i+1]-bData[i+1])* (0.7*strength);
-      od[i+2]=od[i+2]+ (od[i+2]-bData[i+2])* (0.7*strength);
-    }
+    for(let i=0;i<od.length;i+=4){ od[i]+= (od[i]-bData[i])*0.4; od[i+1]+= (od[i+1]-bData[i+1])*0.4; od[i+2]+= (od[i+2]-bData[i+2])*0.4; }
     ctx.putImageData(oData,0,0);
   }
-  return {avg: avg.toFixed(0), low, high, bright, rGain:rGain.toFixed(2)};
+  return {avg: avg.toFixed(0)};
 }
 
 async function foto(){
-  let usarFlash=document.getElementById('flashOn').checked && torchCapable &&!facingFront;
-  if(usarFlash) await setTorch(true);
-  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),160); navigator.vibrate?.(50);
-  if(usarFlash) await new Promise(r=>setTimeout(r,350));
+  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),150);
   let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; let ctx=c.getContext('2d'); ctx.drawImage(v,0,0,c.width,c.height);
-  let blob=await new Promise(r=>c.toBlob(r,'image/png',1));
-  if(usarFlash) await setTorch(false); c.width=1;c.height=1;
+  let blob=await new Promise(r=>c.toBlob(r,'image/png',1)); c.width=1;c.height=1;
   try{
     let bmp=await createImageBitmap(blob);
     let c2=document.createElement('canvas'); c2.width=bmp.width; c2.height=bmp.height; let ctx2=c2.getContext('2d'); ctx2.drawImage(bmp,0,0);
-    let infoAuto={};
-    if(document.getElementById('autoOn').checked){
-      document.getElementById('autoBadge').style.display='block';
-      document.getElementById('autoBadge').innerText='🤖 AJUSTANDO COLOR V2...';
-      await new Promise(r=>setTimeout(r,40));
-      infoAuto=autoEnhanceCanvasV2(c2);
-      document.getElementById('autoBadge').innerText=`✨ LUZ ${infoAuto.avg} • NIVELES ${infoAuto.low}-${infoAuto.high}`;
-      setTimeout(()=>document.getElementById('autoBadge').style.display='none',2000);
-    }
-    ctx2.font=`bold ${c2.width*0.028}px system-ui`; ctx2.fillStyle='#fff'; ctx2.shadowColor='#000'; ctx2.shadowBlur=12; ctx2.textAlign='right'; ctx2.fillText(document.getElementById('wm').value, c2.width*0.97, c2.height*0.96);
-    ctx2.font=`900 ${c2.width*0.055}px system-ui`; ctx2.fillStyle='#ff7800'; ctx2.shadowBlur=0; ctx2.textAlign='left'; ctx2.fillText(document.getElementById('price').value, c2.width*0.03, c2.height*0.93);
+    let info={};
+    if(document.getElementById('autoOn').checked){ document.getElementById('autoBadge').style.display='block'; info=autoEnhanceCanvasV2(c2); setTimeout(()=>document.getElementById('autoBadge').style.display='none',1500); }
     blob=await new Promise(r=>c2.toBlob(r,'image/png',1)); c2.width=1;c2.height=1; bmp.close();
     if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} }
-    let url=URL.createObjectURL(blob); lastUrl=url; let mb=(blob.size/1024/1024).toFixed(2);
-    document.getElementById('outImg').src=url; document.getElementById('resInfo').innerText=`✅ AUTO V2 • Luz ${infoAuto.avg||'--'} • Rango ${infoAuto.low||0}-${infoAuto.high||255} • ${mb} MB • ${facingFront?'FRONTAL':'TRASERA'}`;
+    let url=URL.createObjectURL(blob); lastUrl=url;
+    document.getElementById('outImg').src=url;
+    document.getElementById('resInfo').innerText=`✅ Cam ${camIndex+1}/${cams.length} • ${info.avg||''} luz • ${(blob.size/1024/1024).toFixed(1)} MB • PRINT`;
     document.getElementById('res').style.display='flex';
-  }catch(e){ document.getElementById('resInfo').innerText='Error '+e.message; }
+  }catch(e){}
 }
-document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; a.download=`AUTO_V2_${Date.now()}.png`; document.body.appendChild(a); a.click(); a.remove(); };
+document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; a.download=`MULTI_${camIndex+1}_${Date.now()}.png`; document.body.appendChild(a); a.click(); a.remove(); };
 setFilter('auto');
 </script></body></html> 
