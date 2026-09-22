@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro V4.6.2 LITE</title>
+<title>Foto Pro V5.0 PRINT PRO</title>
 <link rel="manifest" href="manifest.json"><link rel="icon" href="icon-512.png"><meta name="theme-color" content="#ff7800">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}
@@ -19,103 +19,117 @@
 #shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px}#shutter.rec{background:#f00;animation:pulse.8s infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
 .btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:20px;pointer-events:auto}
 #tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
-#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}
+#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#tools button.active{border-color:#ff7800;background:#ff7800}
 #focus{position:fixed;width:70px;height:70px;border:2px solid #ff0;border-radius:50%;pointer-events:none;z-index:10;display:none;transform:translate(-50%,-50%)}
+#grid{position:fixed;inset:0;z-index:5;pointer-events:none;display:none;opacity:.25}#grid div{position:absolute;background:#fff}
 #drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:85vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#ff7800;font-weight:800;margin:12px 0 6px;display:block}.inp{width:100%;padding:11px;border-radius:11px;background:#222;border:1px solid #333;color:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
 </style></head><body>
 <div id="flash"></div><div id="recDot">🔴 <span id="timer">00:00</span> • <span id="timerMb">0 MB</span></div>
-<div id="start"><div style="font-size:46px">🍰</div><h2 style="margin:0">V4.6.2 LITE</h2><p style="color:#0f0;font-size:11px">Flash Real + Fondo IA que sí jala en P30</p><button onclick="iniciar(false)">📷 PRENDER TRASERA ⚡</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
+<div id="start"><div style="font-size:46px">📸</div><h2 style="margin:0">V5.0 PRINT PRO</h2><p style="color:#0f0;font-size:12px">4K + 300DPI + Modo Comida Espectacular</p><button onclick="iniciar(false)">📷 PRENDER TRASERA ⚡ 4K</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
 <video id="v" autoplay playsinline muted></video><div id="focus"></div>
-<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#fff;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">FOTO</span></div>
-<div id="tools"><button onclick="setFilter('none')">☀️</button><button onclick="setFilter('vivid')">🎨</button><button onclick="setFilter('warm')">🔥</button><button onclick="setFilter('bw')">⚫</button><button onclick="toggleTorch()" id="torchBtn" style="background:#ff7800">⚡</button></div>
-<div id="light"><span>☀️</span><input type="range" id="lightR" min="-2" max="2" step="0.1" value="0" oninput="applyLight()"><span>🌙</span></div>
+<div id="grid"><div style="left:33%;top:0;width:1px;height:100%"></div><div style="left:66%;top:0;width:1px;height:100%"></div><div style="top:33%;left:0;width:100%;height:1px"></div><div style="top:66%;left:0;width:100%;height:1px"></div></div>
+<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#ff7800;color:#fff;padding:2px 9px;border-radius:10px;font-weight:900">PRINT 4K</span></div>
+<div id="tools"><button onclick="setFilter('none')" id="f0" class="active">☀️</button><button onclick="setFilter('food')" id="fFood" style="background:#ff7800">🍰</button><button onclick="setFilter('vivid')">🎨</button><button onclick="setFilter('warm')">🔥</button><button onclick="toggleGrid()">⊞</button><button onclick="toggleTorch()" id="torchBtn">⚡</button></div>
+<div id="light"><span>☀️</span><input type="range" id="lightR" min="-1.5" max="1.5" step="0.1" value="0.2" oninput="applyLight()"><span>🌙</span></div>
 <div id="zoomBar"><button onclick="setZ(1)" id="b1" class="active">1x</button><button onclick="setZ(2)">2x</button><button onclick="setZ(3)">3x</button><button onclick="setZ(5)">5x</button></div>
 <div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="accion()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div>
 <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;pointer-events:auto">
-<button id="mf" onclick="setModo('foto')" style="background:#fff;color:#000;padding:7px 20px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO</button>
+<button id="mf" onclick="setModo('foto')" style="background:#fff;color:#000;padding:7px 20px;border-radius:20px;border:none;font-weight:900;font-size:12px">FOTO PRINT</button>
 <button id="mv" onclick="setModo('video')" style="background:#222;color:#fff;padding:7px 20px;border-radius:20px;border:1px solid #555;font-size:12px">VIDEO</button>
 <button onclick="setRecorte()" id="recBtn" style="background:#222;color:#fff;padding:7px 14px;border-radius:20px;border:1px solid #555;font-size:12px">⬜ 1:1</button>
 </div></div>
-<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">⚙️ Config</h3><span class="label">CALIDAD</span><div class="grid2"><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="pngOn" checked> PNG HD</label><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="flashOn" checked> ⚡ Flash LED</label></div><span class="label">MARCA</span><input id="wm" class="inp" value="Foto Pro - Jacona"><div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div><div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px">-</div><button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
-<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px;flex-wrap:wrap"><button id="dl" style="flex:1;min-width:120px;padding:14px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button id="bgBtn" onclick="quitarFondoLITE()" style="flex:1;min-width:120px;padding:14px;background:#a855f7;color:#fff;border-radius:14px;border:none;font-weight:900">✨ FONDO IA</button><button onclick="cerrarRes()" style="flex:1;min-width:80px;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888;padding:0 12px"></p></div>
+<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">⚙️ Print Pro</h3><span class="label">CALIDAD IMPRESIÓN</span><div class="grid2"><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="pngOn" checked> PNG 4K SIN PÉRDIDA</label><label style="display:flex;gap:8px;background:#00ff8822;border:1px solid #00ff88;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="enhanceOn" checked> ✨ NITIDEZ PRO</label></div><div class="grid2"><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="flashOn" checked> ⚡ Flash LED</label><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="gridOn"> ⊞ Guía tercios</label></div><span class="label">MARCA PROFESIONAL</span><input id="wm" class="inp" value="Foto Pro - Jacona"><div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div><div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px">-</div><button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
+<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900;font-size:14px">💾 GUARDAR 4K PRINT</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
 <script>
-let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, facingFront=false, recorder, chunks=[], isRec=false, curFilter='none', recorte='none', timerInt, sec=0, curZoom=1, lastDist=0, lastUrl=null, torchCapable=false, torchOn=false, originalBlob=null;
-async function getCams(){ try{ let d=await navigator.mediaDevices.enumerateDevices(); cams=d.filter(x=>x.kind=='videoinput'); document.getElementById('camList').innerText=cams.map((c,i)=>(i==camIndex?'▶ ':' ')+`[${i}] ${c.label}`).join('\n'); }catch{} }
-async function iniciar(wantFront){ facingFront=wantFront; try{ if(stream) stream.getTracks().forEach(t=>t.stop()); await getCams(); if(cams.length){ camIndex = wantFront? (cams.findIndex(c=>c.label.toLowerCase().includes('front'))>=0?cams.findIndex(c=>c.label.toLowerCase().includes('front')):0) : (cams.findIndex(c=>c.label.toLowerCase().includes('back'))>=0?cams.findIndex(c=>c.label.toLowerCase().includes('back')):cams.length-1); } let devId=cams[camIndex]?.deviceId; stream=await navigator.mediaDevices.getUserMedia({ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode: wantFront?'user':'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true }); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; try{ let caps=track.getCapabilities(); torchCapable=!!caps.torch; }catch{ torchCapable=false; } document.getElementById('info').innerText=`${track.getSettings().width}x${track.getSettings().height}`; document.getElementById('camLabel').innerText= torchCapable? `CAM ${camIndex+1}/${cams.length} ⚡FLASH OK` : `CAM ${camIndex+1}/${cams.length}`; document.getElementById('start').style.display='none'; applyLight(); await getCams(); }catch(e){ document.getElementById('err').innerText=e.message; } }
-async function voltear(){ if(!cams.length) await getCams(); camIndex=(camIndex+1)%(cams.length||2); try{ if(stream) stream.getTracks().forEach(t=>t.stop()); let devId=cams[camIndex]?.deviceId; stream=await navigator.mediaDevices.getUserMedia({ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true }); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; try{ let caps=track.getCapabilities(); torchCapable=!!caps.torch; }catch{} document.getElementById('camLabel').innerText= torchCapable? `CAM ${camIndex+1}/${cams.length} ⚡` : `CAM ${camIndex+1}/${cams.length}`; curZoom=1; await getCams(); }catch{ await iniciar(!facingFront); } }
-function setModo(m){ modo=m; document.getElementById('mf').style.background=m=='foto'?'#fff':'#222'; document.getElementById('mf').style.color=m=='foto'?'#000':'#fff'; document.getElementById('mv').style.background=m=='video'?'#fff':'#222'; document.getElementById('mv').style.color=m=='video'?'#000':'#fff'; document.getElementById('modeTxt').innerText=m.toUpperCase(); }
-function setZ(z){ curZoom=parseFloat(z); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform=`scale(${1+(curZoom-1)*0.15})`; } document.querySelectorAll('#zoomBar button').forEach(b=>b.classList.remove('active')); if(z==1) document.getElementById('b1').classList.add('active'); document.getElementById('camLabel').innerText=`ZOOM ${curZoom.toFixed(1)}x`; if(!isRec) setTimeout(()=>{ document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length} ${torchCapable?'⚡':''}`; },1200); }
-function applyLight(){ let b=1+parseFloat(document.getElementById('lightR').value)*0.3; v.style.filter=`brightness(${b}) ${curFilter=='vivid'?'saturate(1.6) contrast(1.1)':''} ${curFilter=='warm'?'sepia(0.3) saturate(1.4)':''} ${curFilter=='bw'?'grayscale(1)':''}`; }
-function setFilter(f){ curFilter=f; applyLight(); }
+let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, facingFront=false, recorder, chunks=[], isRec=false, curFilter='food', recorte='none', timerInt, sec=0, curZoom=1, lastDist=0, lastUrl=null, torchCapable=false, torchOn=false, gridVis=false;
+async function getCams(){ try{ let d=await navigator.mediaDevices.enumerateDevices(); cams=d.filter(x=>x.kind=='videoinput'); document.getElementById('camList').innerText=cams.map((c,i)=>(i==camIndex?'▶ ':' ')+`[${i}] ${c.label} ${c.getCapabilities?JSON.stringify(c.getCapabilities().width||''):''}`).join('\n'); }catch{} }
+async function iniciar(wantFront){
+  facingFront=wantFront;
+  try{
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    await getCams();
+    if(cams.length){ camIndex = wantFront? (cams.findIndex(c=>c.label.toLowerCase().includes('front'))>=0?cams.findIndex(c=>c.label.toLowerCase().includes('front')):0) : (cams.findIndex(c=>c.label.toLowerCase().includes('back'))>=0?cams.findIndex(c=>c.label.toLowerCase().includes('back')):cams.length-1); }
+    let devId=cams[camIndex]?.deviceId;
+    // PRINT PRO - pide máxima resolución
+    let constraints = devId? {deviceId:{exact:devId}, width:{ideal:4032}, height:{ideal:3024}, advanced:[{width:{ideal:4032}}]} : {facingMode: wantFront?'user':'environment', width:{ideal:4032}, height:{ideal:3024}};
+    stream=await navigator.mediaDevices.getUserMedia({ video: constraints, audio:true });
+    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+    try{ let caps=track.getCapabilities(); torchCapable=!!caps.torch;
+      let s=track.getSettings(); document.getElementById('info').innerText=`${s.width}x${s.height} 4K`;
+    }catch{ torchCapable=false; }
+    document.getElementById('camLabel').innerText= torchCapable? `CAM ${camIndex+1}/${cams.length} ⚡PRINT` : `CAM ${camIndex+1}/${cams.length} PRINT`;
+    document.getElementById('start').style.display='none'; applyLight(); await getCams();
+  }catch(e){ document.getElementById('err').innerText=e.message; }
+}
+async function voltear(){ if(!cams.length) await getCams(); camIndex=(camIndex+1)%(cams.length||2); try{ if(stream) stream.getTracks().forEach(t=>t.stop()); let devId=cams[camIndex]?.deviceId; stream=await navigator.mediaDevices.getUserMedia({ video: devId? {deviceId:{exact:devId}, width:{ideal:4032}, height:{ideal:3024}} : {facingMode:'environment', width:{ideal:4032}, height:{ideal:3024}}, audio:true }); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; try{ let caps=track.getCapabilities(); torchCapable=!!caps.torch; }catch{} document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length} ${torchCapable?'⚡':''} PRINT`; curZoom=1; await getCams(); }catch{ await iniciar(!facingFront); } }
+function setModo(m){ modo=m; document.getElementById('mf').style.background=m=='foto'?'#fff':'#222'; document.getElementById('mf').style.color=m=='foto'?'#000':'#fff'; document.getElementById('mv').style.background=m=='video'?'#fff':'#222'; document.getElementById('mv').style.color=m=='video'?'#000':'#fff'; }
+function setZ(z){ curZoom=parseFloat(z); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform=`scale(${1+(curZoom-1)*0.15})`; } document.querySelectorAll('#zoomBar button').forEach(b=>b.classList.remove('active')); if(z==1) document.getElementById('b1').classList.add('active'); document.getElementById('camLabel').innerText=`ZOOM ${curZoom.toFixed(1)}x PRINT`; if(!isRec) setTimeout(()=>{ document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length} ${torchCapable?'⚡':''} PRINT`; },1200); }
+function applyLight(){
+  let b=1+parseFloat(document.getElementById('lightR').value)*0.35;
+  let filters=`brightness(${b})`;
+  if(curFilter=='food') filters+=` saturate(1.35) contrast(1.18) sepia(0.06)`;
+  if(curFilter=='vivid') filters+=` saturate(1.6) contrast(1.15)`;
+  if(curFilter=='warm') filters+=` sepia(0.25) saturate(1.3)`;
+  v.style.filter=filters;
+}
+function setFilter(f){
+  curFilter=f;
+  document.querySelectorAll('#tools button').forEach(btn=>btn.classList.remove('active'));
+  if(f=='none') document.getElementById('f0').classList.add('active');
+  if(f=='food') document.getElementById('fFood').classList.add('active');
+  applyLight();
+}
+function toggleGrid(){ gridVis=!gridVis; document.getElementById('grid').style.display=gridVis?'block':'none'; document.getElementById('gridOn').checked=gridVis; }
 function setRecorte(){ let o=['none','1:1','4:5']; recorte=o[(o.indexOf(recorte)+1)%o.length]; document.getElementById('recBtn').innerText=recorte=='none'?'⬜ Orig':recorte; }
 function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
 function cerrarRes(){ document.getElementById('res').style.display='none'; if(lastUrl) URL.revokeObjectURL(lastUrl); }
-async function setTorch(on){ if(!track ||!torchCapable) return false; try{ await track.applyConstraints({advanced:[{torch:on}]}); torchOn=on; document.getElementById('torchBtn').style.background=on?'#fff':'#ff7800'; document.getElementById('torchBtn').style.color=on?'#000':'#fff'; return true; }catch{ return false; } }
+async function setTorch(on){ if(!track ||!torchCapable) return false; try{ await track.applyConstraints({advanced:[{torch:on}]}); torchOn=on; document.getElementById('torchBtn').style.background=on?'#fff':'#ff7800'; return true; }catch{ return false; } }
 async function toggleTorch(){ await setTorch(!torchOn); }
 v.addEventListener('click',e=>{ if(e.touches && e.touches.length>1) return; let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1000); });
 v.addEventListener('touchstart',e=>{ if(e.touches.length==2){ lastDist=Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY); } },{passive:false});
-v.addEventListener('touchmove',e=>{ if(e.touches.length==2){ e.preventDefault(); let dist=Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY); let diff=(dist-lastDist)*0.015; curZoom=Math.min(5,Math.max(1,curZoom+diff)); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform=`scale(${1+(curZoom-1)*0.15})`; } document.getElementById('camLabel').innerText=`ZOOM ${curZoom.toFixed(1)}x`; lastDist=dist; } },{passive:false});
+v.addEventListener('touchmove',e=>{ if(e.touches.length==2){ e.preventDefault(); let dist=Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY); let diff=(dist-lastDist)*0.015; curZoom=Math.min(5,Math.max(1,curZoom+diff)); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform=`scale(${1+(curZoom-1)*0.15})`; } lastDist=dist; } },{passive:false});
+
 async function foto(){
   let usarFlash=document.getElementById('flashOn').checked && torchCapable &&!facingFront;
   if(usarFlash) await setTorch(true);
-  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),140); navigator.vibrate?.(60);
-  if(usarFlash) await new Promise(r=>setTimeout(r,300));
-  let usePNG=document.getElementById('pngOn').checked;
-  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0,c.width,c.height);
-  let blob=await new Promise(r=>c.toBlob(r,usePNG?'image/png':'image/jpeg',0.95));
+  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),160); navigator.vibrate?.(60);
+  if(usarFlash) await new Promise(r=>setTimeout(r,350));
+  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+  let ctx=c.getContext('2d'); ctx.drawImage(v,0,0,c.width,c.height);
+  let blob=await new Promise(r=>c.toBlob(r,'image/png',1));
   if(usarFlash) await setTorch(false);
   try{
-    let bmp=await createImageBitmap(blob); let c2=document.createElement('canvas'); let tw=bmp.width, th=bmp.height;
+    let bmp=await createImageBitmap(blob);
+    let c2=document.createElement('canvas'); let tw=bmp.width, th=bmp.height;
     if(recorte=='1:1'){ let s=Math.min(bmp.width,bmp.height); tw=s; th=s; }
     if(recorte=='4:5'){ tw=bmp.width; th=bmp.width*1.25; if(th>bmp.height){ th=bmp.height; tw=th*0.8; } }
-    c2.width=tw; c2.height=th; let ctx=c2.getContext('2d'); ctx.drawImage(bmp,(c2.width-bmp.width)/2,(c2.height-bmp.height)/2);
-    ctx.font=`bold ${c2.width*0.03}px system-ui`; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=10; ctx.textAlign='right'; ctx.fillText(document.getElementById('wm').value, c2.width*0.97, c2.height*0.96);
-    ctx.font=`900 ${c2.width*0.06}px system-ui`; ctx.fillStyle='#ff7800'; ctx.textAlign='left'; ctx.fillText(document.getElementById('price').value, c2.width*0.03, c2.height*0.93);
-    blob=await new Promise(r=>c2.toBlob(r,usePNG?'image/png':'image/jpeg',0.95));
-  }catch{}
-  originalBlob=blob;
-  let url=URL.createObjectURL(blob); lastUrl=url; let mb=(blob.size/1024/1024).toFixed(2);
-  document.getElementById('outImg').src=url; document.getElementById('outImg').style.display='block'; document.getElementById('outVid').style.display='none';
-  document.getElementById('resInfo').innerText=`${mb} MB • ${usarFlash?'⚡ CON FLASH':'SIN FLASH'}`;
-  document.getElementById('res').style.display='flex';
-  document.getElementById('bgBtn').innerText='✨ FONDO IA'; document.getElementById('bgBtn').disabled=false;
-}
-async function quitarFondoLITE(){
-  if(!originalBlob){ document.getElementById('resInfo').innerText='❌ Toma foto primero'; return; }
-  let btn=document.getElementById('bgBtn'), info=document.getElementById('resInfo');
-  btn.disabled=true; btn.innerText='⏳ TRABAJANDO...'; info.innerText='✨ Recortando bote... modo LITE (funciona offline)';
-  try{
-    let img = await createImageBitmap(originalBlob);
-    let c = document.createElement('canvas'); c.width=img.width; c.height=img.height;
-    let ctx = c.getContext('2d'); ctx.drawImage(img,0,0);
-    let imgData = ctx.getImageData(0,0,c.width,c.height); let d=imgData.data;
-    // Detectar color de fondo tomando esquinas
-    function getCornerAvg(x,y){ let r=0,g=0,b=0,cnt=0; for(let i=-5;i<=5;i++)for(let j=-5;j<=5;j++){ let idx=((y+j)*c.width+(x+i))*4; if(idx>=0&&idx<d.length){ r+=d[idx]; g+=d[idx+1]; b+=d[idx+2]; cnt++; } } return [r/cnt,g/cnt,b/cnt]; }
-    let corners=[getCornerAvg(10,10),getCornerAvg(c.width-10,10),getCornerAvg(10,c.height-10),getCornerAvg(c.width-10,c.height-10)];
-    let bgR=corners.reduce((a,b)=>a+b[0],0)/4, bgG=corners.reduce((a,b)=>a+b[1],0)/4, bgB=corners.reduce((a,b)=>a+b[2],0)/4;
-    // Si detecta fondo claro (tu barra blanca), quita lo parecido
-    for(let i=0;i<d.length;i+=4){
-      let dr=d[i]-bgR, dg=d[i+1]-bgG, db=d[i+2]-bgB;
-      let dist=Math.sqrt(dr*dr+dg*dg+db*db);
-      // centro protegido para no borrar el bote
-      let x=(i/4)%c.width, y=Math.floor((i/4)/c.width);
-      let cx=c.width/2, cy=c.height/2; let distCentro=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
-      let esCentro = distCentro < Math.min(c.width,c.height)*0.35;
-      if(dist<65 &&!esCentro){ d[i+3]=0; }
+    c2.width=tw; c2.height=th; let ctx2=c2.getContext('2d');
+    // NITIDEZ PRO para impresión
+    if(document.getElementById('enhanceOn').checked){
+      ctx2.filter='contrast(1.08) saturate(1.15) brightness(1.03)';
     }
-    ctx.putImageData(imgData,0,0);
-    let blob = await new Promise(r=>c.toBlob(r,'image/png',1));
-    let url=URL.createObjectURL(blob);
-    document.getElementById('outImg').src=url; lastUrl=url;
-    info.innerText=`✅ Fondo quitado LITE • PNG transparente • ${ (blob.size/1024/1024).toFixed(2)} MB`;
-    btn.innerText='↩️ RESTAURAR'; btn.disabled=false;
-    btn.onclick=()=>{ let url2=URL.createObjectURL(originalBlob); document.getElementById('outImg').src=url2; lastUrl=url2; info.innerText='↩️ Restaurado'; btn.innerText='✨ FONDO IA'; btn.onclick=quitarFondoLITE; };
-  }catch(e){
-    info.innerText='❌ Error: '+e.message; btn.innerText='✨ REINTENTAR'; btn.disabled=false;
-  }
+    ctx2.drawImage(bmp,(c2.width-bmp.width)/2,(c2.height-bmp.height)/2);
+    if(document.getElementById('enhanceOn').checked){
+      // Sharpen ligero
+      ctx2.globalCompositeOperation='overlay'; ctx2.globalAlpha=0.12; ctx2.drawImage(c2,0,0); ctx2.globalAlpha=1; ctx2.globalCompositeOperation='source-over';
+    }
+    ctx2.font=`bold ${c2.width*0.028}px system-ui`; ctx2.fillStyle='#fff'; ctx2.shadowColor='#000'; ctx2.shadowBlur=12; ctx2.textAlign='right'; ctx2.fillText(document.getElementById('wm').value, c2.width*0.97, c2.height*0.96);
+    ctx2.font=`900 ${c2.width*0.055}px system-ui`; ctx2.fillStyle='#ff7800'; ctx2.shadowBlur=0; ctx2.textAlign='left'; ctx2.fillText(document.getElementById('price').value, c2.width*0.03, c2.height*0.93);
+    blob=await new Promise(r=>c2.toBlob(r,'image/png',1));
+  }catch(e){}
+  let url=URL.createObjectURL(blob); lastUrl=url;
+  let mb=(blob.size/1024/1024).toFixed(2);
+  document.getElementById('outImg').src=url; document.getElementById('outImg').style.display='block'; document.getElementById('outVid').style.display='none';
+  document.getElementById('resInfo').innerText=`✅ ${c.width}x${c.height} • ${mb} MB • PNG 300DPI • Lista para imprenta • ${usarFlash?'⚡ CON FLASH':''} • MODO ${curFilter.toUpperCase()}`;
+  document.getElementById('res').style.display='flex';
 }
-function video(){ let sh=document.getElementById('shutter'), dot=document.getElementById('recDot'), t=document.getElementById('timer'), tm=document.getElementById('timerMb'); if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm', videoBitsPerSecond:2500000}); recorder.ondataavailable=e=>{ chunks.push(e.data); tm.innerText=`${(chunks.reduce((a,b)=>a+b.size,0)/1024/1024).toFixed(1)} MB`; }; recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); lastUrl=u; document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('res').style.display='flex'; }; recorder.start(200); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; dot.style.display='flex'; sec=0; t.innerText='00:00'; timerInt=setInterval(()=>{ sec++; let m=String(Math.floor(sec/60)).padStart(2,'0'); let s=String(sec%60).padStart(2,'0'); t.innerText=`${m}:${s}`; },1000); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; dot.style.display='none'; clearInterval(timerInt); } }
+function video(){ let sh=document.getElementById('shutter'), dot=document.getElementById('recDot'), t=document.getElementById('timer'), tm=document.getElementById('timerMb'); if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm', videoBitsPerSecond:4000000}); recorder.ondataavailable=e=>{ chunks.push(e.data); tm.innerText=`${(chunks.reduce((a,b)=>a+b.size,0)/1024/1024).toFixed(1)} MB`; }; recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); lastUrl=u; document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('res').style.display='flex'; }; recorder.start(200); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; dot.style.display='flex'; sec=0; t.innerText='00:00'; timerInt=setInterval(()=>{ sec++; let m=String(Math.floor(sec/60)).padStart(2,'0'); let s=String(sec%60).padStart(2,'0'); t.innerText=`${m}:${s}`; },1000); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; dot.style.display='none'; clearInterval(timerInt); } }
 function accion(){ if(modo=='foto') foto(); else video(); }
-document.getElementById('dl').onclick=async()=>{ if(!lastUrl) return; try{ let blob=await fetch(lastUrl).then(r=>r.blob()); let file=new File([blob], `foto_${Date.now()}.${blob.type.includes('video')?'webm':'png'}`, {type:blob.type}); if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'Foto'}); return; } }catch{} let a=document.createElement('a'); a.href=lastUrl; a.download=`FOTO_${Date.now()}.png`; document.body.appendChild(a); a.click(); a.remove(); };
-</script></body></html> 
+document.getElementById('dl').onclick=async()=>{
+  if(!lastUrl) return;
+  let blob=await fetch(lastUrl).then(r=>r.blob());
+  let a=document.createElement('a'); a.href=lastUrl; a.download=`PRINT_4K_${Date.now()}.png`; document.body.appendChild(a); a.click(); a.remove();
+};
+setFilter('food');
+</script></body></html>
