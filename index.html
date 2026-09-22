@@ -1,158 +1,168 @@
 <!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro V5.4 MULTI CAM</title>
+<title>Foto Pro V5.5 HDR</title>
 <meta name="theme-color" content="#ff7800">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}
 #v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
 #flash{position:fixed;inset:0;background:#fff;z-index:60;opacity:0;pointer-events:none;transition:opacity.12s}#flash.on{opacity:1}
 #start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px;text-align:center}
-#start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900}#start button.sec{background:#222;border:1px solid #444}
+#start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900}
 #top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333}
 #ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 14px 20px;background:linear-gradient(transparent,#000d 20%,#000 90%);pointer-events:none}
 #mainRow{display:flex;align-items:center;justify-content:space-between;pointer-events:auto}
-#shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px}
-.btn{width:58px;height:58px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:22px;pointer-events:auto}
+#shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px;transition:transform.1s}#shutter:active{transform:scale(.92)}
+.btn{width:58px;height:58px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:20px;pointer-events:auto}
 #tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
 #tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#tools button.active{background:#00ff88;color:#000;border-color:#00ff88}
-#zoomBar{position:fixed;left:50%;bottom:175px;transform:translateX(-50%);z-index:20;background:#000e;padding:7px 8px;border-radius:25px;display:flex;gap:6px;border:1px solid #444}
-#zoomBar button{background:#222;color:#fff;border:1px solid #555;padding:7px 13px;border-radius:20px;font-size:12px}
+#tools button.hdr.active{background:#ff7800;color:#fff;border-color:#ff7800}
 #drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:88vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#ff7800;font-weight:800;margin:14px 0 6px;display:block}.inp{width:100%;padding:11px;border-radius:11px;background:#222;border:1px solid #333;color:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img{flex:1;width:100%;object-fit:contain;background:#111}
 #autoBadge{position:fixed;left:50%;top:85px;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:900;display:none}
-#camDots{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:6px}
-#camDots div{width:8px;height:8px;border-radius:50%;background:#ffffff40;border:1px solid #fff3}#camDots div.active{background:#ff7800;width:22px}
+#hdrBadge{position:fixed;left:50%;top:110px;transform:translateX(-50%);z-index:15;background:#ff7800;color:#fff;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:900;display:none}
+#camDots{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:6px}#camDots div{width:8px;height:8px;border-radius:50%;background:#ffffff40;border:1px solid #fff3}#camDots div.active{background:#ff7800;width:22px}
 </style></head><body>
-<div id="flash"></div><div id="camDots"></div><div id="autoBadge">✨ AUTO</div>
-<div id="start"><div style="font-size:46px">📸</div><h2 style="margin:0">V5.4 MULTI-CÁMARA</h2><p style="color:#0f0;font-size:12px">Las 3 traseras + frontal de tu P30</p><button onclick="iniciarPorIndice(0)">📷 INICIAR TODAS LAS CÁMARAS</button><p id="err" style="color:#ff6;font-size:11px"></p><div id="preList" style="font-size:10px;color:#555;background:#111;padding:8px;border-radius:8px;margin-top:8px;max-height:120px;overflow:auto"></div></div>
+<div id="flash"></div><div id="camDots"></div><div id="autoBadge">✨ COLOR V3</div><div id="hdrBadge">🔆 HDR x3</div>
+<div id="start"><div style="font-size:46px">📸</div><h2 style="margin:0">V5.5 HDR PRO</h2><p style="color:#0f0;font-size:11px">5 cámaras + HDR sin trabar<br>16MB PRINT</p><button onclick="iniciarPorIndice(0)">📷 INICIAR</button><p id="err" style="color:#ff6;font-size:11px"></p><div id="preList" style="font-size:10px;color:#555;background:#111;padding:8px;border-radius:8px;max-height:80px;overflow:auto"></div></div>
 <video id="v" autoplay playsinline muted></video>
-<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#00ff88;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">MULTI</span></div>
-<div id="tools"><button onclick="setFilter('auto')" id="fAuto" class="active">🤖</button><button onclick="setFilter('food')" id="fFood">🍰</button><button onclick="toggleTorch()">⚡</button></div>
+<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#00ff88;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">AUTO</span></div>
+<div id="tools">
+<button onclick="setFilter('auto')" id="fAuto" class="active">🤖</button>
+<button onclick="setFilter('food')" id="fFood">🍰</button>
+<button onclick="toggleHDR()" id="fHdr" class="hdr">HDR</button>
+<button onclick="toggleTorch()">⚡</button>
+</div>
 <div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="foto()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div>
-<div style="display:flex;justify-content:center;gap:8px;margin-top:12px;pointer-events:auto">
-<span id="camName" style="background:#000a;border:1px solid #333;padding:6px 14px;border-radius:20px;font-size:11px">Cargando cámaras...</span>
+<div style="display:flex;justify-content:center;gap:8px;margin-top:10px;pointer-events:auto">
+<span id="camName" style="background:#000a;border:1px solid #333;padding:6px 14px;border-radius:20px;font-size:11px">Cargando...</span>
+<span id="hdrStatus" style="background:#ff780022;border:1px solid #ff7800;padding:6px 10px;border-radius:20px;font-size:10px">HDR: OFF</span>
 </div></div>
-<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">📷 Tus 4 cámaras P30</h3><span class="label">ELIGE CÁMARA DIRECTA</span><div id="camButtons" style="display:flex;flex-direction:column;gap:8px"></div>
-<span class="label">COLOR V2</span><div class="grid2"><label style="display:flex;gap:8px;background:#00ff8822;border:1px solid #00ff88;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="autoOn" checked> Auto color</label><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="sharpOn" checked> Nitidez</label></div>
-<input type="range" id="satR" min="0" max="60" value="18" style="margin-top:10px;width:100%;accent-color:#ff7800">
+<div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div>
+<h3 style="margin:0">📷 V5.5 TODO</h3>
+<span class="label">CÁMARAS (5 detectadas)</span><div id="camButtons" style="display:flex;flex-direction:column;gap:8px"></div>
+<span class="label">MEJORA COLOR V3 - NO BORRA NADA</span>
+<div class="grid2"><label style="display:flex;gap:8px;background:#00ff8822;border:1px solid #00ff88;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="autoOn" checked> Auto balance</label><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="sharpOn" checked> Nitidez PRO</label></div>
+<input type="range" id="satR" min="0" max="60" value="22" style="margin-top:10px;width:100%;accent-color:#ff7800"><div style="display:flex;justify-content:space-between;font-size:10px;color:#888"><span>Natural</span><span style="color:#ff7800">Vivo botes</span></div>
+<div class="grid2" style="margin-top:10px"><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="hdrOn"> HDR Interior/Carro</label><label style="display:flex;gap:8px;background:#222;border:1px solid #444;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="saveJpg"> Guardar ligero (3MB)</label></div>
 <div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px"></div>
 <button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
 <div id="res"><img id="outImg"><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
 <script>
-let v=document.getElementById('v'), stream, track, cams=[], camIndex=0, lastUrl=null, torchCapable=false, curFilter='auto';
-
+let v=document.getElementById('v'), stream, track, cams=[], camIndex=0, lastUrl=null, torchCapable=false, curFilter='auto', hdrOn=false;
 async function getCams(){
   try{
-    let d=await navigator.mediaDevices.enumerateDevices();
-    cams=d.filter(x=>x.kind=='videoinput');
-    document.getElementById('camList').innerText=cams.map((c,i)=>`[${i}] ${c.label||'Cam '+i} ${i==camIndex?'<< ACTIVA':''}`).join('\n');
-    document.getElementById('preList').innerText=cams.length? cams.map((c,i)=>`[${i}] ${c.label}`).join('\n') : 'Dale a INICIAR para detectar';
-    // dibuja puntitos
-    let dots=document.getElementById('camDots'); dots.innerHTML='';
-    cams.forEach((_,i)=>{ let dot=document.createElement('div'); if(i==camIndex) dot.classList.add('active'); dots.appendChild(dot); });
-    // botones directos
+    let d=await navigator.mediaDevices.enumerateDevices(); cams=d.filter(x=>x.kind=='videoinput');
+    document.getElementById('camList').innerText=cams.map((c,i)=>`[${i}] ${c.label||'Cam '+i} ${i==camIndex?'<<':''}`).join('\n');
+    document.getElementById('preList').innerText=cams.length? cams.map((c,i)=>`[${i}] ${c.label}`).join('\n') : 'Dale iniciar';
+    let dots=document.getElementById('camDots'); dots.innerHTML=''; cams.forEach((_,i)=>{ let dot=document.createElement('div'); if(i==camIndex) dot.classList.add('active'); dots.appendChild(dot); });
     let cont=document.getElementById('camButtons'); cont.innerHTML='';
     cams.forEach((c,i)=>{
-      let isFront=c.label.toLowerCase().includes('front')||c.label.toLowerCase().includes('facing front');
-      let isWide=c.label.toLowerCase().includes('wide')||c.label.toLowerCase().includes('angular');
-      let name=isFront?'🤳 Frontal': isWide? '📷 Trasera Gran Angular' : `📷 Trasera ${i+1}`;
-      let b=document.createElement('button'); b.innerText=name + (i==camIndex?' ✅':'');
-      b.style.cssText='padding:12px;background:'+(i==camIndex?'#ff7800':'#222')+';color:#fff;border:1px solid #444;border-radius:12px;text-align:left';
-      b.onclick=()=>iniciarPorIndice(i);
-      cont.appendChild(b);
+      let l=c.label.toLowerCase(), isFront=l.includes('front'), isWide=l.includes('wide')||l.includes('angular');
+      let name=isFront?'🤳 Frontal': isWide?'📷 Gran Angular':`📷 Trasera ${i+1}`;
+      let b=document.createElement('button'); b.innerText=name+(i==camIndex?' ✅':''); b.style.cssText='padding:12px;background:'+(i==camIndex?'#ff7800':'#222')+';color:#fff;border:1px solid #444;border-radius:12px;text-align:left';
+      b.onclick=()=>iniciarPorIndice(i); cont.appendChild(b);
     });
-    document.getElementById('camName').innerText=`CÁMARA ${camIndex+1}/${cams.length} ${cams[camIndex]?.label?.slice(0,25)||''}`;
+    document.getElementById('camName').innerText=`CAM ${camIndex+1}/${cams.length}`;
   }catch{}
 }
-
 async function iniciarPorIndice(idx){
   camIndex=idx;
   try{
-    if(stream){ stream.getTracks().forEach(t=>{ try{t.stop();}catch{} }); stream=null; await new Promise(r=>setTimeout(r,400)); }
-    if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; }
-    document.getElementById('outImg').src='';
+    if(stream){ stream.getTracks().forEach(t=>{try{t.stop();}catch{}}); stream=null; await new Promise(r=>setTimeout(r,300)); }
+    if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; } document.getElementById('outImg').src='';
     if(cams.length==0) await getCams();
     let devId=cams[camIndex]?.deviceId;
-    let constraints;
-    if(devId){
-      constraints={ video:{ deviceId:{exact:devId}, width:{ideal:3024}, height:{ideal:3024} }, audio:false };
-    } else {
-      constraints={ video:{ facingMode: camIndex==0?'environment':'user', width:{ideal:1920} }, audio:false };
-    }
-    try{
-      stream=await navigator.mediaDevices.getUserMedia(constraints);
-    }catch(e){
-      // fallback sin exact
-      stream=await navigator.mediaDevices.getUserMedia({ video:{ deviceId: devId? {exact:devId} : true, width:{ideal:1920} }, audio:false });
-    }
+    let cons=devId? {video:{deviceId:{exact:devId}, width:{ideal: hdrOn?1920:3024}, height:{ideal: hdrOn?1080:3024}}} : {video:{facingMode:'environment', width:{ideal:1920}}};
+    try{ stream=await navigator.mediaDevices.getUserMedia(cons); }catch{ stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:devId?{exact:devId}:true}}); }
     v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
-    try{ let caps=track.getCapabilities(); torchCapable=!!caps.torch; }catch{ torchCapable=false; }
-    let s=track.getSettings(); document.getElementById('info').innerText=`${s.width}x${s.height}`;
-    let label=cams[camIndex]?.label||''; let isFront=label.toLowerCase().includes('front');
-    document.getElementById('camLabel').innerText= isFront? `FRONTAL ${camIndex+1}` : `TRASERA ${camIndex+1} de ${cams.length}`;
-    document.getElementById('start').style.display='none'; getCams();
-  }catch(e){
-    document.getElementById('err').innerText='Error cam '+camIndex+': '+e.message;
-    // prueba siguiente automaticamente
-    if(cams.length>1){ camIndex=(camIndex+1)%cams.length; setTimeout(()=>iniciarPorIndice(camIndex),800); }
-  }
+    try{ torchCapable=!!track.getCapabilities().torch; }catch{}
+    let s=track.getSettings(); document.getElementById('info').innerText=`${s.width}x${s.height}`; document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length}`; document.getElementById('start').style.display='none'; getCams();
+  }catch(e){ document.getElementById('err').innerText='Error: '+e.message; }
 }
-
-async function voltear(){
-  if(cams.length==0) await getCams();
-  if(cams.length==0){ await iniciarPorIndice(0); return; }
-  camIndex=(camIndex+1)%cams.length;
-  await iniciarPorIndice(camIndex);
-}
-function setFilter(f){ curFilter=f; document.querySelectorAll('#tools button').forEach(b=>b.classList.remove('active')); document.getElementById(f=='auto'?'fAuto':'fFood').classList.add('active'); }
+async function voltear(){ if(cams.length==0) await getCams(); camIndex=(camIndex+1)%Math.max(1,cams.length); await iniciarPorIndice(camIndex); }
+function setFilter(f){ curFilter=f; document.getElementById('fAuto').classList.toggle('active',f=='auto'); document.getElementById('fFood').classList.toggle('active',f=='food'); document.getElementById('modeTxt').innerText=f=='food'?'FOOD':'AUTO'; }
+function toggleHDR(){ hdrOn=!hdrOn; document.getElementById('hdrOn').checked=hdrOn; document.getElementById('fHdr').classList.toggle('active',hdrOn); document.getElementById('hdrStatus').innerText=hdrOn?'HDR: ON (3 fotos)':'HDR: OFF'; document.getElementById('hdrStatus').style.background=hdrOn?'#ff7800':'#000a'; document.getElementById('hdrStatus').style.color=hdrOn?'#fff':'#888'; }
 function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
 function cerrarRes(){ document.getElementById('res').style.display='none'; if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; } document.getElementById('outImg').src=''; }
 async function toggleTorch(){ if(!track||!torchCapable) return; try{ await track.applyConstraints({advanced:[{torch:true}]}); setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{torch:false}]});}catch{} },2000); }catch{} }
+document.getElementById('hdrOn').onchange=e=>{ hdrOn=e.target.checked; document.getElementById('fHdr').classList.toggle('active',hdrOn); document.getElementById('hdrStatus').innerText=hdrOn?'HDR: ON':'HDR: OFF'; };
 
-function autoEnhanceCanvasV2(canvas){
-  let ctx=canvas.getContext('2d'); let w=canvas.width,h=canvas.height;
+function colorV3(canvas){
+  let ctx=canvas.getContext('2d'), w=canvas.width, h=canvas.height;
   let small=document.createElement('canvas'); small.width=200; small.height=200*h/w; let sCtx=small.getContext('2d'); sCtx.drawImage(canvas,0,0,small.width,small.height);
-  let data=sCtx.getImageData(0,0,small.width,small.height).data; let sum=0,sumR=0,sumG=0,sumB=0,cnt=data.length/4;
+  let data=sCtx.getImageData(0,0,small.width,small.height).data, sum=0,sumR=0,sumG=0,sumB=0,cnt=data.length/4;
   for(let i=0;i<data.length;i+=4){ sum+=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2]; sumR+=data[i]; sumG+=data[i+1]; sumB+=data[i+2]; }
-  let avg=sum/cnt, avgR=sumR/cnt, avgG=sumG/cnt, avgB=sumB/cnt; let avgAll=(avgR+avgG+avgB)/3;
-  let rGain=Math.max(0.75,Math.min(1.35,avgAll/avgR)), gGain=Math.max(0.75,Math.min(1.35,avgAll/avgG)), bGain=Math.max(0.75,Math.min(1.35,avgAll/avgB));
-  let bright=avg<80?50:avg<115?30:avg<140?12:avg>200?-18:0;
+  let avg=sum/cnt, avgR=sumR/cnt, avgG=sumG/cnt, avgB=sumB/cnt, avgAll=(avgR+avgG+avgB)/3;
+  let rGain=Math.max(0.8,Math.min(1.3,avgAll/avgR)), gGain=Math.max(0.8,Math.min(1.3,avgAll/avgG)), bGain=Math.max(0.8,Math.min(1.3,avgAll/avgB));
+  let bright=avg<80?40:avg<110?22:avg>210?-15:0;
   let sat=parseInt(document.getElementById('satR').value)/100;
-  let imgData=ctx.getImageData(0,0,w,h); let d=imgData.data;
+  let imgData=ctx.getImageData(0,0,w,h), d=imgData.data;
   for(let i=0;i<d.length;i+=4){
     let r=d[i]+bright, g=d[i+1]+bright, b=d[i+2]+bright;
-    if(curFilter=='food'){ if(b>g+10) b*=1.08; if(r>g+20) r*=1.06; }
-    d[i]=Math.min(255,Math.max(0,r*rGain*(1+sat*0.3)));
-    d[i+1]=Math.min(255,Math.max(0,g*gGain));
-    d[i+2]=Math.min(255,Math.max(0,b*bGain*(1+sat*0.2)));
+    if(curFilter=='food'){ if(r>g+15) r*=1.07; if(b>150) b*=1.08; }
+    let gray=0.299*r+0.587*g+0.114*b;
+    d[i]=Math.min(255,Math.max(0, (gray + (r-gray)*(1+sat))*rGain ));
+    d[i+1]=Math.min(255,Math.max(0, (gray + (g-gray)*(1+sat*0.6))*gGain ));
+    d[i+2]=Math.min(255,Math.max(0, (gray + (b-gray)*(1+sat*0.8))*bGain ));
   }
   ctx.putImageData(imgData,0,0);
   if(document.getElementById('sharpOn').checked){
     let blurred=document.createElement('canvas'); blurred.width=w; blurred.height=h; let bCtx=blurred.getContext('2d'); bCtx.filter='blur(1px)'; bCtx.drawImage(canvas,0,0);
     let bData=bCtx.getImageData(0,0,w,h).data; let oData=ctx.getImageData(0,0,w,h); let od=oData.data;
-    for(let i=0;i<od.length;i+=4){ od[i]+= (od[i]-bData[i])*0.4; od[i+1]+= (od[i+1]-bData[i+1])*0.4; od[i+2]+= (od[i+2]-bData[i+2])*0.4; }
+    for(let i=0;i<od.length;i+=4){ od[i]=Math.min(255,od[i]+(od[i]-bData[i])*0.35); od[i+1]=Math.min(255,od[i+1]+(od[i+1]-bData[i+1])*0.35); od[i+2]=Math.min(255,od[i+2]+(od[i+2]-bData[i+2])*0.35); }
     ctx.putImageData(oData,0,0);
   }
-  return {avg: avg.toFixed(0)};
+  return {avg:avg.toFixed(0)};
+}
+function mergeHDR(dark, normal, bright){
+  let w=normal.width, h=normal.height, ctx=normal.getContext('2d');
+  let dD=dark.getContext('2d').getImageData(0,0,w,h).data, dN=ctx.getImageData(0,0,w,h).data, dB=bright.getContext('2d').getImageData(0,0,w,h).data;
+  let out=ctx.createImageData(w,h), o=out.data;
+  for(let i=0;i<o.length;i+=4){
+    let rn=dN[i], gn=dN[i+1], bn=dN[i+2];
+    let lum=(rn+gn+bn)/3/255;
+    let wDark=lum>0.75? (lum-0.75)*4 : 0;
+    let wBright=lum<0.25? (0.25-lum)*4 : 0;
+    let wNorm=1 - wDark - wBright;
+    o[i]=Math.min(255, dN[i]*wNorm + dD[i]*wDark*0.7 + dB[i]*wBright*0.9);
+    o[i+1]=Math.min(255, dN[i+1]*wNorm + dD[i+1]*wDark*0.7 + dB[i+1]*wBright*0.9);
+    o[i+2]=Math.min(255, dN[i+2]*wNorm + dD[i+2]*wDark*0.7 + dB[i+2]*wBright*0.9);
+    o[i+3]=255;
+  }
+  ctx.putImageData(out,0,0);
 }
 
 async function foto(){
-  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),150);
-  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; let ctx=c.getContext('2d'); ctx.drawImage(v,0,0,c.width,c.height);
-  let blob=await new Promise(r=>c.toBlob(r,'image/png',1)); c.width=1;c.height=1;
-  try{
-    let bmp=await createImageBitmap(blob);
-    let c2=document.createElement('canvas'); c2.width=bmp.width; c2.height=bmp.height; let ctx2=c2.getContext('2d'); ctx2.drawImage(bmp,0,0);
-    let info={};
-    if(document.getElementById('autoOn').checked){ document.getElementById('autoBadge').style.display='block'; info=autoEnhanceCanvasV2(c2); setTimeout(()=>document.getElementById('autoBadge').style.display='none',1500); }
-    blob=await new Promise(r=>c2.toBlob(r,'image/png',1)); c2.width=1;c2.height=1; bmp.close();
-    if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} }
-    let url=URL.createObjectURL(blob); lastUrl=url;
-    document.getElementById('outImg').src=url;
-    document.getElementById('resInfo').innerText=`✅ Cam ${camIndex+1}/${cams.length} • ${info.avg||''} luz • ${(blob.size/1024/1024).toFixed(1)} MB • PRINT`;
-    document.getElementById('res').style.display='flex';
-  }catch(e){}
+  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),120);
+  let vw=v.videoWidth, vh=v.videoHeight;
+  if(!hdrOn){
+    let c=document.createElement('canvas'); c.width=vw; c.height=vh; c.getContext('2d').drawImage(v,0,0,vw,vh);
+    document.getElementById('autoBadge').style.display='block';
+    let info=colorV3(c); setTimeout(()=>document.getElementById('autoBadge').style.display='none',1200);
+    let blob=await new Promise(r=>c.toBlob(r, document.getElementById('saveJpg').checked?'image/jpeg':'image/png', document.getElementById('saveJpg').checked?0.92:1));
+    if(lastUrl) try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=URL.createObjectURL(blob);
+    document.getElementById('outImg').src=lastUrl; document.getElementById('resInfo').innerText=`✅ CAM ${camIndex+1}/${cams.length} • ${info.avg} luz • ${(blob.size/1024/1024).toFixed(1)}MB • PRINT`;
+    document.getElementById('res').style.display='flex'; c.width=1;c.height=1;
+  } else {
+    document.getElementById('hdrBadge').style.display='block'; document.getElementById('hdrStatus').innerText='HDR: capturando 3...';
+    let w=Math.min(1920,vw), h=w*vh/vw;
+    let caps=[0.6,1,1.6];
+    let canvases=[];
+    for(let k=0;k<3;k++){
+      let ca=document.createElement('canvas'); ca.width=w; ca.height=h; let ct=ca.getContext('2d'); ct.filter=`brightness(${caps[k]})`; ct.drawImage(v,0,0,w,h); ct.filter='none'; canvases.push(ca);
+      await new Promise(r=>setTimeout(r,120));
+    }
+    mergeHDR(canvases[0],canvases[1],canvases[2]);
+    let info=colorV3(canvases[1]);
+    let finalW=vw, finalH=vh;
+    let finalC=document.createElement('canvas'); finalC.width=finalW; finalC.height=finalH; finalC.getContext('2d').drawImage(canvases[1],0,0,finalW,finalH);
+    let blob=await new Promise(r=>finalC.toBlob(r, document.getElementById('saveJpg').checked?'image/jpeg':'image/png', document.getElementById('saveJpg').checked?0.92:1));
+    if(lastUrl) try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=URL.createObjectURL(blob);
+    document.getElementById('outImg').src=lastUrl; document.getElementById('resInfo').innerText=`🔆 HDR CAM ${camIndex+1} • ${info.avg} luz • ${(blob.size/1024/1024).toFixed(1)}MB • sombras+luces`;
+    document.getElementById('res').style.display='flex'; document.getElementById('hdrBadge').style.display='none'; document.getElementById('hdrStatus').innerText='HDR: ON';
+    canvases.forEach(c=>{c.width=1;c.height=1}); finalC.width=1;finalC.height=1;
+  }
 }
-document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; a.download=`MULTI_${camIndex+1}_${Date.now()}.png`; document.body.appendChild(a); a.click(); a.remove(); };
+document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; let ext=document.getElementById('saveJpg').checked?'jpg':'png'; a.download=`V55_HDR_C${camIndex+1}_${Date.now()}.${ext}`; document.body.appendChild(a); a.click(); a.remove(); };
 setFilter('auto');
 </script></body></html> 
