@@ -1,16 +1,11 @@
 <!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro V4.6 FLASH + IA GRATIS</title>
+<title>Foto Pro V4.6.1 FLASH + IA</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-512.png">
 <meta name="theme-color" content="#ff7800">
-<!-- IA GRATIS - NO BORRA NADA, SOLO AGREGA -->
-<script type="module">
-import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js';
-window.removeBackground = removeBackground;
-window.bgReady = true;
-console.log('IA lista');
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.umd.js"></script>
+<script>window.bgReady=true;</script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}
 #v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
@@ -34,7 +29,7 @@ console.log('IA lista');
 #res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
 </style></head><body>
 <div id="flash"></div><div id="recDot">🔴 <span id="timer">00:00</span> • <span id="timerMb">0 MB</span></div>
-<div id="start"><div style="font-size:46px">🍰</div><h2 style="margin:0">V4.6 FLASH + IA</h2><p style="color:#0f0;font-size:11px">Trasera con LED + sin rayas + Fondo IA gratis</p><button onclick="iniciar(false)">📷 PRENDER TRASERA ⚡</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
+<div id="start"><div style="font-size:46px">🍰</div><h2 style="margin:0">V4.6.1 FLASH + IA</h2><p style="color:#0f0;font-size:11px">Trasera con LED + Fondo IA con %</p><button onclick="iniciar(false)">📷 PRENDER TRASERA ⚡</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
 <video id="v" autoplay playsinline muted></video><div id="focus"></div>
 <div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#fff;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">FOTO</span></div>
 <div id="tools"><button onclick="setFilter('none')">☀️</button><button onclick="setFilter('vivid')">🎨</button><button onclick="setFilter('warm')">🔥</button><button onclick="setFilter('bw')">⚫</button><button onclick="toggleTorch()" id="torchBtn" style="background:#ff7800">⚡</button></div>
@@ -47,7 +42,7 @@ console.log('IA lista');
 <button onclick="setRecorte()" id="recBtn" style="background:#222;color:#fff;padding:7px 14px;border-radius:20px;border:1px solid #555;font-size:12px">⬜ 1:1</button>
 </div></div>
 <div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">⚙️ Config</h3><span class="label">CALIDAD</span><div class="grid2"><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="pngOn" checked> PNG HD</label><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="flashOn" checked> ⚡ Flash LED</label></div><span class="label">MARCA</span><input id="wm" class="inp" value="Foto Pro - Jacona"><div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div><div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px">-</div><button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
-<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px;flex-wrap:wrap"><button id="dl" style="flex:1;padding:14px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button id="bgBtn" onclick="quitarFondoGratis()" style="flex:1;padding:14px;background:#a855f7;color:#fff;border-radius:14px;border:none;font-weight:900">✨ FONDO IA</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
+<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px;flex-wrap:wrap"><button id="dl" style="flex:1;min-width:120px;padding:14px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button id="bgBtn" onclick="quitarFondoGratis()" style="flex:1;min-width:120px;padding:14px;background:#a855f7;color:#fff;border-radius:14px;border:none;font-weight:900">✨ FONDO IA</button><button onclick="cerrarRes()" style="flex:1;min-width:80px;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888;padding:0 12px"></p></div>
 <script>
 let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, facingFront=false, recorder, chunks=[], isRec=false, curFilter='none', recorte='none', timerInt, sec=0, curZoom=1, lastDist=0, lastUrl=null, torchCapable=false, torchOn=false, originalBlob=null;
 async function getCams(){ try{ let d=await navigator.mediaDevices.enumerateDevices(); cams=d.filter(x=>x.kind=='videoinput'); document.getElementById('camList').innerText=cams.map((c,i)=>(i==camIndex?'▶ ':' ')+`[${i}] ${c.label}`).join('\n'); }catch{} }
@@ -88,36 +83,43 @@ async function foto(){
   document.getElementById('outImg').src=url; document.getElementById('outImg').style.display='block'; document.getElementById('outVid').style.display='none';
   document.getElementById('resInfo').innerText=`${mb} MB • ${usarFlash?'⚡ CON FLASH':'SIN FLASH'} • SIN RAYAS`;
   document.getElementById('res').style.display='flex';
-  document.getElementById('bgBtn').innerText='✨ FONDO IA'; document.getElementById('bgBtn').disabled=false;
+  document.getElementById('bgBtn').innerText='✨ FONDO IA'; document.getElementById('bgBtn').disabled=false; document.getElementById('bgBtn').onclick=quitarFondoGratis;
 }
-// === NUEVA FUNCION IA GRATIS - NO TOCA NADA DE LO ANTERIOR ===
 async function quitarFondoGratis(){
-  if(!lastUrl ||!originalBlob) return;
+  if(!originalBlob){ document.getElementById('resInfo').innerText='❌ Toma foto primero'; return; }
   let btn=document.getElementById('bgBtn'), info=document.getElementById('resInfo');
-  if(!window.bgReady){ info.innerText='⏳ Cargando IA... espera 5 seg'; return; }
-  btn.disabled=true; btn.innerText='⏳ IA...';
-  info.innerText='⏳ Quitando fondo... 1ra vez baja 28MB (20seg), luego 2seg';
+  let removeFn = window.removeBackground || (window.ImglyBackgroundRemoval && window.ImglyBackgroundRemoval.removeBackground);
+  if(typeof removeFn!== 'function'){
+    info.innerText='❌ IA no cargó - Conéctate a WiFi fuerte y recarga';
+    return;
+  }
+  btn.disabled=true; btn.innerText='⏳ 0%';
+  info.innerText='⏳ Bajando modelo IA 28MB... 1ra vez tarda 20s en WiFi';
   try{
-    const blobSinFondo = await window.removeBackground(originalBlob, {
+    const blobSinFondo = await removeFn(originalBlob, {
       model: 'small',
-      output: { format: 'image/png', quality: 0.9 }
+      output: { format: 'image/png', quality: 0.9 },
+      progress: (key, current, total)=>{
+        let pct = total? Math.round((current/total)*100) : Math.round(key*100);
+        if(pct>0){ btn.innerText=`⏳ ${pct}%`; info.innerText=`⏳ IA ${pct}% - No cierres la pantalla`; }
+      }
     });
     let url = URL.createObjectURL(blobSinFondo);
-    // no borramos original para poder revertir si quieres
     document.getElementById('outImg').src=url;
     lastUrl=url;
     let mb=(blobSinFondo.size/1024/1024).toFixed(2);
-    info.innerText=`✅ ${mb} MB • Fondo quitado GRATIS • PNG transparente`;
-    btn.innerText='✅ HECHO';
-    // cambiar boton a restaurar
+    info.innerText=`✅ ${mb} MB • Fondo quitado GRATIS • Ya es PNG transparente`;
+    btn.innerText='↩️ RESTAURAR'; btn.disabled=false;
     btn.onclick=()=>{
       let url2=URL.createObjectURL(originalBlob);
       document.getElementById('outImg').src=url2; lastUrl=url2;
-      info.innerText='↩️ Restaurado original';
-      btn.innerText='✨ FONDO IA'; btn.onclick=quitarFondoGratis;
+      info.innerText='↩️ Original restaurado'; btn.innerText='✨ FONDO IA';
+      setTimeout(()=>{ btn.onclick=quitarFondoGratis; },200);
     };
   }catch(e){
-    info.innerText='❌ Error IA: '+e.message; btn.innerText='✨ REINTENTAR'; btn.disabled=false; btn.onclick=quitarFondoGratis;
+    console.error(e);
+    info.innerText='❌ Error: '+e.message+' - Prueba con WiFi y recarga';
+    btn.innerText='✨ REINTENTAR'; btn.disabled=false; btn.onclick=quitarFondoGratis;
   }
 }
 function video(){ let sh=document.getElementById('shutter'), dot=document.getElementById('recDot'), t=document.getElementById('timer'), tm=document.getElementById('timerMb'); if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm', videoBitsPerSecond:2500000}); recorder.ondataavailable=e=>{ chunks.push(e.data); tm.innerText=`${(chunks.reduce((a,b)=>a+b.size,0)/1024/1024).toFixed(1)} MB`; }; recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); lastUrl=u; document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('res').style.display='flex'; }; recorder.start(200); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; dot.style.display='flex'; sec=0; t.innerText='00:00'; timerInt=setInterval(()=>{ sec++; let m=String(Math.floor(sec/60)).padStart(2,'0'); let s=String(sec%60).padStart(2,'0'); t.innerText=`${m}:${s}`; },1000); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; dot.style.display='none'; clearInterval(timerInt); } }
