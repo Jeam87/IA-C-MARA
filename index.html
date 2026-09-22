@@ -1,9 +1,16 @@
 <!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro V4.5 FLASH REAL</title>
+<title>Foto Pro V4.6 FLASH + IA GRATIS</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-512.png">
 <meta name="theme-color" content="#ff7800">
+<!-- IA GRATIS - NO BORRA NADA, SOLO AGREGA -->
+<script type="module">
+import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js';
+window.removeBackground = removeBackground;
+window.bgReady = true;
+console.log('IA lista');
+</script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}
 #v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
@@ -27,7 +34,7 @@
 #res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img,#res video{flex:1;width:100%;object-fit:contain;background:#111}
 </style></head><body>
 <div id="flash"></div><div id="recDot">🔴 <span id="timer">00:00</span> • <span id="timerMb">0 MB</span></div>
-<div id="start"><div style="font-size:46px">🍰</div><h2 style="margin:0">V4.5 FLASH REAL</h2><p style="color:#0f0;font-size:11px">Trasera con LED + sin rayas</p><button onclick="iniciar(false)">📷 PRENDER TRASERA ⚡</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
+<div id="start"><div style="font-size:46px">🍰</div><h2 style="margin:0">V4.6 FLASH + IA</h2><p style="color:#0f0;font-size:11px">Trasera con LED + sin rayas + Fondo IA gratis</p><button onclick="iniciar(false)">📷 PRENDER TRASERA ⚡</button><button onclick="iniciar(true)" class="sec">🤳 FRONTAL</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
 <video id="v" autoplay playsinline muted></video><div id="focus"></div>
 <div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#fff;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">FOTO</span></div>
 <div id="tools"><button onclick="setFilter('none')">☀️</button><button onclick="setFilter('vivid')">🎨</button><button onclick="setFilter('warm')">🔥</button><button onclick="setFilter('bw')">⚫</button><button onclick="toggleTorch()" id="torchBtn" style="background:#ff7800">⚡</button></div>
@@ -40,9 +47,9 @@
 <button onclick="setRecorte()" id="recBtn" style="background:#222;color:#fff;padding:7px 14px;border-radius:20px;border:1px solid #555;font-size:12px">⬜ 1:1</button>
 </div></div>
 <div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div><h3 style="margin:0">⚙️ Config</h3><span class="label">CALIDAD</span><div class="grid2"><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="pngOn" checked> PNG HD</label><label style="display:flex;gap:8px;background:#222;border:1px solid #333;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="flashOn" checked> ⚡ Flash LED</label></div><span class="label">MARCA</span><input id="wm" class="inp" value="Foto Pro - Jacona"><div class="grid2"><input id="price" class="inp" value="$250"><input id="gps" class="inp" value="Jacona, Mich"></div><div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px">-</div><button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
-<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:14px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
+<div id="res"><img id="outImg" style="display:none"><video id="outVid" controls playsinline style="display:none"></video><div style="display:flex;gap:8px;padding:12px;flex-wrap:wrap"><button id="dl" style="flex:1;padding:14px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button id="bgBtn" onclick="quitarFondoGratis()" style="flex:1;padding:14px;background:#a855f7;color:#fff;border-radius:14px;border:none;font-weight:900">✨ FONDO IA</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
 <script>
-let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, facingFront=false, recorder, chunks=[], isRec=false, curFilter='none', recorte='none', timerInt, sec=0, curZoom=1, lastDist=0, lastUrl=null, torchCapable=false, torchOn=false;
+let v=document.getElementById('v'), stream, track, modo='foto', cams=[], camIndex=0, facingFront=false, recorder, chunks=[], isRec=false, curFilter='none', recorte='none', timerInt, sec=0, curZoom=1, lastDist=0, lastUrl=null, torchCapable=false, torchOn=false, originalBlob=null;
 async function getCams(){ try{ let d=await navigator.mediaDevices.enumerateDevices(); cams=d.filter(x=>x.kind=='videoinput'); document.getElementById('camList').innerText=cams.map((c,i)=>(i==camIndex?'▶ ':' ')+`[${i}] ${c.label}`).join('\n'); }catch{} }
 async function iniciar(wantFront){ facingFront=wantFront; try{ if(stream) stream.getTracks().forEach(t=>t.stop()); await getCams(); if(cams.length){ camIndex = wantFront? (cams.findIndex(c=>c.label.toLowerCase().includes('front'))>=0?cams.findIndex(c=>c.label.toLowerCase().includes('front')):0) : (cams.findIndex(c=>c.label.toLowerCase().includes('back'))>=0?cams.findIndex(c=>c.label.toLowerCase().includes('back')):cams.length-1); } let devId=cams[camIndex]?.deviceId; stream=await navigator.mediaDevices.getUserMedia({ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode: wantFront?'user':'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true }); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; try{ let caps=track.getCapabilities(); torchCapable=!!caps.torch; }catch{ torchCapable=false; } document.getElementById('info').innerText=`${track.getSettings().width}x${track.getSettings().height}`; document.getElementById('camLabel').innerText= torchCapable? `CAM ${camIndex+1}/${cams.length} ⚡FLASH OK` : `CAM ${camIndex+1}/${cams.length}`; document.getElementById('start').style.display='none'; applyLight(); await getCams(); }catch(e){ document.getElementById('err').innerText=e.message; } }
 async function voltear(){ if(!cams.length) await getCams(); camIndex=(camIndex+1)%(cams.length||2); try{ if(stream) stream.getTracks().forEach(t=>t.stop()); let devId=cams[camIndex]?.deviceId; stream=await navigator.mediaDevices.getUserMedia({ video: devId? {deviceId:{exact:devId}, width:{ideal:1280}, height:{ideal:720}} : {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true }); v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; try{ let caps=track.getCapabilities(); torchCapable=!!caps.torch; }catch{} document.getElementById('camLabel').innerText= torchCapable? `CAM ${camIndex+1}/${cams.length} ⚡` : `CAM ${camIndex+1}/${cams.length}`; curZoom=1; await getCams(); }catch{ await iniciar(!facingFront); } }
@@ -55,51 +62,64 @@ function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
 function cerrarRes(){ document.getElementById('res').style.display='none'; if(lastUrl) URL.revokeObjectURL(lastUrl); }
 async function setTorch(on){ if(!track ||!torchCapable) return false; try{ await track.applyConstraints({advanced:[{torch:on}]}); torchOn=on; document.getElementById('torchBtn').style.background=on?'#fff':'#ff7800'; document.getElementById('torchBtn').style.color=on?'#000':'#fff'; return true; }catch{ return false; } }
 async function toggleTorch(){ await setTorch(!torchOn); }
-
 v.addEventListener('click',e=>{ if(e.touches && e.touches.length>1) return; let f=document.getElementById('focus'); f.style.left=e.clientX+'px'; f.style.top=e.clientY+'px'; f.style.display='block'; setTimeout(()=>f.style.display='none',1000); });
 v.addEventListener('touchstart',e=>{ if(e.touches.length==2){ lastDist=Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY); } },{passive:false});
 v.addEventListener('touchmove',e=>{ if(e.touches.length==2){ e.preventDefault(); let dist=Math.hypot(e.touches[0].pageX-e.touches[1].pageX, e.touches[0].pageY-e.touches[1].pageY); let diff=(dist-lastDist)*0.015; curZoom=Math.min(5,Math.max(1,curZoom+diff)); try{ track.applyConstraints({advanced:[{zoom:curZoom}]});}catch{ v.style.transform=`scale(${1+(curZoom-1)*0.15})`; } document.getElementById('camLabel').innerText=`ZOOM ${curZoom.toFixed(1)}x`; lastDist=dist; } },{passive:false});
-
-// FOTO CON FLASH REAL + SIN RAYAS
 async function foto(){
   let usarFlash=document.getElementById('flashOn').checked && torchCapable &&!facingFront;
   if(usarFlash) await setTorch(true);
-
-  // Efecto visual
   let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),140); navigator.vibrate?.(60);
-
-  // Esperar a que el LED ilumine bien
   if(usarFlash) await new Promise(r=>setTimeout(r,300));
-
   let usePNG=document.getElementById('pngOn').checked;
-  let c=document.createElement('canvas');
-  c.width=v.videoWidth;
-  c.height=v.videoHeight;
-  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+  let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0,c.width,c.height);
   let blob=await new Promise(r=>c.toBlob(r,usePNG?'image/png':'image/jpeg',0.95));
-
   if(usarFlash) await setTorch(false);
-
-  // Marca
   try{
-    let bmp=await createImageBitmap(blob);
-    let c2=document.createElement('canvas'); let tw=bmp.width, th=bmp.height;
+    let bmp=await createImageBitmap(blob); let c2=document.createElement('canvas'); let tw=bmp.width, th=bmp.height;
     if(recorte=='1:1'){ let s=Math.min(bmp.width,bmp.height); tw=s; th=s; }
     if(recorte=='4:5'){ tw=bmp.width; th=bmp.width*1.25; if(th>bmp.height){ th=bmp.height; tw=th*0.8; } }
-    c2.width=tw; c2.height=th;
-    let ctx=c2.getContext('2d'); ctx.drawImage(bmp,(c2.width-bmp.width)/2,(c2.height-bmp.height)/2);
+    c2.width=tw; c2.height=th; let ctx=c2.getContext('2d'); ctx.drawImage(bmp,(c2.width-bmp.width)/2,(c2.height-bmp.height)/2);
     ctx.font=`bold ${c2.width*0.03}px system-ui`; ctx.fillStyle='#fff'; ctx.shadowColor='#000'; ctx.shadowBlur=10; ctx.textAlign='right'; ctx.fillText(document.getElementById('wm').value, c2.width*0.97, c2.height*0.96);
     ctx.font=`900 ${c2.width*0.06}px system-ui`; ctx.fillStyle='#ff7800'; ctx.textAlign='left'; ctx.fillText(document.getElementById('price').value, c2.width*0.03, c2.height*0.93);
     blob=await new Promise(r=>c2.toBlob(r,usePNG?'image/png':'image/jpeg',0.95));
   }catch{}
-
-  let url=URL.createObjectURL(blob); lastUrl=url;
-  let mb=(blob.size/1024/1024).toFixed(2);
+  originalBlob=blob;
+  let url=URL.createObjectURL(blob); lastUrl=url; let mb=(blob.size/1024/1024).toFixed(2);
   document.getElementById('outImg').src=url; document.getElementById('outImg').style.display='block'; document.getElementById('outVid').style.display='none';
   document.getElementById('resInfo').innerText=`${mb} MB • ${usarFlash?'⚡ CON FLASH':'SIN FLASH'} • SIN RAYAS`;
   document.getElementById('res').style.display='flex';
+  document.getElementById('bgBtn').innerText='✨ FONDO IA'; document.getElementById('bgBtn').disabled=false;
 }
-
+// === NUEVA FUNCION IA GRATIS - NO TOCA NADA DE LO ANTERIOR ===
+async function quitarFondoGratis(){
+  if(!lastUrl ||!originalBlob) return;
+  let btn=document.getElementById('bgBtn'), info=document.getElementById('resInfo');
+  if(!window.bgReady){ info.innerText='⏳ Cargando IA... espera 5 seg'; return; }
+  btn.disabled=true; btn.innerText='⏳ IA...';
+  info.innerText='⏳ Quitando fondo... 1ra vez baja 28MB (20seg), luego 2seg';
+  try{
+    const blobSinFondo = await window.removeBackground(originalBlob, {
+      model: 'small',
+      output: { format: 'image/png', quality: 0.9 }
+    });
+    let url = URL.createObjectURL(blobSinFondo);
+    // no borramos original para poder revertir si quieres
+    document.getElementById('outImg').src=url;
+    lastUrl=url;
+    let mb=(blobSinFondo.size/1024/1024).toFixed(2);
+    info.innerText=`✅ ${mb} MB • Fondo quitado GRATIS • PNG transparente`;
+    btn.innerText='✅ HECHO';
+    // cambiar boton a restaurar
+    btn.onclick=()=>{
+      let url2=URL.createObjectURL(originalBlob);
+      document.getElementById('outImg').src=url2; lastUrl=url2;
+      info.innerText='↩️ Restaurado original';
+      btn.innerText='✨ FONDO IA'; btn.onclick=quitarFondoGratis;
+    };
+  }catch(e){
+    info.innerText='❌ Error IA: '+e.message; btn.innerText='✨ REINTENTAR'; btn.disabled=false; btn.onclick=quitarFondoGratis;
+  }
+}
 function video(){ let sh=document.getElementById('shutter'), dot=document.getElementById('recDot'), t=document.getElementById('timer'), tm=document.getElementById('timerMb'); if(!isRec){ chunks=[]; recorder=new MediaRecorder(stream,{mimeType:'video/webm', videoBitsPerSecond:2500000}); recorder.ondataavailable=e=>{ chunks.push(e.data); tm.innerText=`${(chunks.reduce((a,b)=>a+b.size,0)/1024/1024).toFixed(1)} MB`; }; recorder.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); lastUrl=u; document.getElementById('outVid').src=u; document.getElementById('outVid').style.display='block'; document.getElementById('outImg').style.display='none'; document.getElementById('res').style.display='flex'; }; recorder.start(200); isRec=true; sh.classList.add('rec'); sh.innerText='⬛'; dot.style.display='flex'; sec=0; t.innerText='00:00'; timerInt=setInterval(()=>{ sec++; let m=String(Math.floor(sec/60)).padStart(2,'0'); let s=String(sec%60).padStart(2,'0'); t.innerText=`${m}:${s}`; },1000); }else{ recorder.stop(); isRec=false; sh.classList.remove('rec'); sh.innerText='📸'; dot.style.display='none'; clearInterval(timerInt); } }
 function accion(){ if(modo=='foto') foto(); else video(); }
 document.getElementById('dl').onclick=async()=>{ if(!lastUrl) return; try{ let blob=await fetch(lastUrl).then(r=>r.blob()); let file=new File([blob], `foto_${Date.now()}.${blob.type.includes('video')?'webm':'jpg'}`, {type:blob.type}); if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'Foto'}); return; } }catch{} let a=document.createElement('a'); a.href=lastUrl; a.download=`FOTO_${Date.now()}.${lastUrl.includes('video')?'webm':'jpg'}`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>window.open(lastUrl,'_blank'),500); };
