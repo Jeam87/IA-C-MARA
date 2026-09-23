@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro V5.6 SHARP</title>
+<title>Foto Pro V5.7 SHARP FIX</title>
 <meta name="theme-color" content="#ff7800">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}
@@ -15,13 +15,13 @@
 .btn{width:58px;height:58px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:20px;pointer-events:auto}
 #tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
 #tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#tools button.active{background:#00ff88;color:#000;border-color:#00ff88}
-#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:88vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#ff7800;font-weight:800;margin:14px 0 6px;display:block}.inp{width:100%;padding:11px;border-radius:11px;background:#222;border:1px solid #333;color:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:88vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#ff7800;font-weight:800;margin:14px 0 6px;display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img{flex:1;width:100%;object-fit:contain;background:#111}
 #autoBadge{position:fixed;left:50%;top:85px;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:900;display:none}
 #camDots{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:6px}#camDots div{width:8px;height:8px;border-radius:50%;background:#ffffff40;border:1px solid #fff3}#camDots div.active{background:#ff7800;width:22px}
 </style></head><body>
-<div id="flash"></div><div id="camDots"></div><div id="autoBadge">✨ SHARP V3</div>
-<div id="start"><div style="font-size:46px">📸</div><h2 style="margin:0">V5.6 SHARP</h2><p style="color:#0f0;font-size:11px">5 cámaras • 1 toma nítida • 16MB<br>No borroso, no se traba</p><button onclick="iniciarPorIndice(0)">📷 INICIAR</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
+<div id="flash"></div><div id="camDots"></div><div id="autoBadge">✨ SHARP</div>
+<div id="start"><div style="font-size:46px">📸</div><h2 style="margin:0">V5.7 FIX SOMBRAS</h2><p style="color:#0f0;font-size:11px">Ya no oscurece • Nítida • 5 cámaras</p><button onclick="iniciarPorIndice(0)">📷 INICIAR</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
 <video id="v" autoplay playsinline muted></video>
 <div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#00ff88;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">AUTO</span></div>
 <div id="tools">
@@ -30,16 +30,16 @@
 <button onclick="toggleTorch()">⚡</button>
 </div>
 <div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="foto()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div>
-<div style="display:flex;justify-content:center;margin-top:10px;pointer-events:auto">
-<span id="camName" style="background:#000a;border:1px solid #333;padding:6px 14px;border-radius:20px;font-size:11px">Cargando...</span>
-</div></div>
+<div style="display:flex;justify-content:center;margin-top:10px;pointer-events:auto"><span id="camName" style="background:#000a;border:1px solid #333;padding:6px 14px;border-radius:20px;font-size:11px">Cargando...</span></div></div>
 <div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div>
-<h3 style="margin:0">📷 V5.6 SHARP - TODO INCLUIDO</h3>
-<span class="label">CÁMARAS (5)</span><div id="camButtons" style="display:flex;flex-direction:column;gap:8px"></div>
-<span class="label">COLOR V3 SHARP</span>
-<div class="grid2"><label style="display:flex;gap:8px;background:#00ff8822;border:1px solid #00ff88;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="autoOn" checked> Auto balance</label><label style="display:flex;gap:8px;background:#ff780022;border:1px solid #ff7800;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="sharpOn" checked> Nitidez PRO</label></div>
-<input type="range" id="satR" min="0" max="60" value="22" style="margin-top:10px;width:100%;accent-color:#ff7800"><div style="display:flex;justify-content:space-between;font-size:10px;color:#888"><span>Natural</span><span style="color:#ff7800">Vivo botes</span></div>
-<div class="grid2" style="margin-top:10px"><label style="display:flex;gap:8px;background:#222;border:1px solid #444;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="saveJpg"> Guardar ligero (3MB JPG)</label><label style="display:flex;gap:8px;background:#222;border:1px solid #444;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="hdrSingle" checked> Recuperar luces/sombras</label></div>
+<h3 style="margin:0">📷 V5.7 - ARREGLO SOMBRAS</h3>
+<span class="label">CÁMARAS</span><div id="camButtons" style="display:flex;flex-direction:column;gap:8px"></div>
+<span class="label">AJUSTES</span>
+<div class="grid2"><label style="display:flex;gap:8px;background:#00ff8822;border:1px solid #00ff88;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="sharpOn" checked> Nitidez</label><label style="display:flex;gap:8px;background:#222;border:1px solid #444;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="saveJpg"> JPG ligero</label></div>
+<label class="label">Color vivo botes</label>
+<input type="range" id="satR" min="0" max="60" value="18" style="width:100%;accent-color:#ff7800"><div style="display:flex;justify-content:space-between;font-size:10px;color:#888"><span>Natural</span><span>Vivo</span></div>
+<label class="label">Recuperar luces/sombras (ahora suave)</label>
+<input type="range" id="hdrR" min="0" max="100" value="35" style="width:100%;accent-color:#00ff88"><div style="display:flex;justify-content:space-between;font-size:10px;color:#888"><span>0 = sin efecto</span><span style="color:#00ff88" id="hdrVal">35% suave</span></div>
 <div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px"></div>
 <button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
 <div id="res"><img id="outImg"><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
@@ -80,35 +80,38 @@ function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
 function cerrarRes(){ document.getElementById('res').style.display='none'; if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; } document.getElementById('outImg').src=''; }
 async function toggleTorch(){ if(!track||!torchCapable) return; try{ await track.applyConstraints({advanced:[{torch:true}]}); setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{torch:false}]});}catch{} },1800); }catch{} }
 
+document.getElementById('hdrR').oninput=e=>{ document.getElementById('hdrVal').innerText=e.target.value+'% '+(e.target.value<20?'apagado':e.target.value<50?'suave':'fuerte'); };
+
 function colorSharp(canvas){
   let ctx=canvas.getContext('2d'), w=canvas.width, h=canvas.height;
   let small=document.createElement('canvas'); small.width=180; small.height=180*h/w; let sCtx=small.getContext('2d'); sCtx.drawImage(canvas,0,0,small.width,small.height);
   let dta=sCtx.getImageData(0,0,small.width,small.height).data, sum=0,sumR=0,sumG=0,sumB=0,cnt=dta.length/4;
   for(let i=0;i<dta.length;i+=4){ sum+=0.299*dta[i]+0.587*dta[i+1]+0.114*dta[i+2]; sumR+=dta[i]; sumG+=dta[i+1]; sumB+=dta[i+2]; }
   let avg=sum/cnt, avgR=sumR/cnt, avgG=sumG/cnt, avgB=sumB/cnt, avgAll=(avgR+avgG+avgB)/3;
-  let rGain=Math.max(0.8,Math.min(1.3,avgAll/(avgR+1))), gGain=Math.max(0.8,Math.min(1.3,avgAll/(avgG+1))), bGain=Math.max(0.8,Math.min(1.3,avgAll/(avgB+1)));
+  let rGain=Math.max(0.85,Math.min(1.2,avgAll/(avgR+1))), gGain=Math.max(0.85,Math.min(1.2,avgAll/(avgG+1))), bGain=Math.max(0.85,Math.min(1.2,avgAll/(avgB+1)));
   let imgData=ctx.getImageData(0,0,w,h), d=imgData.data;
   let sat=parseInt(document.getElementById('satR').value)/100;
-  let doHDR=document.getElementById('hdrSingle').checked;
+  let hdrInt=parseInt(document.getElementById('hdrR').value)/100;
   for(let i=0;i<d.length;i+=4){
     let r=d[i], g=d[i+1], b=d[i+2];
     let lum=(r+g+b)/3;
-    if(doHDR){
-      if(lum<50){ r=Math.min(255,r*1.5+15); g=Math.min(255,g*1.5+15); b=Math.min(255,b*1.5+15); }
-      else if(lum<90){ r=Math.min(255,r+18); g=Math.min(255,g+18); b=Math.min(255,b+18); }
-      if(lum>220){ r*=0.82; g*=0.82; b*=0.82; }
+    // FIX SOMBRAS: antes era *1.5 y +18, ahora es mucho más suave y depende de la barrita
+    if(hdrInt>0){
+      if(lum<45){ r=Math.min(255, r + (28*hdrInt)); g=Math.min(255, g + (28*hdrInt)); b=Math.min(255, b + (28*hdrInt)); }
+      else if(lum<85){ r=Math.min(255, r + (10*hdrInt)); g=Math.min(255, g + (10*hdrInt)); b=Math.min(255, b + (10*hdrInt)); }
+      if(lum>230){ r*=1-(0.18*hdrInt); g*=1-(0.18*hdrInt); b*=1-(0.18*hdrInt); }
     }
-    if(curFilter=='food'){ if(r>g+10) r*=1.06; if(b>120) b*=1.07; }
+    if(curFilter=='food' && r>g+10) r*=1.05;
     let gray=0.299*r+0.587*g+0.114*b;
-    d[i]=Math.min(255,Math.max(0,(gray+(r-gray)*(1+sat*0.9))*rGain));
-    d[i+1]=Math.min(255,Math.max(0,(gray+(g-gray)*(1+sat*0.45))*gGain));
-    d[i+2]=Math.min(255,Math.max(0,(gray+(b-gray)*(1+sat*0.75))*bGain));
+    d[i]=Math.min(255,Math.max(0,(gray+(r-gray)*(1+sat*0.85))*rGain));
+    d[i+1]=Math.min(255,Math.max(0,(gray+(g-gray)*(1+sat*0.4))*gGain));
+    d[i+2]=Math.min(255,Math.max(0,(gray+(b-gray)*(1+sat*0.65))*bGain));
   }
   ctx.putImageData(imgData,0,0);
   if(document.getElementById('sharpOn').checked){
     let blurred=document.createElement('canvas'); blurred.width=w; blurred.height=h; let bCtx=blurred.getContext('2d'); bCtx.filter='blur(1px)'; bCtx.drawImage(canvas,0,0);
     let bData=bCtx.getImageData(0,0,w,h).data; let oData=ctx.getImageData(0,0,w,h); let od=oData.data;
-    for(let i=0;i<od.length;i+=4){ od[i]=Math.min(255,od[i]+(od[i]-bData[i])*0.45); od[i+1]=Math.min(255,od[i+1]+(od[i+1]-bData[i+1])*0.45); od[i+2]=Math.min(255,od[i+2]+(od[i+2]-bData[i+2])*0.45); }
+    for(let i=0;i<od.length;i+=4){ od[i]=Math.min(255,od[i]+(od[i]-bData[i])*0.40); od[i+1]=Math.min(255,od[i+1]+(od[i+1]-bData[i+1])*0.40); od[i+2]=Math.min(255,od[i+2]+(od[i+2]-bData[i+2])*0.40); }
     ctx.putImageData(oData,0,0);
   }
   return {avg:avg.toFixed(0)};
@@ -119,12 +122,12 @@ async function foto(){
   let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0,c.width,c.height);
   document.getElementById('autoBadge').style.display='block';
   let info=colorSharp(c);
-  setTimeout(()=>document.getElementById('autoBadge').style.display='none',900);
+  setTimeout(()=>document.getElementById('autoBadge').style.display='none',800);
   let blob=await new Promise(r=>c.toBlob(r, document.getElementById('saveJpg').checked?'image/jpeg':'image/png', document.getElementById('saveJpg').checked?0.92:1));
   if(lastUrl) try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=URL.createObjectURL(blob);
-  document.getElementById('outImg').src=lastUrl; document.getElementById('resInfo').innerText=`✅ SHARP CAM ${camIndex+1}/${cams.length} • luz ${info.avg} • ${(blob.size/1024/1024).toFixed(1)}MB • nítida`;
+  document.getElementById('outImg').src=lastUrl; document.getElementById('resInfo').innerText=`✅ CAM ${camIndex+1} • HDR ${document.getElementById('hdrR').value}% • ${(blob.size/1024/1024).toFixed(1)}MB`;
   document.getElementById('res').style.display='flex'; c.width=1;c.height=1;
 }
-document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; let ext=document.getElementById('saveJpg').checked?'jpg':'png'; a.download=`V56_SHARP_C${camIndex+1}_${Date.now()}.${ext}`; document.body.appendChild(a); a.click(); a.remove(); };
+document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; let ext=document.getElementById('saveJpg').checked?'jpg':'png'; a.download=`V57_FIX_C${camIndex+1}_${Date.now()}.${ext}`; document.body.appendChild(a); a.click(); a.remove(); };
 setFilter('auto');
-</script></body></html>
+</script></body></html> 
