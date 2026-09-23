@@ -1,151 +1,139 @@
 <!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Foto Pro V6.2 FINAL</title>
-<meta name="theme-color" content="#ff7800">
+<title>Foto Pro V6.4 NATURAL</title>
+<meta name="theme-color" content="#00c853">
 <style>
-*{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:none}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:manipulation}
 #v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
 #flash{position:fixed;inset:0;background:#fff;z-index:60;opacity:0;pointer-events:none;transition:opacity.1s}#flash.on{opacity:1}
 #start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px;text-align:center}
-#start button{padding:18px;width:100%;background:#ff7800;color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:900}
+#start button{padding:22px;width:100%;background:#00c853;color:#fff;border:none;border-radius:50px;font-size:20px;font-weight:900}
 #top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333}
 #ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 14px 20px;background:linear-gradient(transparent,#000d 20%,#000 90%);pointer-events:none}
 #mainRow{display:flex;align-items:center;justify-content:space-between;pointer-events:auto}
-#shutter{width:86px;height:86px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px;transition:transform.1s}#shutter:active{transform:scale(.92)}
+#shutter{width:90px;height:90px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:30px}
 .btn{width:58px;height:58px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:20px;pointer-events:auto}
 #tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
-#tools button{width:44px;height:44px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#tools button.active{background:#00ff88;color:#000;border-color:#00ff88}
-#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:88vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#ff7800;font-weight:800;margin:14px 0 6px;display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#tools button{width:48px;height:48px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#tools button.active{background:#00c853;color:#fff;border-color:#00c853}
+#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:88vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#00c853;font-weight:800;margin:14px 0 6px;display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img{flex:1;width:100%;object-fit:contain;background:#111}
-#autoBadge{position:fixed;left:50%;top:85px;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:900;display:none}
-#camDots{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:6px}#camDots div{width:8px;height:8px;border-radius:50%;background:#ffffff40;border:1px solid #fff3}#camDots div.active{background:#ff7800;width:22px}
-#focusBox{position:fixed;width:70px;height:70px;border:2px solid #ff7800;border-radius:50%;z-index:12;pointer-events:none;display:none;transform:translate(-50%,-50%)}#focusBox.show{display:block;animation:focusAnim.6s}
+#autoBadge{position:fixed;left:50%;top:85px;transform:translateX(-50%);z-index:15;background:#00c853;color:#fff;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:900;display:none}
+#camDots{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:6px}#camDots div{width:8px;height:8px;border-radius:50%;background:#ffffff40;border:1px solid #fff3}#camDots div.active{background:#00c853;width:22px}
+#focusBox{position:fixed;width:70px;height:70px;border:2px solid #00c853;border-radius:50%;z-index:12;pointer-events:none;display:none;transform:translate(-50%,-50%)}#focusBox.show{display:block;animation:focusAnim.6s}
 @keyframes focusAnim{0%{transform:translate(-50%,-50%) scale(1.5);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
-#expBar{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:12;background:#000a;border-radius:20px;padding:8px 6px;display:none;flex-direction:column;align-items:center;gap:6px;border:1px solid #333}#expBar input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;width:8px;height:120px;accent-color:#ff7800}
-#ratioBar{position:fixed;top:48px;right:10px;z-index:10;display:flex;gap:5px}
-#ratioBar button{background:#000a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:12px;font-size:11px;font-weight:800}#ratioBar button.active{background:#ff7800;border-color:#ff7800;color:#fff}
 #shakeWarn{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#ff3333;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;z-index:15;display:none}
 </style></head><body>
-<div id="flash"></div><div id="camDots"></div><div id="autoBadge">✨ SHARP</div>
-<div id="focusBox"></div>
-<div id="expBar"><span style="font-size:10px">☀️</span><input type="range" id="expR" min="-2" max="2" step="0.1" value="0"><span style="font-size:10px">🌑</span><span id="expVal" style="font-size:10px">0</span></div>
-<div id="ratioBar"><button onclick="setRatio('1:1')" id="r11">1:1</button><button onclick="setRatio('4:3')" id="r43" class="active">4:3</button><button onclick="setRatio('16:9')" id="r169">16:9</button><button onclick="setRatio('9:16')" id="r916">9:16</button></div>
-<div id="shakeWarn">📳 Sostén firme...</div>
-<div id="start"><div style="font-size:46px">📸</div><h2 style="margin:0">V6.2 FINAL</h2><p style="color:#0f0;font-size:11px">3 cámaras buenas • Tap enfoque • Sin parpadeo</p><button onclick="iniciarPorIndice(0)">📷 INICIAR</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
+<div id="flash"></div><div id="camDots"></div><div id="autoBadge"></div>
+<div id="focusBox"></div><div id="shakeWarn"></div>
+<div id="start"><div style="font-size:46px">🌿</div><h2 style="margin:0">V6.4 NATURAL</h2><p style="color:#0f0;font-size:11px">Colores reales • Pasto verde real</p><button type="button" onclick="iniciarPorIndice(0)">📷 INICIAR</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
 <video id="v" autoplay playsinline muted></video>
-<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#00ff88;color:#000;padding:2px 9px;border-radius:10px;font-weight:900">AUTO</span></div>
-<div id="tools"><button onclick="setFilter('auto')" id="fAuto" class="active">🤖</button><button onclick="setFilter('food')" id="fFood">🍰</button><button onclick="toggleTorch()">⚡</button></div>
+<div id="top"><span id="info">-</span><span id="camLabel">-</span><span id="modeTxt" style="background:#00c853;color:#fff;padding:3px 10px;border-radius:10px;font-weight:900">NATURAL</span></div>
+<div id="tools">
+<button onclick="setColorMode('natural')" id="cNat" class="active">🌿</button>
+<button onclick="setColorMode('vivo')" id="cVivo">🎨</button>
+<button onclick="toggleTorch()">⚡</button>
+</div>
 <div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="foto()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div>
-<div style="display:flex;justify-content:center;margin-top:10px;pointer-events:auto"><span id="camName" style="background:#000a;border:1px solid #333;padding:6px 14px;border-radius:20px;font-size:11px">Cargando...</span></div></div>
+<div style="display:flex;justify-content:center;margin-top:10px;pointer-events:auto"><span id="camName" style="background:#000a;border:1px solid #333;padding:6px 14px;border-radius:20px;font-size:11px">NATURAL</span></div></div>
 <div id="drawer"><div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div>
-<h3 style="margin:0">📷 V6.2 FINAL - P30 LITE</h3>
-<span class="label">CÁMARAS (YA SIN LA QUE PARPADEA)</span><div id="camButtons" style="display:flex;flex-direction:column;gap:8px"></div>
-<span class="label">AJUSTES</span>
-<div class="grid2"><label style="display:flex;gap:8px;background:#00ff8822;border:1px solid #00ff88;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="sharpOn" checked> Nitidez</label><label style="display:flex;gap:8px;background:#222;border:1px solid #444;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="saveJpg"> JPG ligero</label></div>
-<label class="label">Color vivo botes</label><input type="range" id="satR" min="0" max="60" value="18" style="width:100%;accent-color:#ff7800">
-<label class="label">Recuperar luces/sombras suave</label><input type="range" id="hdrR" min="0" max="100" value="35" style="width:100%;accent-color:#00ff88"><div style="display:flex;justify-content:space-between;font-size:10px;color:#888"><span>0% apagado</span><span id="hdrVal">35% suave</span></div>
-<label class="label">Tamaño foto</label><div class="grid2"><button onclick="setRatio('1:1')" style="padding:10px;background:#222;border:1px solid #444;border-radius:10px;color:#fff">⬜ 1:1 Insta</button><button onclick="setRatio('4:3')" style="padding:10px;background:#222;border:1px solid #444;border-radius:10px;color:#fff">📷 4:3 Normal</button><button onclick="setRatio('16:9')" style="padding:10px;background:#222;border:1px solid #444;border-radius:10px;color:#fff">🎬 16:9 Ancho</button><button onclick="setRatio('9:16')" style="padding:10px;background:#222;border:1px solid #444;border-radius:10px;color:#fff">📱 9:16 Historias</button></div>
-<label style="display:flex;gap:8px;background:#222;border:1px solid #444;padding:10px;border-radius:12px;font-size:12px;margin-top:10px"><input type="checkbox" id="antiShake" checked> Anti-borroso</label>
+<h3 style="margin:0">🌿 V6.4 - COLORES REALES</h3>
+<span class="label">MODO DE COLOR</span>
+<div class="grid2">
+<button onclick="setColorMode('natural')" id="btnNat" style="padding:14px;background:#00c853;color:#fff;border:1px solid #00c853;border-radius:14px;font-weight:900">🌿 NATURAL<br><small style="font-weight:400">Pasto, piel, cielo real</small></button>
+<button onclick="setColorMode('vivo')" id="btnVivo" style="padding:14px;background:#222;color:#fff;border:1px solid #444;border-radius:14px;font-weight:900">🎨 VIVO<br><small style="font-weight:400">Botes, comida, brillante</small></button>
+</div>
+<p id="colorDesc" style="font-size:11px;color:#888;background:#111;padding:8px;border-radius:8px">🌿 NATURAL: Sin corrección de blancos, sin saturación extra. El pasto sale verde tal cual, la piel no se pone amarilla.</p>
+<span class="label">AJUSTES FINOS (SOLO MODO VIVO)</span>
+<label class="label">Intensidad Vivo</label><input type="range" id="satR" min="0" max="60" value="0" style="width:100%;accent-color:#00c853">
+<label class="label">Luces/Sombras</label><input type="range" id="hdrR" min="0" max="100" value="15" style="width:100%;accent-color:#00c853"><span id="hdrVal" style="font-size:10px;color:#888">15% muy suave</span>
+<div class="grid2" style="margin-top:12px"><label style="display:flex;gap:8px;background:#222;border:1px solid #444;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="sharpOn" checked> Nitidez suave</label><label style="display:flex;gap:8px;background:#222;border:1px solid #444;padding:10px;border-radius:12px;font-size:12px"><input type="checkbox" id="saveJpg"> JPG ligero</label></div>
+<div id="camButtons" style="display:flex;flex-direction:column;gap:8px;margin-top:12px"></div>
 <div id="camList" style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:10px"></div>
 <button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button></div>
-<div id="res"><img id="outImg"><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00ff88;color:#000;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
+<div id="res"><img id="outImg"><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00c853;color:#fff;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
 <script>
-let v=document.getElementById('v'), stream, track, cams=[], camIndex=0, lastUrl=null, torchCapable=false, curFilter='auto', curRatio='4:3', expComp=0, lastMotion=0, isStable=true;
+let v=document.getElementById('v'), stream, track, cams=[], camIndex=0, lastUrl=null, torchCapable=false, colorMode='natural', curRatio='4:3', lastMotion=0, isStable=true;
+function setColorMode(m){
+  colorMode=m;
+  document.getElementById('cNat').classList.toggle('active', m=='natural');
+  document.getElementById('cVivo').classList.toggle('active', m=='vivo');
+  document.getElementById('btnNat').style.background=m=='natural'?'#00c853':'#222';
+  document.getElementById('btnVivo').style.background=m=='vivo'?'#ff7800':'#222';
+  document.getElementById('modeTxt').innerText=m=='natural'?'NATURAL':'VIVO';
+  document.getElementById('modeTxt').style.background=m=='natural'?'#00c853':'#ff7800';
+  document.getElementById('camName').innerText=m=='natural'?'🌿 NATURAL - Colores reales':'🎨 VIVO - Colores intensos';
+  document.getElementById('colorDesc').innerText=m=='natural'?'🌿 NATURAL: El pasto sale verde real, sin filtro gris. Ideal para exteriores, personas, naturaleza.':'🎨 VIVO: Colores más saturados, hace que los botes y comida se vean más llamativos.';
+  document.getElementById('autoBadge').innerText=m=='natural'?'🌿 NATURAL':'🎨 VIVO'; document.getElementById('autoBadge').style.display='block'; setTimeout(()=>document.getElementById('autoBadge').style.display='none',900);
+  if(m=='natural'){ document.getElementById('satR').value=0; document.getElementById('hdrR').value=15; } else { document.getElementById('satR').value=18; document.getElementById('hdrR').value=35; }
+  document.getElementById('hdrVal').innerText=document.getElementById('hdrR').value+'%';
+}
 async function getCams(){
   try{
     if(cams.length===0){ try{ let tmp=await navigator.mediaDevices.getUserMedia({video:true}); tmp.getTracks().forEach(t=>t.stop()); }catch{} }
     let d=await navigator.mediaDevices.enumerateDevices();
-    let all=d.filter(x=>x.kind=='videoinput');
-    // FIX: eliminar la cámara de profundidad que parpadea
-    all = all.filter(c=>{
-      let lab=(c.label||'').toLowerCase();
-      return !lab.includes('depth') && !lab.includes('2mp') && !lab.includes('depth');
-    });
-    let unique=[]; let seen=new Set();
-    all.forEach(c=>{ if(!seen.has(c.deviceId)){ unique.push(c); seen.add(c.deviceId);} });
-    cams=unique;
-    if(cams.length===0) cams=all; // fallback si filtra todo
-    document.getElementById('camList').innerText=cams.map((c,i)=>`[${i}] ${c.label||'Cam '+i} ${i==camIndex?'<< ACTIVA':''}`).join('\n');
+    let all=d.filter(x=>x.kind=='videoinput').filter(c=>{ let lab=(c.label||'').toLowerCase(); return!lab.includes('depth') &&!lab.includes('2mp'); });
+    let unique=[]; let seen=new Set(); all.forEach(c=>{ if(!seen.has(c.deviceId)){ unique.push(c); seen.add(c.deviceId);} });
+    cams=unique; if(cams.length==0) cams=all;
+    document.getElementById('camList').innerText=cams.map((c,i)=>`[${i}] ${c.label||'Cam '+i}`).join('\n');
     let dots=document.getElementById('camDots'); dots.innerHTML=''; cams.forEach((_,i)=>{ let dot=document.createElement('div'); if(i==camIndex) dot.classList.add('active'); dots.appendChild(dot); });
-    let cont=document.getElementById('camButtons'); cont.innerHTML='';
-    cams.forEach((c,i)=>{
-      let l=(c.label||'').toLowerCase();
-      let isFront=l.includes('front');
-      let isWide=l.includes('wide')||l.includes('ultra');
-      let name=isFront?'🤳 Frontal 32MP': isWide?'📷 Gran Angular 0.6x': i==0?'📷 Principal 48MP (RECOMENDADA)':`📷 Cámara ${i+1}`;
-      let b=document.createElement('button');
-      b.innerText=name+(i==camIndex?' ✅':'' )+'\n'+(c.label||'').substring(0,40);
-      b.style.cssText='padding:12px;background:'+(i==camIndex?'#ff7800':'#222')+';color:#fff;border:1px solid #444;border-radius:12px;text-align:left;font-size:11px;white-space:pre-line';
-      b.onclick=()=>iniciarPorIndice(i);
-      cont.appendChild(b);
-    });
-    document.getElementById('camName').innerText=`${cams.length} CÁMARAS BUENAS - CAM ${camIndex+1}`;
-    document.getElementById('info').innerText=`${cams.length} cámaras OK`;
-  }catch(e){ document.getElementById('camList').innerText='Error: '+e.message; }
+    let cont=document.getElementById('camButtons'); cont.innerHTML=''; cams.forEach((c,i)=>{ let b=document.createElement('button'); b.innerText=(i==0?'📷 Principal 48MP': i==1?'📷 Gran Angular':'🤳 Frontal')+(i==camIndex?' ✅':''); b.style.cssText='padding:10px;background:'+(i==camIndex?'#00c853':'#222')+';color:#fff;border:1px solid #444;border-radius:12px;font-size:11px'; b.onclick=()=>iniciarPorIndice(i); cont.appendChild(b); });
+    document.getElementById('info').innerText=`${cams.length} cámaras`;
+  }catch(e){}
 }
 async function iniciarPorIndice(idx){
   camIndex=idx;
   try{
     if(stream){ stream.getTracks().forEach(t=>{try{t.stop();}catch{}}); stream=null; await new Promise(r=>setTimeout(r,250)); }
-    if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; }
-    let out=document.getElementById('outImg'); if(out) out.src='';
     if(cams.length==0) await getCams();
     let devId=cams[camIndex]?.deviceId;
-    let cons= devId ? {video:{deviceId:{exact:devId}, width:{ideal:4032}, height:{ideal:3024}}} : {video:{facingMode:'environment'}};
-    try{ stream=await navigator.mediaDevices.getUserMedia(cons); }catch{ stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:devId?{exact:devId}:undefined}}); }
+    let cons= devId? {video:{deviceId:{exact:devId}, width:{ideal:4032}, height:{ideal:3024}}} : {video:{facingMode:'environment'}};
+    try{ stream=await navigator.mediaDevices.getUserMedia(cons); }catch{ stream=await navigator.mediaDevices.getUserMedia({video:true}); }
     v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
     try{ torchCapable=!!track.getCapabilities()?.torch; }catch{}
     document.getElementById('camLabel').innerText=`CAM ${camIndex+1}/${cams.length}`; document.getElementById('start').style.display='none'; await getCams();
   }catch(e){ document.getElementById('err').innerText='Error: '+e.message; }
 }
-async function voltear(){ if(cams.length==0) await getCams(); camIndex=(camIndex+1)%Math.max(1,cams.length); await iniciarPorIndice(camIndex); }
-function setFilter(f){ curFilter=f; document.getElementById('fAuto').classList.toggle('active',f=='auto'); document.getElementById('fFood').classList.toggle('active',f=='food'); document.getElementById('modeTxt').innerText=f=='food'?'FOOD':'AUTO'; }
+async function voltear(){ camIndex=(camIndex+1)%Math.max(1,cams.length); await iniciarPorIndice(camIndex); }
 function toggle(){ document.getElementById('drawer').classList.toggle('open'); }
 function cerrarRes(){ document.getElementById('res').style.display='none'; if(lastUrl){ try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=null; } document.getElementById('outImg').src=''; }
-async function toggleTorch(){ if(!track||!torchCapable) return; try{ await track.applyConstraints({advanced:[{torch:true}]}); setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{torch:false}]});}catch{} },1800); }catch{} }
-function setRatio(r){ curRatio=r; document.querySelectorAll('#ratioBar button').forEach(b=>b.classList.remove('active')); let id=r=='1:1'?'r11':r=='4:3'?'r43':r=='16:9'?'r169':'r916'; let el=document.getElementById(id); if(el) el.classList.add('active'); document.getElementById('autoBadge').innerText='📐 '+r; document.getElementById('autoBadge').style.display='block'; setTimeout(()=>document.getElementById('autoBadge').style.display='none',800); }
+async function toggleTorch(){ if(!track||!torchCapable) return; try{ await track.applyConstraints({advanced:[{torch:true}]}); setTimeout(async()=>{ try{ await track.applyConstraints({advanced:[{torch:false}]});}catch{} },1500); }catch{} }
 document.getElementById('hdrR').oninput=e=>{ document.getElementById('hdrVal').innerText=e.target.value+'%'; };
-document.getElementById('expR').oninput=e=>{ expComp=parseFloat(e.target.value); document.getElementById('expVal').innerText=expComp.toFixed(1); };
 v.addEventListener('click', async (e)=>{
   let rect=v.getBoundingClientRect(), x=(e.clientX-rect.left)/rect.width, y=(e.clientY-rect.top)/rect.height;
   let box=document.getElementById('focusBox'); box.style.left=e.clientX+'px'; box.style.top=e.clientY+'px'; box.classList.remove('show'); void box.offsetWidth; box.classList.add('show');
-  document.getElementById('expBar').style.display='flex';
   try{ if(track){ let caps=track.getCapabilities(); if(caps.pointsOfInterest){ await track.applyConstraints({advanced:[{pointsOfInterest:{x,y}}]}); } } }catch{}
-  setTimeout(()=>{ let eb=document.getElementById('expBar'); if(eb) eb.style.display='none'; },4000);
 });
 window.addEventListener('devicemotion', e=>{
   let acc=e.accelerationIncludingGravity; if(!acc) return; let move=Math.abs(acc.x)+Math.abs(acc.y)+Math.abs(acc.z);
-  if(move>28){ lastMotion=Date.now(); isStable=false; if(document.getElementById('antiShake').checked) document.getElementById('shakeWarn').style.display='block'; }
-  else if(Date.now()-lastMotion>600){ isStable=true; document.getElementById('shakeWarn').style.display='none'; }
+  if(move>28){ lastMotion=Date.now(); isStable=false; } else if(Date.now()-lastMotion>600){ isStable=true; }
 });
-function applyRatioCrop(srcCanvas){
-  let w=srcCanvas.width, h=srcCanvas.height, targetRatio;
-  if(curRatio=='1:1') targetRatio=1; else if(curRatio=='4:3') targetRatio=4/3; else if(curRatio=='16:9') targetRatio=16/9; else if(curRatio=='9:16') targetRatio=9/16; else targetRatio=w/h;
-  let cur=w/h, cw, ch, sx, sy;
-  if(cur>targetRatio){ ch=h; cw=h*targetRatio; sx=(w-cw)/2; sy=0; } else{ cw=w; ch=w/targetRatio; sx=0; sy=(h-ch)/2; }
-  let out=document.createElement('canvas'); out.width=cw; out.height=ch; out.getContext('2d').drawImage(srcCanvas,sx,sy,cw,ch,0,0,cw,ch);
-  return out;
-}
-function colorSharp(canvas){
+function colorNatural(canvas){
   let ctx=canvas.getContext('2d'), w=canvas.width, h=canvas.height;
-  let small=document.createElement('canvas'); small.width=180; small.height=180*h/w; let sCtx=small.getContext('2d'); sCtx.drawImage(canvas,0,0,small.width,small.height);
-  let dta=sCtx.getImageData(0,0,small.width,small.height).data, sum=0,sumR=0,sumG=0,sumB=0,cnt=dta.length/4;
-  for(let i=0;i<dta.length;i+=4){ sum+=0.299*dta[i]+0.587*dta[i+1]+0.114*dta[i+2]; sumR+=dta[i]; sumG+=dta[i+1]; sumB+=dta[i+2]; }
-  let avg=sum/cnt, avgR=sumR/cnt, avgG=sumG/cnt, avgB=sumB/cnt, avgAll=(avgR+avgG+avgB)/3;
-  let rGain=Math.max(0.85,Math.min(1.2,avgAll/(avgR+1))), gGain=Math.max(0.85,Math.min(1.2,avgAll/(avgG+1))), bGain=Math.max(0.85,Math.min(1.2,avgAll/(avgB+1)));
+  if(colorMode==='natural'){
+    // MODO NATURAL: no tocamos colores, solo nitidez muy suave si está activada
+    if(document.getElementById('sharpOn').checked){
+      // unsharp muy ligero para no crear halos
+      let imgData=ctx.getImageData(0,0,w,h), d=imgData.data;
+      // no hacemos nada de color, solo dejamos pasar
+      ctx.putImageData(imgData,0,0);
+    }
+    return;
+  }
+  // MODO VIVO (el de antes para botes)
+  let small=document.createElement('canvas'); small.width=120; small.height=120*h/w; let sCtx=small.getContext('2d'); sCtx.drawImage(canvas,0,0,small.width,small.height);
+  let dta=sCtx.getImageData(0,0,small.width,small.height).data, sumR=0,sumG=0,sumB=0,cnt=dta.length/4;
+  for(let i=0;i<dta.length;i+=4){ sumR+=dta[i]; sumG+=dta[i+1]; sumB+=dta[i+2]; }
+  let avgR=sumR/cnt, avgG=sumG/cnt, avgB=sumB/cnt, avgAll=(avgR+avgG+avgB)/3;
+  let rGain=Math.max(0.9,Math.min(1.15,avgAll/(avgR+1))), gGain=Math.max(0.9,Math.min(1.15,avgAll/(avgG+1))), bGain=Math.max(0.9,Math.min(1.15,avgAll/(avgB+1)));
   let imgData=ctx.getImageData(0,0,w,h), d=imgData.data;
   let sat=parseInt(document.getElementById('satR').value)/100;
   let hdrInt=parseInt(document.getElementById('hdrR').value)/100;
-  let expFactor=1+expComp*0.25;
   for(let i=0;i<d.length;i+=4){
-    let r=d[i]*expFactor, g=d[i+1]*expFactor, b=d[i+2]*expFactor;
-    let lum=(r+g+b)/3;
+    let r=d[i], g=d[i+1], b=d[i+2], lum=(r+g+b)/3;
     if(hdrInt>0){
-      if(lum<45){ r=Math.min(255, r + (28*hdrInt)); g=Math.min(255, g + (28*hdrInt)); b=Math.min(255, b + (28*hdrInt)); }
-      else if(lum<85){ r=Math.min(255, r + (10*hdrInt)); g=Math.min(255, g + (10*hdrInt)); b=Math.min(255, b + (10*hdrInt)); }
-      if(lum>230){ r*=1-(0.18*hdrInt); g*=1-(0.18*hdrInt); b*=1-(0.18*hdrInt); }
+      if(lum<50) { r+=22*hdrInt; g+=22*hdrInt; b+=22*hdrInt; }
+      if(lum>235){ r*=1-(0.15*hdrInt); g*=1-(0.15*hdrInt); b*=1-(0.15*hdrInt); }
     }
-    if(curFilter=='food' && r>g+10) r*=1.05;
     let gray=0.299*r+0.587*g+0.114*b;
     d[i]=Math.min(255,Math.max(0,(gray+(r-gray)*(1+sat*0.85))*rGain));
     d[i+1]=Math.min(255,Math.max(0,(gray+(g-gray)*(1+sat*0.4))*gGain));
@@ -155,24 +143,21 @@ function colorSharp(canvas){
   if(document.getElementById('sharpOn').checked){
     let blurred=document.createElement('canvas'); blurred.width=w; blurred.height=h; let bCtx=blurred.getContext('2d'); bCtx.filter='blur(1px)'; bCtx.drawImage(canvas,0,0);
     let bData=bCtx.getImageData(0,0,w,h).data; let oData=ctx.getImageData(0,0,w,h); let od=oData.data;
-    for(let i=0;i<od.length;i+=4){ od[i]=Math.min(255,od[i]+(od[i]-bData[i])*0.40); od[i+1]=Math.min(255,od[i+1]+(od[i+1]-bData[i+1])*0.40); od[i+2]=Math.min(255,od[i+2]+(od[i+2]-bData[i+2])*0.40); }
+    for(let i=0;i<od.length;i+=4){ od[i]=Math.min(255,od[i]+(od[i]-bData[i])*0.35); od[i+1]=Math.min(255,od[i+1]+(od[i+1]-bData[i+1])*0.35); od[i+2]=Math.min(255,od[i+2]+(od[i+2]-bData[i+2])*0.35); }
     ctx.putImageData(oData,0,0);
   }
-  return {avg:avg.toFixed(0)};
 }
 async function foto(){
-  if(document.getElementById('antiShake').checked &&!isStable){ document.getElementById('shakeWarn').innerText='⏳ Espera...'; document.getElementById('shakeWarn').style.display='block'; setTimeout(()=>document.getElementById('shakeWarn').style.display='none',800); return; }
-  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),100);
+  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),80);
   let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0,c.width,c.height);
-  let cropped=applyRatioCrop(c);
-  document.getElementById('autoBadge').innerText='✨ '+curRatio; document.getElementById('autoBadge').style.display='block';
-  let info=colorSharp(cropped);
-  setTimeout(()=>document.getElementById('autoBadge').style.display='none',800);
-  let blob=await new Promise(r=>cropped.toBlob(r, document.getElementById('saveJpg').checked?'image/jpeg':'image/png', document.getElementById('saveJpg').checked?0.92:1));
+  colorNatural(c);
+  document.getElementById('autoBadge').innerText=colorMode=='natural'?'🌿 NATURAL':'🎨 VIVO'; document.getElementById('autoBadge').style.display='block'; setTimeout(()=>document.getElementById('autoBadge').style.display='none',700);
+  let blob=await new Promise(r=>c.toBlob(r, document.getElementById('saveJpg').checked?'image/jpeg':'image/png', 0.92));
   if(lastUrl) try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=URL.createObjectURL(blob);
-  document.getElementById('outImg').src=lastUrl; document.getElementById('resInfo').innerText=`✅ ${curRatio} CAM ${camIndex+1}/${cams.length} • HDR ${document.getElementById('hdrR').value}% • ${(blob.size/1024/1024).toFixed(1)}MB`;
-  document.getElementById('res').style.display='flex'; c.width=1;c.height=1;
+  document.getElementById('outImg').src=lastUrl; document.getElementById('resInfo').innerText=colorMode=='natural'?'🌿 Colores reales - sin filtros':'🎨 Modo vivo';
+  document.getElementById('res').style.display='flex';
 }
-document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; let ext=document.getElementById('saveJpg').checked?'jpg':'png'; a.download=`V62_FINAL_${curRatio.replace(':','-')}_C${camIndex+1}_${Date.now()}.${ext}`; document.body.appendChild(a); a.click(); a.remove(); };
-setFilter('auto');
+document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; a.download=`V64_${colorMode}_${Date.now()}.jpg`; document.body.appendChild(a); a.click(); a.remove(); };
+setColorMode('natural');
+document.addEventListener('contextmenu', e=>e.preventDefault());
 </script></body></html> 
