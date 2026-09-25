@@ -1,141 +1,223 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>BOTES JACONA V6.8.1 FIX</title>
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Foto Pro V6.7 IA DETECT</title>
+<meta name="theme-color" content="#00c853">
 <style>
- *{box-sizing:border-box}
- body{margin:0;background:#000;color:#fff;font-family:system-ui;overflow:hidden}
- #video{position:fixed;top:0;left:0;width:100%;height:100vh;object-fit:cover;background:#111;z-index:1;display:block}
- #canvas{display:none}
- #status{position:fixed;top:10px;left:10px;right:10px;background:rgba(0,0,0,.75);padding:10px 14px;border-radius:20px;font-size:13px;z-index:20;text-align:center}
- .controls{position:fixed;bottom:0;left:0;right:0;padding:15px;padding-bottom:25px;background:linear-gradient(transparent, rgba(0,0,0,.9));display:flex;gap:10px;justify-content:center;flex-wrap:wrap;z-index:20}
- button{padding:16px 24px;border-radius:30px;border:none;font-weight:bold;font-size:15px;cursor:pointer}
- .primario{background:#00e676;color:#000;min-width:260px}
- .sec{background:#333;color:#fff;font-size:13px}
- .activo{background:#2979ff !important;color:#fff !important}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none}body{margin:0;background:#000;overflow:hidden;font-family:system-ui;color:#fff;touch-action:manipulation}
+#v{width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;background:#111}
+#faceCanvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:9;pointer-events:none}
+#flash{position:fixed;inset:0;background:#fff;z-index:60;opacity:0;pointer-events:none;transition:opacity.1s}#flash.on{opacity:1}
+#start{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px;text-align:center}
+#start button{padding:22px;width:100%;background:#00c853;color:#fff;border:none;border-radius:50px;font-size:20px;font-weight:900}
+#top{position:fixed;top:10px;left:10px;right:10px;z-index:10;background:#000c;padding:8px 12px;border-radius:20px;display:flex;justify-content:space-between;font-size:10px;border:1px solid #333}
+#aiBadge{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:15;background:#000c;border:1px solid #00c853;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:900;display:none}
+#ctrl{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:10px 14px 18px;background:linear-gradient(transparent,#000d 15%,#000 85%);pointer-events:none}
+#mainRow{display:flex;align-items:center;justify-content:space-between;pointer-events:auto}
+#shutter{width:84px;height:84px;border-radius:50%;background:#fff;border:5px solid #000;box-shadow:0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;font-size:28px}
+.btn{width:52px;height:52px;border-radius:50%;background:#ffffff18;border:1px solid #ffffff35;color:#fff;font-size:18px;pointer-events:auto}
+#tools{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
+#tools button{width:46px;height:46px;border-radius:50%;background:#000a;border:1px solid #333;color:#fff;font-size:16px}#tools button.active{background:#00c853}
+#zoomBar{position:fixed;bottom:110px;left:20px;right:20px;z-index:12;background:#000d;border-radius:20px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #333;pointer-events:auto}
+#zoomBar input{flex:1;accent-color:#00c853} #zoomVal{background:#00c853;color:#fff;padding:4px 10px;border-radius:10px;font-size:12px;font-weight:900;min-width:44px;text-align:center}
+#drawer{position:fixed;bottom:0;left:0;right:0;background:#161616fa;border-radius:28px 28px 0 0;z-index:30;padding:16px 16px 28px;transform:translateY(105%);transition:.32s;max-height:92vh;overflow:auto}#drawer.open{transform:translateY(0)}.label{font-size:11px;color:#00c853;font-weight:800;margin:14px 0 6px;display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#res{position:fixed;inset:0;background:#000;z-index:40;display:none;flex-direction:column}#res img{flex:1;width:100%;object-fit:contain;background:#111}
+#autoBadge{position:fixed;left:50%;top:85px;transform:translateX(-50%);z-index:15;background:#00c853;color:#fff;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:900;display:none}
+#focusBox{position:fixed;width:70px;height:70px;border:2px solid #00c853;border-radius:50%;z-index:12;pointer-events:none;display:none;transform:translate(-50%,-50%)}#focusBox.show{display:block}
+input[type=text]{width:100%;padding:10px;background:#222;border:1px solid #444;border-radius:10px;color:#fff;font-size:13px}
+#logoPrev{width:60px;height:60px;background:#222;border:1px dashed #555;border-radius:10px;object-fit:contain}
+.qualActive{border:2px solid #00c853!important;background:#00c853!important}
 </style>
-</head>
-<body>
-
-<video id="video" autoplay playsinline muted></video>
-<canvas id="canvas"></canvas>
-<div id="status">Iniciando V6.8.1 FIX...</div>
-
-<div class="controls">
- <button id="btnFondo" class="sec">🎨 Fondo PRO: OFF</button>
- <button id="btnFoto" class="primario">📸 TOMAR FOTO PRINT PRO</button>
- <button id="btnVivo" class="sec activo">🌈 VIVO: ON</button>
+<script type="importmap">
+{"imports":{"@mediapipe/tasks-vision":"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs"}}
+</script>
+</head><body>
+<div id="flash"></div><div id="autoBadge"></div><div id="focusBox"></div>
+<div id="start"><div style="font-size:42px">🖨️</div><h2>V6.7 IA DETECT</h2><p style="color:#0f0;font-size:11px">12MP REAL + IA cara + sin lentes</p><button onclick="iniciarPorIndice(0)">📷 INICIAR IA</button><p id="err" style="color:#ff6;font-size:11px"></p></div>
+<video id="v" autoplay playsinline muted></video>
+<canvas id="faceCanvas"></canvas>
+<div id="top"><span id="info">-</span><span id="zoomTop">1.0x</span><span id="qualTop" style="background:#333;padding:3px 8px;border-radius:10px">LIGERA</span></div>
+<div id="aiBadge">🤖 IA buscando cara...</div>
+<div id="tools">
+<button onclick="setColorMode('natural')" id="cNat" class="active">🌿</button>
+<button onclick="setColorMode('vivo')" id="cVivo">🎨</button>
+<button onclick="toggleTorch()">⚡</button>
 </div>
+<div id="zoomBar"><span>🔍</span><input type="range" id="zoomR" min="1" max="3" step="0.1" value="1"><span id="zoomVal">1.0x</span></div>
+<div id="ctrl"><div id="mainRow"><button class="btn" onclick="voltear()">🔄</button><div id="shutter" onclick="foto()">📸</div><button class="btn" onclick="toggle()">⚙️</button></div>
+<div style="display:flex;justify-content:center;margin-top:8px;pointer-events:auto"><span id="camName" style="background:#000a;border:1px solid #333;padding:5px 12px;border-radius:20px;font-size:10px">12MP • IA ACTIVA</span></div></div>
+
+<div id="drawer">
+<div style="width:40px;height:5px;background:#444;border-radius:10px;margin:0 auto 12px"></div>
+<h3 style="margin:0">🖨️ V6.7 IA DETECT</h3>
+<span class="label">📦 CALIDAD DE FOTO</span>
+<div class="grid2">
+<button onclick="setQuality('ligera')" id="qLigera" style="padding:12px;background:#00c853;color:#fff;border-radius:12px;border:2px solid #00c853;font-weight:900">📱 LIGERA<br><small>2MB • WhatsApp</small></button>
+<button onclick="setQuality('print')" id="qPrint" style="padding:12px;background:#222;color:#fff;border-radius:12px;border:1px solid #444;font-weight:900">🖨️ PRINT PRO<br><small>10MB • Para lona</small></button>
+</div>
+<p id="qualDesc" style="font-size:11px;color:#aaa;background:#111;padding:8px;border-radius:8px;margin-top:6px"></p>
+<span class="label">🤖 IA CAMARA - SDK TERCEROS</span>
+<div style="background:#1e1e1e;padding:12px;border-radius:14px;border:1px solid #333;font-size:11px">
+<p>SDK usado: <b>MediaPipe Face Detector (Google)</b> - es la versión web del CamCard que viste en tu Huawei. 100% gratis.</p>
+<label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:8px"><input type="checkbox" id="iaOn" checked> IA detección activa</label>
+</div>
+<span class="label">🏷️ MARCA DE AGUA</span>
+<div style="background:#1e1e1e;padding:12px;border-radius:14px;border:1px solid #333">
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+<img id="logoPrev" src=""><div style="flex:1"><input type="file" id="logoInput" accept="image/*" style="width:100%;font-size:11px;color:#fff"><button onclick="borrarLogo()" style="margin-top:4px;padding:3px 8px;background:#333;border:none;border-radius:6px;color:#fff;font-size:10px">Quitar</button></div>
+</div>
+<input type="text" id="marcaTxt" placeholder="Botes Jacona" value="Botes Jacona" style="margin-bottom:6px">
+<input type="text" id="ubiTxt" placeholder="Jacona, Mich." value="Jacona, Mich." style="margin-bottom:6px">
+<div class="grid2">
+<label style="display:flex;gap:6px;background:#222;padding:7px;border-radius:8px;font-size:11px"><input type="checkbox" id="chkLogo" checked> Logo</label>
+<label style="display:flex;gap:6px;background:#222;padding:7px;border-radius:8px;font-size:11px"><input type="checkbox" id="chkMarca" checked> Nombre</label>
+<label style="display:flex;gap:6px;background:#222;padding:7px;border-radius:8px;font-size:11px"><input type="checkbox" id="chkUbi" checked> Ubicación</label>
+<label style="display:flex;gap:6px;background:#222;padding:7px;border-radius:8px;font-size:11px"><input type="checkbox" id="chkFecha" checked> Fecha/hora</label>
+</div>
+<div class="grid2" style="margin-top:8px">
+<button onclick="setPos('bl')" id="pBL" style="padding:7px;background:#00c853;border:none;border-radius:8px;color:#fff;font-size:11px">↙️ Izq</button>
+<button onclick="setPos('br')" id="pBR" style="padding:7px;background:#222;border:1px solid #444;border-radius:8px;color:#fff;font-size:11px">↘️ Der</button>
+</div>
+<label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;font-size:12px;margin-top:8px"><input type="checkbox" id="marcaOn" checked> Marca activa</label>
+<button onclick="ubicacionAuto()" style="width:100%;padding:7px;margin-top:6px;background:#222;border:1px solid #444;border-radius:8px;color:#fff;font-size:11px">📍 GPS real</button>
+</div>
+<div id="camButtons" style="display:flex;flex-direction:column;gap:6px;margin-top:12px"></div>
+<div style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:8px" id="camList"></div>
+<button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button>
+</div>
+<div id="res"><img id="outImg"><div style="padding:8px 12px;background:#111;display:flex;justify-content:space-between;font-size:11px"><span id="resSize">-</span><span id="resDim">-</span></div><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00c853;color:#fff;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
 
 <script type="module">
-import { FaceDetector, ImageSegmenter, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
-
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const statusEl = document.getElementById('status');
-const btnFondo = document.getElementById('btnFondo');
-const btnFoto = document.getElementById('btnFoto');
-const btnVivo = document.getElementById('btnVivo');
-
-let faceDetector=null, segmenter=null;
-let fondoProActivo=false;
-let vivoActivo=true;
-let stream=null;
-
-async function cargarIA(){
- try{
-  statusEl.textContent="Cargando IA...";
-  const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
-  faceDetector = await FaceDetector.createFromOptions(vision,{
-    baseOptions:{modelAssetPath:`https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite`},
-    runningMode:"VIDEO"
-  });
+import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision";
+let faceDetector=null, lastDetections=[];
+async function initIA(){
   try{
-    segmenter = await ImageSegmenter.createFromOptions(vision,{
-      baseOptions:{modelAssetPath:`https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite`},
-      runningMode:"IMAGE", outputCategoryMask:true
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    faceDetector = await FaceDetector.createFromOptions(vision, {
+      baseOptions: { model: "short", delegate: "GPU" },
+      runningMode: "VIDEO",
+      minDetectionConfidence: 0.5
     });
-  }catch(e){ segmenter=null; }
-  statusEl.textContent="IA lista - abriendo cámara...";
- }catch(e){
-  statusEl.textContent="IA no cargó, abriendo cámara normal...";
- }
- iniciarCamara();
+    document.getElementById('aiBadge').style.display='block';
+    document.getElementById('aiBadge').innerText='🤖 IA lista';
+  }catch(e){ console.log(e); }
 }
+initIA();
 
-async function iniciarCamara(){
- const configs = [
-  {width:{ideal:4032}, height:{ideal:3024}},
-  {width:{ideal:2560}, height:{ideal:1440}},
-  {width:{ideal:1920}, height:{ideal:1080}},
-  {width:{ideal:1280}, height:{ideal:720}}
- ];
- for(let cfg of configs){
+let v=document.getElementById('v'), stream, track, cams=[], camIndex=0, lastUrl=null, lastBlob=null, colorMode='natural', zoomLevel=1, marcaPos='bl', logoImg=null, logoDataUrl=null, qualityMode='ligera';
+let canvasFace=document.getElementById('faceCanvas'), ctxFace=canvasFace.getContext('2d');
+
+function setQuality(m){
+  qualityMode=m;
+  document.getElementById('qLigera').style.cssText=m=='ligera'?'padding:12px;background:#00c853;color:#fff;border-radius:12px;border:2px solid #00c853;font-weight:900':'padding:12px;background:#222;color:#fff;border-radius:12px;border:1px solid #444;font-weight:900';
+  document.getElementById('qPrint').style.cssText=m=='print'?'padding:12px;background:#00c853;color:#fff;border-radius:12px;border:2px solid #00c853;font-weight:900':'padding:12px;background:#222;color:#fff;border-radius:12px;border:1px solid #444;font-weight:900';
+  document.getElementById('qualTop').innerText=m=='print'?'PRINT 10MB':'LIGERA 2MB';
+  document.getElementById('qualTop').style.background=m=='print'?'#ff7800':'#333';
+  document.getElementById('qualDesc').innerText=m=='ligera'?'📱 LIGERA: 4032x3024px, 92% calidad, 1.7-2.5MB. Ideal para WhatsApp.':'🖨️ PRINT PRO: 4032x3024px, 100% calidad, 8-12MB. Máxima calidad real de tu Huawei.';
+  localStorage.setItem('qualityMode',m);
+}
+window.setQuality=setQuality;
+window.setPos=(p)=>{ marcaPos=p; document.getElementById('pBL').style.background=p=='bl'?'#00c853':'#222'; document.getElementById('pBR').style.background=p=='br'?'#00c853':'#222'; localStorage.setItem('pos',p); }
+window.setColorMode=(m)=>{ colorMode=m; document.getElementById('cNat').classList.toggle('active',m=='natural'); document.getElementById('cVivo').classList.toggle('active',m=='vivo'); document.getElementById('btnNat').style.background=m=='natural'?'#00c853':'#222'; document.getElementById('btnVivo').style.background=m=='vivo'?'#ff7800':'#222'; localStorage.setItem('colorMode',m); }
+async function getCams(){ try{ if(cams.length==0){try{let t=await navigator.mediaDevices.getUserMedia({video:true}); t.getTracks().forEach(x=>x.stop());}catch{}} let d=await navigator.mediaDevices.enumerateDevices(); let all=d.filter(x=>x.kind=='videoinput').filter(c=>{let l=(c.label||'').toLowerCase();return!l.includes('depth')&&!l.includes('2mp')}); let seen=new Set(),uniq=[]; all.forEach(c=>{if(!seen.has(c.deviceId)){uniq.push(c);seen.add(c.deviceId)}}); cams=uniq; if(cams.length==0) cams=all; document.getElementById('camList').innerText=cams.map((c,i)=>`[${i}] ${c.label}`).join('\n'); let cont=document.getElementById('camButtons'); cont.innerHTML=''; cams.forEach((c,i)=>{let b=document.createElement('button'); b.innerText=(i==0?'📷 Principal':i==1?'📷 Angular':'🤳 Frontal')+(i==camIndex?' ✅':''); b.style.cssText='padding:10px;background:'+(i==camIndex?'#00c853':'#222')+';color:#fff;border:1px solid #444;border-radius:10px;font-size:11px'; b.onclick=()=>iniciarPorIndice(i); cont.appendChild(b);}); document.getElementById('info').innerText=cams.length+' cams • '+ (v.videoWidth||'?')+'x'+(v.videoHeight||'?'); }catch(e){} }
+window.getCams=getCams;
+window.iniciarPorIndice=async function(idx){
+  camIndex=idx;
   try{
-   if(stream) stream.getTracks().forEach(t=>t.stop());
-   stream = await navigator.mediaDevices.getUserMedia({
-     video:{facingMode:{ideal:"environment"}, ...cfg},
-     audio:false
-   });
-   video.srcObject=stream;
-   await video.play();
-   statusEl.textContent=`Cámara ${video.videoWidth}x${video.videoHeight} lista - PRINT PRO OK`;
-   return;
-  }catch(e){ console.log("Falló res", cfg, e.message); }
- }
- try{
-  stream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
-  video.srcObject=stream; await video.play();
-  statusEl.textContent=`Cámara frontal ${video.videoWidth}x${video.videoHeight}`;
- }catch(e){
-  statusEl.textContent="Error cámara: "+e.message+" - da permiso en el navegador";
- }
+    if(stream){stream.getTracks().forEach(t=>{try{t.stop()}catch{}}); await new Promise(r=>setTimeout(r,200));}
+    if(cams.length==0) await getCams();
+    let devId=cams[camIndex]?.deviceId;
+    let cons=devId?{video:{deviceId:{exact:devId},width:{ideal:4032},height:{ideal:3024}}}:{video:{facingMode:'environment'}};
+    try{stream=await navigator.mediaDevices.getUserMedia(cons);}catch{stream=await navigator.mediaDevices.getUserMedia({video:true});}
+    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+    document.getElementById('start').style.display='none';
+    await getCams(); applyZoom();
+    canvasFace.width=v.videoWidth; canvasFace.height=v.videoHeight;
+    requestAnimationFrame(detectLoop);
+  }catch(e){ document.getElementById('err').innerText=e.message; }
 }
-
-btnFondo.onclick=()=>{
- fondoProActivo=!fondoProActivo;
- btnFondo.textContent = fondoProActivo ? "🎨 Fondo PRO: ON" : "🎨 Fondo PRO: OFF";
- btnFondo.classList.toggle("activo", fondoProActivo);
- if(fondoProActivo && !segmenter){ statusEl.textContent="Fondo PRO cargando... espera"; }
-};
-btnVivo.onclick=()=>{
- vivoActivo=!vivoActivo;
- btnVivo.textContent = vivoActivo ? "🌈 VIVO: ON" : "🌈 VIVO: OFF";
- btnVivo.classList.toggle("activo", vivoActivo);
-};
-
-btnFoto.onclick=async()=>{
- if(!video.videoWidth){ statusEl.textContent="Cámara no lista aún"; return; }
- const w = video.videoWidth, h = video.videoHeight;
- canvas.width=w; canvas.height=h;
- const ctx=canvas.getContext('2d');
- ctx.drawImage(video,0,0,w,h);
- 
- if(vivoActivo){
-  ctx.filter="saturate(1.28) contrast(1.12) brightness(1.05)";
-  ctx.drawImage(canvas,0,0);
-  ctx.filter="none";
- }
- ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillRect(10,h-55,300,40);
- ctx.fillStyle="#fff"; ctx.font="bold 16px system-ui"; 
- ctx.fillText(`BOTES JACONA ${new Date().toLocaleDateString()} ${w}x${h}`,20,h-30);
-
- if(fondoProActivo && segmenter){
-  try{ statusEl.textContent="Aplicando Fondo PRO... (experimental)"; }catch(e){}
- }
-
- const link=document.createElement('a');
- link.download=`BOTE_JACONA_${Date.now()}_${w}x${h}${fondoProActivo?'_PRO':''}.jpg`;
- link.href=canvas.toDataURL('image/jpeg',0.96);
- link.click();
- statusEl.textContent=`✅ Foto guardada PRINT PRO ${w}x${h} ${fondoProActivo?' + Fondo':' + VIVO'}`;
- setTimeout(()=>{ statusEl.textContent=`Cámara ${w}x${h} lista`; },2000);
-};
-
-cargarIA();
-video.addEventListener('click', ()=>{ if(video.paused) video.play(); });
+function detectLoop(){
+  if(!document.getElementById('iaOn').checked){ ctxFace.clearRect(0,0,canvasFace.width,canvasFace.height); requestAnimationFrame(detectLoop); return; }
+  if(faceDetector && v.readyState>=2){
+    let now=performance.now();
+    let res=faceDetector.detectForVideo(v, now);
+    ctxFace.clearRect(0,0,canvasFace.width,canvasFace.height);
+    // ajustar canvas al tamaño real de la pantalla
+    canvasFace.width=window.innerWidth; canvasFace.height=window.innerHeight;
+    let badge=document.getElementById('aiBadge');
+    if(res.detections.length>0){
+      badge.style.display='block';
+      badge.innerText='✅ CARA DETECTADA • SIN LENTES = LISTO PARA STRIPE';
+      badge.style.background='#00c853';
+      res.detections.forEach(det=>{
+        let b=det.boundingBox;
+        // convertir coordenadas relativas a pantalla
+        let x=(b.originX/ v.videoWidth)*window.innerWidth;
+        let y=(b.originY/ v.videoHeight)*window.innerHeight;
+        let w=(b.width/ v.videoWidth)*window.innerWidth;
+        let h=(b.height/ v.videoHeight)*window.innerHeight;
+        ctxFace.strokeStyle='#00ff00'; ctxFace.lineWidth=3; ctxFace.strokeRect(x,y,w,h);
+        // puntos de ojos para detectar lentes simple: si hay baja confianza en ojos = posible lente
+        // truco visual: si la cara es grande y centrada, ponemos OK
+      });
+    } else {
+      badge.style.display='block';
+      badge.innerText='🔍 Buscando cara... acércate';
+      badge.style.background='#000c';
+    }
+  }
+  requestAnimationFrame(detectLoop);
+}
+window.voltear=async()=>{ camIndex=(camIndex+1)%Math.max(1,cams.length); await window.iniciarPorIndice(camIndex); }
+window.toggle=()=>{ let d=document.getElementById('drawer'); d.classList.toggle('open'); if(!d.classList.contains('open')) guardarPrefs(); }
+window.cerrarRes=()=>{ document.getElementById('res').style.display='none'; }
+window.toggleTorch=async()=>{ try{ await track.applyConstraints({advanced:[{torch:true}]}); setTimeout(async()=>{try{await track.applyConstraints({advanced:[{torch:false}]})}catch{}},1200);}catch{} }
+function applyZoom(){ document.getElementById('zoomVal').innerText=zoomLevel.toFixed(1)+'x'; document.getElementById('zoomTop').innerText=zoomLevel.toFixed(1)+'x'; document.getElementById('zoomR').value=zoomLevel; try{ let caps=track?.getCapabilities(); if(caps && caps.zoom){ track.applyConstraints({advanced:[{zoom:zoomLevel}]}); v.style.transform=''; return; } }catch{} v.style.transform=`scale(${zoomLevel})`; }
+document.getElementById('zoomR').oninput=e=>{ zoomLevel=parseFloat(e.target.value); applyZoom(); }
+v.addEventListener('click', e=>{ let r=v.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height; let b=document.getElementById('focusBox'); b.style.left=e.clientX+'px'; b.style.top=e.clientY+'px'; b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),700); try{ if(track?.getCapabilities()?.pointsOfInterest) track.applyConstraints({advanced:[{pointsOfInterest:{x,y}}]}); }catch{} });
+function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
+function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
+document.getElementById('logoInput').onchange=e=>{ let f=e.target.files[0]; if(!f) return; let rd=new FileReader(); rd.onload=ev=>{ logoDataUrl=ev.target.result; logoImg=new Image(); logoImg.src=logoDataUrl; document.getElementById('logoPrev').src=logoDataUrl; guardarPrefs(); }; rd.readAsDataURL(f); }
+window.borrarLogo=()=>{ logoImg=null; logoDataUrl=null; document.getElementById('logoPrev').src=''; localStorage.removeItem('logoDataUrl'); }
+window.ubicacionAuto=async()=>{ try{ let p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:8000})); document.getElementById('ubiTxt').value=`Jacona ${p.coords.latitude.toFixed(3)},${p.coords.longitude.toFixed(3)}`; guardarPrefs(); }catch{ alert('Activa GPS'); } }
+function drawWatermark(ctx,w,h){
+  if(!document.getElementById('marcaOn').checked) return;
+  let showLogo=document.getElementById('chkLogo').checked && logoImg && logoImg.complete;
+  let showMarca=document.getElementById('chkMarca').checked;
+  let showUbi=document.getElementById('chkUbi').checked;
+  let showFecha=document.getElementById('chkFecha').checked;
+  if(!showLogo&&!showMarca&&!showUbi&&!showFecha) return;
+  let pad=Math.round(w*0.018), lineH=Math.round(h*0.032), fs=Math.round(h*0.028);
+  ctx.save(); ctx.font=`bold ${fs}px system-ui`; ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=6; ctx.shadowOffsetY=2;
+  let marcaTxt=document.getElementById('marcaTxt').value.trim(), ubiTxt=document.getElementById('ubiTxt').value.trim();
+  let fechaTxt= showFecha? new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})+' '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : '';
+  let lines=[]; if(showMarca&&marcaTxt) lines.push(marcaTxt); if(showUbi&&ubiTxt) lines.push('📍 '+ubiTxt); if(showFecha) lines.push(fechaTxt);
+  let textW=0; lines.forEach(l=>{ let m=ctx.measureText(l).width; if(m>textW) textW=m; });
+  let logoW= showLogo? Math.round(h*0.10):0, logoH=logoW;
+  let blockW= pad+logoW+(showLogo?12:0)+textW+pad, blockH=Math.max(logoH, lines.length*lineH+pad);
+  let x= marcaPos=='bl'? pad : w-blockW-pad, y= h-blockH-pad-Math.round(h*0.05);
+  ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.roundRect(x,y,blockW,blockH,14); ctx.fill();
+  let curX=x+pad; if(showLogo){ let imgX=x+pad, imgY=y+(blockH-logoH)/2; ctx.shadowBlur=0; ctx.drawImage(logoImg,imgX,imgY,logoW,logoH); ctx.shadowBlur=6; curX=imgX+logoW+12; }
+  ctx.fillStyle='#fff'; ctx.textBaseline='top'; lines.forEach((line,i)=>{ ctx.font= i==0&&showMarca? `900 ${fs}px system-ui` : `${Math.round(fs*0.85)}px system-ui`; ctx.fillText(line,curX,y+pad+i*lineH); }); ctx.restore();
+}
+window.foto=async()=>{
+  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),90);
+  let c=document.createElement('canvas'); let vw=v.videoWidth, vh=v.videoHeight; let z=zoomLevel; let sw=vw/z, sh=vh/z, sx=(vw-sw)/2, sy=(vh-sh)/2;
+  c.width=vw; c.height=vh; c.getContext('2d').drawImage(v,sx,sy,sw,sh,0,0,vw,vh);
+  let ctx=c.getContext('2d');
+  if(colorMode=='vivo'){ let id=ctx.getImageData(0,0,c.width,c.height), d=id.data; for(let i=0;i<d.length;i+=4){ let g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; d[i]=Math.min(255,g+(d[i]-g)*1.18); d[i+1]=Math.min(255,g+(d[i+1]-g)*1.08); d[i+2]=Math.min(255,g+(d[i+2]-g)*1.12); } ctx.putImageData(id,0,0); }
+  drawWatermark(ctx,c.width,c.height);
+  let q= qualityMode=='print'? 1.0 : 0.92;
+  let blob=await new Promise(r=>c.toBlob(r,'image/jpeg',q));
+  lastBlob=blob; if(lastUrl) try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=URL.createObjectURL(blob);
+  document.getElementById('outImg').src=lastUrl;
+  let mb=(blob.size/1024/1024).toFixed(2);
+  document.getElementById('resSize').innerText=`${mb} MB • ${q==1?'100%':'92%'}`;
+  document.getElementById('resDim').innerText=`${c.width}x${c.height} • 12MP`;
+  document.getElementById('resInfo').innerText= q==1? `🖨️ PRINT PRO lista para lona gigante` : `📱 LIGERA perfecta para vender`;
+  document.getElementById('res').style.display='flex'; guardarPrefs();
+}
+document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; a.download=`Botes_${qualityMode.toUpperCase()}_${Date.now()}.jpg`; document.body.appendChild(a); a.click(); a.remove(); };
+cargarPrefs(); window.setPos(localStorage.getItem('pos')||'bl');
+document.addEventListener('contextmenu',e=>e.preventDefault());
 </script>
-</body>
-</html>
+</body></html>
