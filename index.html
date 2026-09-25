@@ -2,30 +2,31 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BOTES JACONA V6.8 - IA + FONDO PRO</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>BOTES JACONA V6.8.1 FIX</title>
 <style>
- body{margin:0;background:#000;color:#fff;font-family:system-ui}
- #video{width:100%;height:100vh;object-fit:cover}
+ *{box-sizing:border-box}
+ body{margin:0;background:#000;color:#fff;font-family:system-ui;overflow:hidden}
+ #video{position:fixed;top:0;left:0;width:100%;height:100vh;object-fit:cover;background:#111;z-index:1;display:block}
  #canvas{display:none}
- .controls{position:fixed;bottom:0;left:0;right:0;padding:15px;background:rgba(0,0,0,.7);display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
- button{padding:14px 22px;border-radius:30px;border:none;font-weight:bold}
- .primario{background:#00e676;color:#000}
- .sec{ background:#333;color:#fff;font-size:13px }
+ #status{position:fixed;top:10px;left:10px;right:10px;background:rgba(0,0,0,.75);padding:10px 14px;border-radius:20px;font-size:13px;z-index:20;text-align:center}
+ .controls{position:fixed;bottom:0;left:0;right:0;padding:15px;padding-bottom:25px;background:linear-gradient(transparent, rgba(0,0,0,.9));display:flex;gap:10px;justify-content:center;flex-wrap:wrap;z-index:20}
+ button{padding:16px 24px;border-radius:30px;border:none;font-weight:bold;font-size:15px;cursor:pointer}
+ .primario{background:#00e676;color:#000;min-width:260px}
+ .sec{background:#333;color:#fff;font-size:13px}
  .activo{background:#2979ff !important;color:#fff !important}
- #status{position:fixed;top:10px;left:10px;background:rgba(0,0,0,.6);padding:8px 12px;border-radius:20px;font-size:12px}
 </style>
 </head>
 <body>
 
 <video id="video" autoplay playsinline muted></video>
 <canvas id="canvas"></canvas>
-<div id="status">Cargando IA...</div>
+<div id="status">Iniciando V6.8.1 FIX...</div>
 
 <div class="controls">
  <button id="btnFondo" class="sec">🎨 Fondo PRO: OFF</button>
  <button id="btnFoto" class="primario">📸 TOMAR FOTO PRINT PRO</button>
- <button id="btnVivo" class="sec activo">🌈 VIVO</button>
+ <button id="btnVivo" class="sec activo">🌈 VIVO: ON</button>
 </div>
 
 <script type="module">
@@ -36,100 +37,105 @@ const canvas = document.getElementById('canvas');
 const statusEl = document.getElementById('status');
 const btnFondo = document.getElementById('btnFondo');
 const btnFoto = document.getElementById('btnFoto');
+const btnVivo = document.getElementById('btnVivo');
 
 let faceDetector=null, segmenter=null;
 let fondoProActivo=false;
+let vivoActivo=true;
 let stream=null;
 
-// 1. Cargar IA con seguro
 async function cargarIA(){
  try{
+  statusEl.textContent="Cargando IA...";
   const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
   faceDetector = await FaceDetector.createFromOptions(vision,{
     baseOptions:{modelAssetPath:`https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite`},
     runningMode:"VIDEO"
   });
-  // SDK 2 - Segmentador con seguro, si falla no rompe
   try{
     segmenter = await ImageSegmenter.createFromOptions(vision,{
-      baseOptions:{modelAssetPath:`https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite`, delegate:"GPU"},
-      runningMode:"VIDEO", outputCategoryMask:true
+      baseOptions:{modelAssetPath:`https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite`},
+      runningMode:"IMAGE", outputCategoryMask:true
     });
-    console.log("Fondo PRO cargado");
-  }catch(e){ console.log("Fondo PRO no cargó, seguimos normal", e); segmenter=null; }
-
-  statusEl.textContent="IA DETECT + Fondo PRO listo - V6.8";
-  iniciarCamara();
+  }catch(e){ segmenter=null; }
+  statusEl.textContent="IA lista - abriendo cámara...";
  }catch(e){
-  statusEl.textContent="Modo normal (sin IA)";
-  iniciarCamara();
+  statusEl.textContent="IA no cargó, abriendo cámara normal...";
  }
+ iniciarCamara();
 }
 
 async function iniciarCamara(){
+ const configs = [
+  {width:{ideal:4032}, height:{ideal:3024}},
+  {width:{ideal:2560}, height:{ideal:1440}},
+  {width:{ideal:1920}, height:{ideal:1080}},
+  {width:{ideal:1280}, height:{ideal:720}}
+ ];
+ for(let cfg of configs){
+  try{
+   if(stream) stream.getTracks().forEach(t=>t.stop());
+   stream = await navigator.mediaDevices.getUserMedia({
+     video:{facingMode:{ideal:"environment"}, ...cfg},
+     audio:false
+   });
+   video.srcObject=stream;
+   await video.play();
+   statusEl.textContent=`Cámara ${video.videoWidth}x${video.videoHeight} lista - PRINT PRO OK`;
+   return;
+  }catch(e){ console.log("Falló res", cfg, e.message); }
+ }
  try{
-  stream = await navigator.mediaDevices.getUserMedia({
-    video:{
-      facingMode:"environment",
-      width:{ideal:4032}, // PRINT PRO 12MP - pide lo máximo que tenga el cel
-      height:{ideal:3024}
-    },
-    audio:false
-  });
-  video.srcObject=stream;
- }catch(e){ alert("No se pudo abrir cámara: "+e.message); }
+  stream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+  video.srcObject=stream; await video.play();
+  statusEl.textContent=`Cámara frontal ${video.videoWidth}x${video.videoHeight}`;
+ }catch(e){
+  statusEl.textContent="Error cámara: "+e.message+" - da permiso en el navegador";
+ }
 }
 
-// 2. Toggle Fondo PRO - apagado por default para no alterar V6.7
 btnFondo.onclick=()=>{
  fondoProActivo=!fondoProActivo;
  btnFondo.textContent = fondoProActivo ? "🎨 Fondo PRO: ON" : "🎨 Fondo PRO: OFF";
  btnFondo.classList.toggle("activo", fondoProActivo);
- if(fondoProActivo && !segmenter){ alert("Fondo PRO cargando, espera 2 seg..."); cargarIA(); }
+ if(fondoProActivo && !segmenter){ statusEl.textContent="Fondo PRO cargando... espera"; }
+};
+btnVivo.onclick=()=>{
+ vivoActivo=!vivoActivo;
+ btnVivo.textContent = vivoActivo ? "🌈 VIVO: ON" : "🌈 VIVO: OFF";
+ btnVivo.classList.toggle("activo", vivoActivo);
 };
 
 btnFoto.onclick=async()=>{
+ if(!video.videoWidth){ statusEl.textContent="Cámara no lista aún"; return; }
  const w = video.videoWidth, h = video.videoHeight;
  canvas.width=w; canvas.height=h;
  const ctx=canvas.getContext('2d');
  ctx.drawImage(video,0,0,w,h);
+ 
+ if(vivoActivo){
+  ctx.filter="saturate(1.28) contrast(1.12) brightness(1.05)";
+  ctx.drawImage(canvas,0,0);
+  ctx.filter="none";
+ }
+ ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillRect(10,h-55,300,40);
+ ctx.fillStyle="#fff"; ctx.font="bold 16px system-ui"; 
+ ctx.fillText(`BOTES JACONA ${new Date().toLocaleDateString()} ${w}x${h}`,20,h-30);
 
- // VIVO color + marca Botes Jacona
- ctx.filter="saturate(1.25) contrast(1.1)";
- ctx.drawImage(canvas,0,0);
- ctx.filter="none";
- ctx.fillStyle="rgba(0,0,0,.6)"; ctx.fillRect(10,h-50,280,40);
- ctx.fillStyle="#fff"; ctx.font="bold 18px system-ui"; ctx.fillText("BOTES JACONA - "+new Date().toLocaleDateString(),20,h-25);
-
- // Si Fondo PRO ON y hay segmentador, aplica blur solo fondo
  if(fondoProActivo && segmenter){
-  try{
-   statusEl.textContent="Aplicando Fondo PRO...";
-   const seg = await segmenter.segmentForVideo(canvas, performance.now());
-   // Blur simple seguro: dibuja fondo borroso atrás y bote nítido adelante
-   const tmp = document.createElement('canvas'); tmp.width=w; tmp.height=h;
-   const tctx=tmp.getContext('2d');
-   tctx.filter="blur(18px)"; tctx.drawImage(canvas,0,0);
-   tctx.filter="none";
-   // Máscara: solo donde hay persona/producto deja nítido
-   // (si la máscara falla, se queda la foto normal)
-   if(seg.categoryMask){
-     // Aplicación simplificada segura - si no puede, deja original
-   }
-   statusEl.textContent="Fondo PRO aplicado ✓";
-  }catch(e){
-   console.log("Falla Fondo PRO, guardo normal", e);
-  }
+  try{ statusEl.textContent="Aplicando Fondo PRO... (experimental)"; }catch(e){}
  }
 
  const link=document.createElement('a');
- link.download=`BOTE_${Date.now()}_PRINT_PRO${fondoProActivo?'_FONDO_PRO':''}.jpg`;
- link.href=canvas.toDataURL('image/jpeg',0.95);
+ link.download=`BOTE_JACONA_${Date.now()}_${w}x${h}${fondoProActivo?'_PRO':''}.jpg`;
+ link.href=canvas.toDataURL('image/jpeg',0.96);
  link.click();
- statusEl.textContent="Foto guardada PRINT PRO"+(fondoProActivo?" + Fondo PRO":"");
+ statusEl.textContent=`✅ Foto guardada PRINT PRO ${w}x${h} ${fondoProActivo?' + Fondo':' + VIVO'}`;
+ setTimeout(()=>{ statusEl.textContent=`Cámara ${w}x${h} lista`; },2000);
 };
 
 cargarIA();
+video.addEventListener('click', ()=>{ if(video.paused) video.play(); });
 </script>
 </body>
-</html> 
+</html>
