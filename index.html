@@ -60,6 +60,11 @@ input[type=text]{width:100%;padding:10px;background:#222;border:1px solid #444;b
 <p>SDK usado: <b>MediaPipe Face Detector (Google)</b> - es la versión web del CamCard que viste en tu Huawei. 100% gratis.</p>
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:8px"><input type="checkbox" id="iaOn" checked> IA detección activa</label>
 </div>
+<span class="label">📸 MODO PRO</span>
+<div style="background:#1e1e1e;padding:12px;border-radius:14px;border:1px solid #333;font-size:11px">
+<label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px"><input type="checkbox" id="proOn" checked> Ráfaga de 3 + la más nítida + realce</label>
+<label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="hdrOn" checked> 🌗 HDR (3 exposiciones) • quédate quieto ~2 s</label>
+<p style="margin:8px 0 2px">☀️ Exposición (EV)</p><input type="range" id="evR" min="-2" max="2" step="0.3" value="0" style="width:100%;accent-color:#00c853"></div>
 <span class="label">🏷️ MARCA DE AGUA</span>
 <div style="background:#1e1e1e;padding:12px;border-radius:14px;border:1px solid #333">
 <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
@@ -117,7 +122,7 @@ function setQuality(m){
 }
 window.setQuality=setQuality;
 window.setPos=(p)=>{ marcaPos=p; document.getElementById('pBL').style.background=p=='bl'?'#00c853':'#222'; document.getElementById('pBR').style.background=p=='br'?'#00c853':'#222'; localStorage.setItem('pos',p); }
-window.setColorMode=(m)=>{ colorMode=m; document.getElementById('cNat').classList.toggle('active',m=='natural'); document.getElementById('cVivo').classList.toggle('active',m=='vivo'); document.getElementById('btnNat').style.background=m=='natural'?'#00c853':'#222'; document.getElementById('btnVivo').style.background=m=='vivo'?'#ff7800':'#222'; localStorage.setItem('colorMode',m); }
+window.setColorMode=(m)=>{ colorMode=m; document.getElementById('cNat').classList.toggle('active',m=='natural'); document.getElementById('cVivo').classList.toggle('active',m=='vivo'); localStorage.setItem('colorMode',m); }
 async function getCams(){ try{ if(cams.length==0){try{let t=await navigator.mediaDevices.getUserMedia({video:true}); t.getTracks().forEach(x=>x.stop());}catch{}} let d=await navigator.mediaDevices.enumerateDevices(); let all=d.filter(x=>x.kind=='videoinput').filter(c=>{let l=(c.label||'').toLowerCase();return!l.includes('depth')&&!l.includes('2mp')}); let seen=new Set(),uniq=[]; all.forEach(c=>{if(!seen.has(c.deviceId)){uniq.push(c);seen.add(c.deviceId)}}); cams=uniq; if(cams.length==0) cams=all; document.getElementById('camList').innerText=cams.map((c,i)=>`[${i}] ${c.label}`).join('\n'); let cont=document.getElementById('camButtons'); cont.innerHTML=''; cams.forEach((c,i)=>{let b=document.createElement('button'); b.innerText=(i==0?'📷 Principal':i==1?'📷 Angular':'🤳 Frontal')+(i==camIndex?' ✅':''); b.style.cssText='padding:10px;background:'+(i==camIndex?'#00c853':'#222')+';color:#fff;border:1px solid #444;border-radius:10px;font-size:11px'; b.onclick=()=>iniciarPorIndice(i); cont.appendChild(b);}); document.getElementById('info').innerText=cams.length+' cams • '+ (v.videoWidth||'?')+'x'+(v.videoHeight||'?'); }catch(e){} }
 window.getCams=getCams;
 window.iniciarPorIndice=async function(idx){
@@ -128,7 +133,7 @@ window.iniciarPorIndice=async function(idx){
     let devId=cams[camIndex]?.deviceId;
     let cons=devId?{video:{deviceId:{exact:devId},width:{ideal:4032},height:{ideal:3024}}}:{video:{facingMode:'environment'}};
     try{stream=await navigator.mediaDevices.getUserMedia(cons);}catch{stream=await navigator.mediaDevices.getUserMedia({video:true});}
-    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0];
+    v.srcObject=stream; await v.play(); track=stream.getVideoTracks()[0]; try{await track.applyConstraints({advanced:[{focusMode:'continuous'},{exposureMode:'continuous'},{whiteBalanceMode:'continuous'}]})}catch{}
     document.getElementById('start').style.display='none';
     await getCams(); applyZoom();
     canvasFace.width=v.videoWidth; canvasFace.height=v.videoHeight;
@@ -173,9 +178,9 @@ window.cerrarRes=()=>{ document.getElementById('res').style.display='none'; }
 window.toggleTorch=async()=>{ try{ await track.applyConstraints({advanced:[{torch:true}]}); setTimeout(async()=>{try{await track.applyConstraints({advanced:[{torch:false}]})}catch{}},1200);}catch{} }
 function applyZoom(){ document.getElementById('zoomVal').innerText=zoomLevel.toFixed(1)+'x'; document.getElementById('zoomTop').innerText=zoomLevel.toFixed(1)+'x'; document.getElementById('zoomR').value=zoomLevel; try{ let caps=track?.getCapabilities(); if(caps && caps.zoom){ track.applyConstraints({advanced:[{zoom:zoomLevel}]}); v.style.transform=''; return; } }catch{} v.style.transform=`scale(${zoomLevel})`; }
 document.getElementById('zoomR').oninput=e=>{ zoomLevel=parseFloat(e.target.value); applyZoom(); }
-v.addEventListener('click', e=>{ let r=v.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height; let b=document.getElementById('focusBox'); b.style.left=e.clientX+'px'; b.style.top=e.clientY+'px'; b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),700); try{ if(track?.getCapabilities()?.pointsOfInterest) track.applyConstraints({advanced:[{pointsOfInterest:{x,y}}]}); }catch{} });
-function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
-function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
+v.addEventListener('click', e=>{ let r=v.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height; let b=document.getElementById('focusBox'); b.style.left=e.clientX+'px'; b.style.top=e.clientY+'px'; b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),700); try{ if(track?.getCapabilities()?.pointsOfInterest) { track.applyConstraints({advanced:[{focusMode:'single-shot',pointsOfInterest:{x,y}}]}); setTimeout(()=>{try{track.applyConstraints({advanced:[{focusMode:'continuous'}]})}catch{}},3000); } }catch{} });
+function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdrOn'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
+function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdrOn'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
 document.getElementById('logoInput').onchange=e=>{ let f=e.target.files[0]; if(!f) return; let rd=new FileReader(); rd.onload=ev=>{ logoDataUrl=ev.target.result; logoImg=new Image(); logoImg.src=logoDataUrl; document.getElementById('logoPrev').src=logoDataUrl; guardarPrefs(); }; rd.readAsDataURL(f); }
 window.borrarLogo=()=>{ logoImg=null; logoDataUrl=null; document.getElementById('logoPrev').src=''; localStorage.removeItem('logoDataUrl'); }
 window.ubicacionAuto=async()=>{ try{ let p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:8000})); document.getElementById('ubiTxt').value=`Jacona ${p.coords.latitude.toFixed(3)},${p.coords.longitude.toFixed(3)}`; guardarPrefs(); }catch{ alert('Activa GPS'); } }
@@ -199,25 +204,100 @@ function drawWatermark(ctx,w,h){
   let curX=x+pad; if(showLogo){ let imgX=x+pad, imgY=y+(blockH-logoH)/2; ctx.shadowBlur=0; ctx.drawImage(logoImg,imgX,imgY,logoW,logoH); ctx.shadowBlur=6; curX=imgX+logoW+12; }
   ctx.fillStyle='#fff'; ctx.textBaseline='top'; lines.forEach((line,i)=>{ ctx.font= i==0&&showMarca? `900 ${fs}px system-ui` : `${Math.round(fs*0.85)}px system-ui`; ctx.fillText(line,curX,y+pad+i*lineH); }); ctx.restore();
 }
-window.foto=async()=>{
-  let f=document.getElementById('flash'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),90);
-  let c=document.createElement('canvas'); let vw=v.videoWidth, vh=v.videoHeight; let z=zoomLevel; let sw=vw/z, sh=vh/z, sx=(vw-sw)/2, sy=(vh-sh)/2;
-  c.width=vw; c.height=vh; c.getContext('2d').drawImage(v,sx,sy,sw,sh,0,0,vw,vh);
-  let ctx=c.getContext('2d');
-  if(colorMode=='vivo'){ let id=ctx.getImageData(0,0,c.width,c.height), d=id.data; for(let i=0;i<d.length;i+=4){ let g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; d[i]=Math.min(255,g+(d[i]-g)*1.18); d[i+1]=Math.min(255,g+(d[i+1]-g)*1.08); d[i+2]=Math.min(255,g+(d[i+2]-g)*1.12); } ctx.putImageData(id,0,0); }
-  drawWatermark(ctx,c.width,c.height);
-  let q= qualityMode=='print'? 1.0 : 0.92;
-  let blob=await new Promise(r=>c.toBlob(r,'image/jpeg',q));
-  lastBlob=blob; if(lastUrl) try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=URL.createObjectURL(blob);
-  document.getElementById('outImg').src=lastUrl;
-  let mb=(blob.size/1024/1024).toFixed(2);
-  document.getElementById('resSize').innerText=`${mb} MB • ${q==1?'100%':'92%'}`;
-  document.getElementById('resDim').innerText=`${c.width}x${c.height} • 12MP`;
-  document.getElementById('resInfo').innerText= q==1? `🖨️ PRINT PRO lista para lona gigante` : `📱 LIGERA perfecta para vender`;
-  document.getElementById('res').style.display='flex'; guardarPrefs();
+function nitidez(b){let w=800,h=Math.round(w*b.height/b.width),c=document.createElement('canvas');c.width=w;c.height=h;let x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,w,h);let d=x.getImageData(0,0,w,h).data,g=new Float32Array(w*h);for(let i=0;i<w*h;i++)g[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];let s=0,s2=0,n=0;for(let y=1;y<h-1;y++)for(let i=y*w+1;i<y*w+w-1;i++){let l=4*g[i]-g[i-1]-g[i+1]-g[i-w]-g[i+w];s+=l;s2+=l*l;n++}return s2/n-(s/n)**2}
+async function tomar(n){
+  let out=[],cap=null,ic=null;
+  try{ic=new ImageCapture(track);cap=await ic.getPhotoCapabilities();}catch{ic=null}
+  for(let i=0;i<n;i++){
+    let b=null;
+    if(ic) try{ b=await createImageBitmap(await ic.takePhoto(cap&&cap.imageWidth?{imageWidth:cap.imageWidth.max,imageHeight:cap.imageHeight.max}:undefined)); }catch{}
+    if(!b){ let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); b=await createImageBitmap(c); await new Promise(r=>setTimeout(r,60)); }
+    out.push(b);
+  }
+  return out;
 }
+function mejorar(c){
+  let w=c.width,h=c.height,x=c.getContext('2d'),o=x.getImageData(0,0,w,h),d=o.data;
+  let b=document.createElement('canvas');b.width=w;b.height=h;let bx=b.getContext('2d');bx.filter='blur(1.6px)';bx.drawImage(c,0,0);bx.filter='none';
+  let bd=bx.getImageData(0,0,w,h).data,H=new Uint32Array(256),tot=0;
+  for(let i=0;i<d.length;i+=16){H[(.299*d[i]+.587*d[i+1]+.114*d[i+2])|0]++;tot++}
+  let lo=0,hi=255,a=0;
+  for(;lo<255&&a+H[lo]<tot*.005;lo++)a+=H[lo];
+  a=0;for(;hi>0&&a+H[hi]<tot*.005;hi--)a+=H[hi];
+  lo=Math.min(lo,30);hi=Math.max(hi,215);
+  let k=255/(hi-lo),A=0.4;
+  for(let i=0;i<d.length;i+=4)for(let j=0;j<3;j++){let t=(d[i+j]+A*(d[i+j]-bd[i+j])-lo)*k;d[i+j]=t<0?0:t>255?255:t}
+  x.putImageData(o,0,0);
+}
+async function tomarHDR(){
+  let ec=track.getCapabilities&&track.getCapabilities().exposureCompensation; if(!ec) return null;
+  let sp=Math.min(1.5,ec.max,-ec.min),out=[],ev0=parseFloat(document.getElementById('evR').value)||0;
+  for(let e of [-sp,0,sp]){
+    try{await track.applyConstraints({advanced:[{exposureCompensation:Math.max(ec.min,Math.min(ec.max,ev0+e))}]})}catch{return null}
+    await new Promise(r=>setTimeout(r,500));
+    out.push((await tomar(1))[0]);
+  }
+  try{await track.applyConstraints({advanced:[{exposureCompensation:ev0}]})}catch{}
+  return out;
+}
+async function fusionar(bs){
+  let W=bs[0].width,H=bs[0].height,s=8,lw=Math.ceil(W/s),lh=Math.ceil(H/s),n=bs.length,M=[],mean=[];
+  for(let k=0;k<n;k++){
+    let c=document.createElement('canvas');c.width=lw;c.height=lh;let x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bs[k],0,0,lw,lh);
+    let d=x.getImageData(0,0,lw,lh).data,m=new Float32Array(lw*lh),acc=0;
+    for(let i=0;i<lw*lh;i++){let L=(.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2])/255;acc+=L;m[i]=Math.exp(-((L-.5)**2)/.08)*(k==(n>>1)?1.4:1)+1e-4}
+    M.push(m);mean.push(acc/(lw*lh));
+  }
+  if(Math.max(...mean)-Math.min(...mean)<0.04) return null;
+  for(let i=0;i<lw*lh;i++){let t=0;for(let k=0;k<n;k++)t+=M[k][i];for(let k=0;k<n;k++)M[k][i]/=t}
+  let o=document.createElement('canvas');o.width=W;o.height=H;let ox=o.getContext('2d'),sh=256;
+  let sc=document.createElement('canvas');sc.width=W;let sx=sc.getContext('2d',{willReadFrequently:true});
+  for(let y0=0;y0<H;y0+=sh){
+    let h=Math.min(sh,H-y0);sc.height=h;let D=[];
+    for(let k=0;k<n;k++){sx.clearRect(0,0,W,h);sx.drawImage(bs[k],0,y0,W,h,0,0,W,h);D.push(sx.getImageData(0,0,W,h).data)}
+    let out=ox.createImageData(W,h),od=out.data;
+    for(let y=0;y<h;y++){
+      let fy=(y0+y)/s-.5;fy=fy<0?0:fy>lh-1?lh-1:fy;let iy=fy|0,ty=fy-iy,iy2=Math.min(iy+1,lh-1);
+      for(let x=0;x<W;x++){
+        let fx=x/s-.5;fx=fx<0?0:fx>lw-1?lw-1:fx;let ix=fx|0,tx=fx-ix,ix2=Math.min(ix+1,lw-1);
+        let p=(y*W+x)*4,r=0,g=0,b=0;
+        for(let k=0;k<n;k++){let m=M[k],w=(m[iy*lw+ix]*(1-tx)+m[iy*lw+ix2]*tx)*(1-ty)+(m[iy2*lw+ix]*(1-tx)+m[iy2*lw+ix2]*tx)*ty,d=D[k];r+=w*d[p];g+=w*d[p+1];b+=w*d[p+2]}
+        od[p]=r;od[p+1]=g;od[p+2]=b;od[p+3]=255;
+      }
+    }
+    ox.putImageData(out,0,y0);
+  }
+  return o;
+}
+window.foto=async()=>{
+  let f=document.getElementById('flash'),ab=document.getElementById('autoBadge'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),90);
+  ab.innerText='⏳ Procesando... no te muevas'; ab.style.display='block';
+  try{
+    let pro=document.getElementById('proOn').checked, hdrOn=document.getElementById('hdrOn').checked, hb=hdrOn?await tomarHDR():null, sinHdr=hdrOn&&!hb, c, ctx, src=null;
+    let hw=!!(track.getCapabilities&&track.getCapabilities().zoom), z=hw?1:zoomLevel;
+    if(hb) src=await fusionar(hb);
+    if(!src){ if(hb){ sinHdr=true; hb=[hb[1]]; } else { let bs=await tomar(pro?3:1), best=bs[0], bn=-1; if(bs.length>1) for(let b of bs){let n=nitidez(b); if(n>bn){bn=n;best=b}} hb=[best]; } src=hb[0]; }
+    let vw=hb[0].width, vh=hb[0].height, sw=vw/z, sh=vh/z;
+    c=document.createElement('canvas'); c.width=vw; c.height=vh; ctx=c.getContext('2d');
+    ctx.drawImage(src,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,vw,vh);
+    if(pro) mejorar(c);
+    if(colorMode=='vivo'){ let id=ctx.getImageData(0,0,c.width,c.height), d=id.data; for(let i=0;i<d.length;i+=4){ let g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; d[i]=Math.min(255,g+(d[i]-g)*1.18); d[i+1]=Math.min(255,g+(d[i+1]-g)*1.08); d[i+2]=Math.min(255,g+(d[i+2]-g)*1.12); } ctx.putImageData(id,0,0); }
+    drawWatermark(ctx,c.width,c.height);
+    let q= qualityMode=='print'? 1.0 : 0.92;
+    let blob=await new Promise(r=>c.toBlob(r,'image/jpeg',q));
+    lastBlob=blob; if(lastUrl) try{URL.revokeObjectURL(lastUrl);}catch{} lastUrl=URL.createObjectURL(blob);
+    document.getElementById('outImg').src=lastUrl;
+    document.getElementById('resSize').innerText=`${(blob.size/1024/1024).toFixed(2)} MB • ${q==1?'100%':'92%'}`;
+    document.getElementById('resDim').innerText=`${c.width}x${c.height} • ${(c.width*c.height/1e6).toFixed(1)}MP`;
+    document.getElementById('resInfo').innerText= hb.length>1? '🌗 HDR de 3 exposiciones + realce suave' : (sinHdr? '⚠️ Chrome no cambió la exposición en este celular: salió sin HDR' : (pro? '📸 Modo Pro: la más nítida de 3 + realce' : 'Foto simple'));
+    document.getElementById('res').style.display='flex'; guardarPrefs();
+  }catch(e){ alert('Error: '+e.message); }
+  finally{ ab.style.display='none'; }
+}
+document.getElementById('evR').oninput=e=>{ try{ track.applyConstraints({advanced:[{exposureCompensation:parseFloat(e.target.value)}]}) }catch{} };
 document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; a.download=`Botes_${qualityMode.toUpperCase()}_${Date.now()}.jpg`; document.body.appendChild(a); a.click(); a.remove(); };
 cargarPrefs(); window.setPos(localStorage.getItem('pos')||'bl');
 document.addEventListener('contextmenu',e=>e.preventDefault());
 </script>
 </body></html>
+ 
