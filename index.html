@@ -64,6 +64,7 @@ input[type=text]{width:100%;padding:10px;background:#222;border:1px solid #444;b
 <div style="background:#1e1e1e;padding:12px;border-radius:14px;border:1px solid #333;font-size:11px">
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px"><input type="checkbox" id="proOn" checked> Ráfaga de 3 + la más nítida + realce</label>
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="hdr2On"> 🌗 HDR (3 exposiciones) • quédate quieto ~2 s</label>
+<label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="lookOn" checked> 🎞️ Look cámara profesional (color, contraste, detalle)</label>
 <p style="margin:8px 0 2px">☀️ Exposición (EV)</p><input type="range" id="evR" min="-2" max="2" step="0.3" value="0" style="width:100%;accent-color:#00c853"></div>
 <span class="label">🏷️ MARCA DE AGUA</span>
 <div style="background:#1e1e1e;padding:12px;border-radius:14px;border:1px solid #333">
@@ -89,7 +90,7 @@ input[type=text]{width:100%;padding:10px;background:#222;border:1px solid #444;b
 <div style="font-size:10px;color:#666;background:#111;padding:8px;border-radius:8px;margin-top:8px" id="camList"></div>
 <button onclick="toggle()" style="width:100%;padding:14px;margin-top:14px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:900">✅ CERRAR</button>
 </div>
-<div id="res"><img id="outImg"><div style="padding:8px 12px;background:#111;display:flex;justify-content:space-between;font-size:11px"><span id="resSize">-</span><span id="resDim">-</span></div><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00c853;color:#fff;border-radius:14px;border:none;font-weight:900">💾 GUARDAR</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
+<div id="res"><img id="outImg"><div style="padding:8px 12px;background:#111;display:flex;justify-content:space-between;font-size:11px"><span id="resSize">-</span><span id="resDim">-</span></div><div style="display:flex;gap:8px;padding:12px"><button id="dl" style="flex:1;padding:16px;background:#00c853;color:#fff;border-radius:14px;border:none;font-weight:900">📷 GUARDAR EN FOTOS</button><button id="dl2" title="Descargas" style="padding:14px;background:#222;color:#fff;border:none;border-radius:14px">⬇️</button><button onclick="cerrarRes()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:14px">Seguir</button></div><p id="resInfo" style="text-align:center;font-size:11px;color:#888"></p></div>
 
 <script type="module">
 import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision";
@@ -176,8 +177,8 @@ window.toggleTorch=async()=>{ try{ await track.applyConstraints({advanced:[{torc
 function applyZoom(){ document.getElementById('zoomVal').innerText=zoomLevel.toFixed(1)+'x'; document.getElementById('zoomTop').innerText=zoomLevel.toFixed(1)+'x'; document.getElementById('zoomR').value=zoomLevel; try{ let caps=track?.getCapabilities(); if(caps && caps.zoom){ track.applyConstraints({advanced:[{zoom:zoomLevel}]}); v.style.transform=''; return; } }catch{} v.style.transform=`scale(${zoomLevel})`; }
 document.getElementById('zoomR').oninput=e=>{ zoomLevel=parseFloat(e.target.value); applyZoom(); }
 v.addEventListener('click', e=>{ let r=v.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height; let b=document.getElementById('focusBox'); b.style.left=e.clientX+'px'; b.style.top=e.clientY+'px'; b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),700); try{ if(track?.getCapabilities()?.pointsOfInterest) { track.applyConstraints({advanced:[{focusMode:'single-shot',pointsOfInterest:{x,y}}]}); setTimeout(()=>{try{track.applyConstraints({advanced:[{focusMode:'continuous'}]})}catch{}},3000); } }catch{} });
-function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
-function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
+function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
+function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
 document.getElementById('logoInput').onchange=e=>{ let f=e.target.files[0]; if(!f) return; let rd=new FileReader(); rd.onload=ev=>{ logoDataUrl=ev.target.result; logoImg=new Image(); logoImg.src=logoDataUrl; document.getElementById('logoPrev').src=logoDataUrl; guardarPrefs(); }; rd.readAsDataURL(f); }
 window.borrarLogo=()=>{ logoImg=null; logoDataUrl=null; document.getElementById('logoPrev').src=''; localStorage.removeItem('logoDataUrl'); }
 window.ubicacionAuto=async()=>{ try{ let p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:8000})); document.getElementById('ubiTxt').value=`Jacona ${p.coords.latitude.toFixed(3)},${p.coords.longitude.toFixed(3)}`; guardarPrefs(); }catch{ alert('Activa GPS'); } }
@@ -216,16 +217,23 @@ async function tomar(n){
   return out;
 }
 function mejorar(c){
-  let w=c.width,h=c.height,x=c.getContext('2d'),o=x.getImageData(0,0,w,h),d=o.data;
-  let b=document.createElement('canvas');b.width=w;b.height=h;let bx=b.getContext('2d');bx.filter='blur(1.6px)';bx.drawImage(c,0,0);bx.filter='none';
-  let bd=bx.getImageData(0,0,w,h).data,H=new Uint32Array(256),tot=0;
+  let w=c.width,h=c.height,x=c.getContext('2d'),o=x.getImageData(0,0,w,h),d=o.data,look=document.getElementById('lookOn').checked;
+  const bl=r=>{let b=document.createElement('canvas');b.width=w;b.height=h;let bx=b.getContext('2d');bx.filter='blur('+r+'px)';bx.drawImage(c,0,0);bx.filter='none';return bx.getImageData(0,0,w,h).data};
+  let bd=bl(1.6), bL=look?bl(Math.max(12,w/120)):null, H=new Uint32Array(256), tot=0;
   for(let i=0;i<d.length;i+=16){H[(.299*d[i]+.587*d[i+1]+.114*d[i+2])|0]++;tot++}
   let lo=0,hi=255,a=0;
   for(;lo<255&&a+H[lo]<tot*.005;lo++)a+=H[lo];
   a=0;for(;hi>0&&a+H[hi]<tot*.005;hi--)a+=H[hi];
   lo=Math.min(lo,30);hi=Math.max(hi,215);
-  let k=255/(hi-lo),A=0.4;
-  for(let i=0;i<d.length;i+=4)for(let j=0;j<3;j++){let t=(d[i+j]+A*(d[i+j]-bd[i+j])-lo)*k;d[i+j]=t<0?0:t>255?255:t}
+  let k=255/(hi-lo),A=0.4,G=[1,1,1];
+  if(look){let sm=[0,0,0];for(let i=0;i<d.length;i+=16){sm[0]+=d[i];sm[1]+=d[i+1];sm[2]+=d[i+2]}let m=(sm[0]+sm[1]+sm[2])/3;for(let j=0;j<3;j++)G[j]=Math.min(1.07,Math.max(.93,m/sm[j]))}
+  let T=new Uint8Array(256);for(let i=0;i<256;i++){let t=i/255;T[i]=Math.round(255*(look?t-0.3*Math.sin(2*Math.PI*t)/(2*Math.PI):t))}
+  const px=(i,j)=>{let v=d[i+j],t=v+A*(v-bd[i+j]);if(bL)t+=.25*(v-bL[i+j]);t=(t*G[j]-lo)*k;return T[t<0?0:t>255?255:(t+.5)|0]};
+  for(let i=0;i<d.length;i+=4){
+    let r=px(i,0),g=px(i,1),b=px(i,2);
+    if(look){let l=.299*r+.587*g+.114*b;r=l+(r-l)*1.06;g=l+(g-l)*1.06;b=l+(b-l)*1.06}
+    d[i]=r;d[i+1]=g;d[i+2]=b;
+  }
   x.putImageData(o,0,0);
 }
 function estado(t){document.getElementById('autoBadge').innerText=t;return new Promise(r=>setTimeout(r,30))}
@@ -275,7 +283,7 @@ window.foto=async()=>{
     let vw=hb[0].width, vh=hb[0].height, sw=vw/z, sh=vh/z;
     c=document.createElement('canvas'); c.width=vw; c.height=vh; ctx=c.getContext('2d');
     ctx.drawImage(src,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,vw,vh);
-    if(pro){ await estado('✨ Realzando...'); mejorar(c); }
+    if(pro||document.getElementById('lookOn').checked){ await estado('✨ Realzando...'); mejorar(c); }
     if(colorMode=='vivo'){ let id=ctx.getImageData(0,0,c.width,c.height), d=id.data; for(let i=0;i<d.length;i+=4){ let g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; d[i]=Math.min(255,g+(d[i]-g)*1.18); d[i+1]=Math.min(255,g+(d[i+1]-g)*1.08); d[i+2]=Math.min(255,g+(d[i+2]-g)*1.12); } ctx.putImageData(id,0,0); }
     drawWatermark(ctx,c.width,c.height);
     let q= qualityMode=='print'? 1.0 : 0.92;
@@ -290,8 +298,18 @@ window.foto=async()=>{
   finally{ ab.style.display='none'; }
 }
 document.getElementById('evR').oninput=e=>{ try{ track.applyConstraints({advanced:[{exposureCompensation:parseFloat(e.target.value)}]}) }catch{} };
-document.getElementById('dl').onclick=()=>{ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; a.download=`Botes_${qualityMode.toUpperCase()}_${Date.now()}.jpg`; document.body.appendChild(a); a.click(); a.remove(); };
+function descargar(){ if(!lastUrl) return; let a=document.createElement('a'); a.href=lastUrl; a.download=`Botes_${qualityMode.toUpperCase()}_${Date.now()}.jpg`; document.body.appendChild(a); a.click(); a.remove(); }
+document.getElementById('dl2').onclick=descargar;
+document.getElementById('dl').onclick=async()=>{
+  if(!lastBlob) return;
+  let f=new File([lastBlob],`Botes_${qualityMode.toUpperCase()}_${Date.now()}.jpg`,{type:'image/jpeg'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){
+    try{ await navigator.share({files:[f]}); return; }catch(e){ if(e&&e.name=='AbortError') return; }
+  }
+  descargar();
+};
 cargarPrefs(); window.setPos(localStorage.getItem('pos')||'bl');
 document.addEventListener('contextmenu',e=>e.preventDefault());
 </script>
 </body></html>
+ 
