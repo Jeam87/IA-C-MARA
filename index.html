@@ -206,11 +206,13 @@ function drawWatermark(ctx,w,h){
 }
 function nitidez(b){let w=800,h=Math.round(w*b.height/b.width),c=document.createElement('canvas');c.width=w;c.height=h;let x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,w,h);let d=x.getImageData(0,0,w,h).data,g=new Float32Array(w*h);for(let i=0;i<w*h;i++)g[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];let s=0,s2=0,n=0;for(let y=1;y<h-1;y++)for(let i=y*w+1;i<y*w+w-1;i++){let l=4*g[i]-g[i-1]-g[i+1]-g[i-w]-g[i+w];s+=l;s2+=l*l;n++}return s2/n-(s/n)**2}
 async function tomar(n){
-  let out=[],cap=null,ic=null;
-  try{ic=new ImageCapture(track);cap=await ic.getPhotoCapabilities();}catch{ic=null}
+  let out=[];
+  if(tomar.t!==track){ tomar.t=track; tomar.ic=null; tomar.cap=null; try{tomar.ic=new ImageCapture(track); tomar.cap=await tomar.ic.getPhotoCapabilities();}catch{} }
+  let ic=tomar.ic, cap=tomar.cap;
+  let ps=cap&&cap.imageWidth?(w=>({imageWidth:w,imageHeight:Math.round(w*cap.imageHeight.max/cap.imageWidth.max)}))(Math.min(cap.imageWidth.max,4032)):undefined;
   for(let i=0;i<n;i++){
     let b=null;
-    if(ic) try{ b=await createImageBitmap(await ic.takePhoto(cap&&cap.imageWidth?{imageWidth:cap.imageWidth.max,imageHeight:cap.imageHeight.max}:undefined)); }catch{}
+    if(ic) try{ b=await createImageBitmap(await ic.takePhoto(ps)); }catch{}
     if(!b){ let c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); b=await createImageBitmap(c); await new Promise(r=>setTimeout(r,60)); }
     out.push(b);
   }
@@ -229,12 +231,14 @@ function mejorar(c){
   for(let i=0;i<d.length;i+=4)for(let j=0;j<3;j++){let t=(d[i+j]+A*(d[i+j]-bd[i+j])-lo)*k;d[i+j]=t<0?0:t>255?255:t}
   x.putImageData(o,0,0);
 }
+function estado(t){document.getElementById('autoBadge').innerText=t;return new Promise(r=>setTimeout(r,30))}
 async function tomarHDR(){
   let ec=track.getCapabilities&&track.getCapabilities().exposureCompensation; if(!ec) return null;
   let sp=Math.min(1.5,ec.max,-ec.min),out=[],ev0=parseFloat(document.getElementById('evR').value)||0;
   for(let e of [-sp,0,sp]){
     try{await track.applyConstraints({advanced:[{exposureCompensation:Math.max(ec.min,Math.min(ec.max,ev0+e))}]})}catch{return null}
-    await new Promise(r=>setTimeout(r,500));
+    await new Promise(r=>setTimeout(r,300));
+    await estado('📸 '+(out.length+1)+'/3 • no te muevas');
     out.push((await tomar(1))[0]);
   }
   try{await track.applyConstraints({advanced:[{exposureCompensation:ev0}]})}catch{}
@@ -250,22 +254,15 @@ async function fusionar(bs){
   }
   if(Math.max(...mean)-Math.min(...mean)<0.04) return null;
   for(let i=0;i<lw*lh;i++){let t=0;for(let k=0;k<n;k++)t+=M[k][i];for(let k=0;k<n;k++)M[k][i]/=t}
-  let o=document.createElement('canvas');o.width=W;o.height=H;let ox=o.getContext('2d'),sh=256;
-  let sc=document.createElement('canvas');sc.width=W;let sx=sc.getContext('2d',{willReadFrequently:true});
-  for(let y0=0;y0<H;y0+=sh){
-    let h=Math.min(sh,H-y0);sc.height=h;let D=[];
-    for(let k=0;k<n;k++){sx.clearRect(0,0,W,h);sx.drawImage(bs[k],0,y0,W,h,0,0,W,h);D.push(sx.getImageData(0,0,W,h).data)}
-    let out=ox.createImageData(W,h),od=out.data;
-    for(let y=0;y<h;y++){
-      let fy=(y0+y)/s-.5;fy=fy<0?0:fy>lh-1?lh-1:fy;let iy=fy|0,ty=fy-iy,iy2=Math.min(iy+1,lh-1);
-      for(let x=0;x<W;x++){
-        let fx=x/s-.5;fx=fx<0?0:fx>lw-1?lw-1:fx;let ix=fx|0,tx=fx-ix,ix2=Math.min(ix+1,lw-1);
-        let p=(y*W+x)*4,r=0,g=0,b=0;
-        for(let k=0;k<n;k++){let m=M[k],w=(m[iy*lw+ix]*(1-tx)+m[iy*lw+ix2]*tx)*(1-ty)+(m[iy2*lw+ix]*(1-tx)+m[iy2*lw+ix2]*tx)*ty,d=D[k];r+=w*d[p];g+=w*d[p+1];b+=w*d[p+2]}
-        od[p]=r;od[p+1]=g;od[p+2]=b;od[p+3]=255;
-      }
-    }
-    ox.putImageData(out,0,y0);
+  let o=document.createElement('canvas');o.width=W;o.height=H;let ox=o.getContext('2d');
+  let t=document.createElement('canvas');t.width=W;t.height=H;let tx=t.getContext('2d');
+  let mc=document.createElement('canvas');mc.width=lw;mc.height=lh;let mx=mc.getContext('2d');
+  ox.globalCompositeOperation='lighter';
+  for(let k=0;k<n;k++){
+    let id=mx.createImageData(lw,lh);for(let i=0;i<lw*lh;i++)id.data[i*4+3]=Math.round(M[k][i]*255);mx.putImageData(id,0,0);
+    tx.globalCompositeOperation='source-over';tx.clearRect(0,0,W,H);tx.drawImage(bs[k],0,0);
+    tx.globalCompositeOperation='destination-in';tx.imageSmoothingQuality='high';tx.drawImage(mc,0,0,W,H);
+    ox.drawImage(t,0,0);
   }
   return o;
 }
@@ -275,12 +272,12 @@ window.foto=async()=>{
   try{
     let pro=document.getElementById('proOn').checked, hdrOn=document.getElementById('hdrOn').checked, hb=hdrOn?await tomarHDR():null, sinHdr=hdrOn&&!hb, c, ctx, src=null;
     let hw=!!(track.getCapabilities&&track.getCapabilities().zoom), z=hw?1:zoomLevel;
-    if(hb) src=await fusionar(hb);
+    if(hb){ await estado('🔀 Fusionando...'); src=await fusionar(hb); }
     if(!src){ if(hb){ sinHdr=true; hb=[hb[1]]; } else { let bs=await tomar(pro?3:1), best=bs[0], bn=-1; if(bs.length>1) for(let b of bs){let n=nitidez(b); if(n>bn){bn=n;best=b}} hb=[best]; } src=hb[0]; }
     let vw=hb[0].width, vh=hb[0].height, sw=vw/z, sh=vh/z;
     c=document.createElement('canvas'); c.width=vw; c.height=vh; ctx=c.getContext('2d');
     ctx.drawImage(src,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,vw,vh);
-    if(pro) mejorar(c);
+    if(pro){ await estado('✨ Realzando...'); mejorar(c); }
     if(colorMode=='vivo'){ let id=ctx.getImageData(0,0,c.width,c.height), d=id.data; for(let i=0;i<d.length;i+=4){ let g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; d[i]=Math.min(255,g+(d[i]-g)*1.18); d[i+1]=Math.min(255,g+(d[i+1]-g)*1.08); d[i+2]=Math.min(255,g+(d[i+2]-g)*1.12); } ctx.putImageData(id,0,0); }
     drawWatermark(ctx,c.width,c.height);
     let q= qualityMode=='print'? 1.0 : 0.92;
@@ -300,4 +297,3 @@ cargarPrefs(); window.setPos(localStorage.getItem('pos')||'bl');
 document.addEventListener('contextmenu',e=>e.preventDefault());
 </script>
 </body></html>
- 
