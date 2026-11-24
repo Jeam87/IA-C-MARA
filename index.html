@@ -65,6 +65,7 @@ input[type=text]{width:100%;padding:10px;background:#222;border:1px solid #444;b
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px"><input type="checkbox" id="proOn" checked> Ráfaga de 3 + la más nítida + realce</label>
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="hdr2On"> 🌗 HDR (3 exposiciones) • quédate quieto ~2 s</label>
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="lookOn" checked> 🎞️ Look cámara profesional (color, contraste, detalle)</label>
+<label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="autoFocoOn" checked> 🎯 Enfocar y medir luz solo (cara o centro)</label>
 <p style="margin:8px 0 2px">☀️ Exposición (EV)</p><input type="range" id="evR" min="-2" max="2" step="0.3" value="0" style="width:100%;accent-color:#00c853"></div>
 <span class="label">🏷️ MARCA DE AGUA</span>
 <div style="background:#1e1e1e;padding:12px;border-radius:14px;border:1px solid #333">
@@ -139,14 +140,31 @@ window.iniciarPorIndice=async function(idx){
     requestAnimationFrame(detectLoop);
   }catch(e){ document.getElementById('err').innerText=e.message; }
 }
+let manualHasta=0,ultP=null,ultT=0,ultTrack=null,sinCaraDesde=0;
+function enfocarEn(x,y,unico){
+  x=Math.min(.95,Math.max(.05,x));y=Math.min(.95,Math.max(.05,y));
+  try{ track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}]},{focusMode:unico?'single-shot':'continuous'},{exposureMode:'continuous'}]}).catch(()=>{}); }catch{}
+  if(unico) setTimeout(()=>{try{track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{})}catch{}},2500);
+}
+function autoEnfoque(p){
+  let t=performance.now();
+  if(!track||t<manualHasta||!document.getElementById('autoFocoOn').checked) return;
+  if(ultTrack!==track){ultTrack=track;ultP=null;ultT=0}
+  if(!p){ if(!sinCaraDesde) sinCaraDesde=t; if(t-sinCaraDesde<1200) return; p={x:.5,y:.5}; } else sinCaraDesde=0;
+  if(t-ultT<1000) return;
+  if(ultP&&Math.hypot(p.x-ultP.x,p.y-ultP.y)<.08&&t-ultT<8000) return;
+  ultP=p;ultT=t;enfocarEn(p.x,p.y,false);
+}
 function detectLoop(){
-  if(!document.getElementById('iaOn').checked){ ctxFace.clearRect(0,0,canvasFace.width,canvasFace.height); requestAnimationFrame(detectLoop); return; }
+  if(!document.getElementById('iaOn').checked){ ctxFace.clearRect(0,0,canvasFace.width,canvasFace.height); autoEnfoque(null); requestAnimationFrame(detectLoop); return; }
   if(faceDetector && v.readyState>=2){
     let now=performance.now();
     let res=faceDetector.detectForVideo(v, now);
     ctxFace.clearRect(0,0,canvasFace.width,canvasFace.height);
     // ajustar canvas al tamaño real de la pantalla
     canvasFace.width=window.innerWidth; canvasFace.height=window.innerHeight;
+    let mejor=res.detections.reduce((a,d)=>!a||d.boundingBox.width>a.boundingBox.width?d:a,null);
+    autoEnfoque(mejor?{x:(mejor.boundingBox.originX+mejor.boundingBox.width/2)/v.videoWidth,y:(mejor.boundingBox.originY+mejor.boundingBox.height/2)/v.videoHeight}:null);
     let badge=document.getElementById('aiBadge');
     if(res.detections.length>0){
       badge.style.display='block';
@@ -168,7 +186,7 @@ function detectLoop(){
       badge.innerText='🔍 Buscando cara... acércate';
       badge.style.background='#000c';
     }
-  }
+  } else autoEnfoque(null);
   requestAnimationFrame(detectLoop);
 }
 window.voltear=async()=>{ camIndex=(camIndex+1)%Math.max(1,cams.length); await window.iniciarPorIndice(camIndex); }
@@ -177,9 +195,9 @@ window.cerrarRes=()=>{ document.getElementById('res').style.display='none'; }
 window.toggleTorch=async()=>{ try{ await track.applyConstraints({advanced:[{torch:true}]}); setTimeout(async()=>{try{await track.applyConstraints({advanced:[{torch:false}]})}catch{}},1200);}catch{} }
 function applyZoom(){ document.getElementById('zoomVal').innerText=zoomLevel.toFixed(1)+'x'; document.getElementById('zoomTop').innerText=zoomLevel.toFixed(1)+'x'; document.getElementById('zoomR').value=zoomLevel; try{ let caps=track?.getCapabilities(); if(caps && caps.zoom){ track.applyConstraints({advanced:[{zoom:zoomLevel}]}); v.style.transform=''; return; } }catch{} v.style.transform=`scale(${zoomLevel})`; }
 document.getElementById('zoomR').oninput=e=>{ zoomLevel=parseFloat(e.target.value); applyZoom(); }
-v.addEventListener('click', e=>{ let r=v.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height; let b=document.getElementById('focusBox'); b.style.left=e.clientX+'px'; b.style.top=e.clientY+'px'; b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),700); try{ if(track?.getCapabilities()?.pointsOfInterest) { track.applyConstraints({advanced:[{focusMode:'single-shot',pointsOfInterest:{x,y}}]}); setTimeout(()=>{try{track.applyConstraints({advanced:[{focusMode:'continuous'}]})}catch{}},3000); } }catch{} });
-function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
-function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
+v.addEventListener('click', e=>{ let r=v.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height; let b=document.getElementById('focusBox'); b.style.left=e.clientX+'px'; b.style.top=e.clientY+'px'; b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),700); manualHasta=performance.now()+6000; let vw=v.videoWidth||1,vh=v.videoHeight||1,sc=Math.max(r.width/vw,r.height/vh),dw=vw*sc,dh=vh*sc; enfocarEn(((e.clientX-r.left)+(dw-r.width)/2)/dw,((e.clientY-r.top)+(dh-r.height)/2)/dh,true); });
+function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn','autoFocoOn'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
+function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn','autoFocoOn'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
 document.getElementById('logoInput').onchange=e=>{ let f=e.target.files[0]; if(!f) return; let rd=new FileReader(); rd.onload=ev=>{ logoDataUrl=ev.target.result; logoImg=new Image(); logoImg.src=logoDataUrl; document.getElementById('logoPrev').src=logoDataUrl; guardarPrefs(); }; rd.readAsDataURL(f); }
 window.borrarLogo=()=>{ logoImg=null; logoDataUrl=null; document.getElementById('logoPrev').src=''; localStorage.removeItem('logoDataUrl'); }
 window.ubicacionAuto=async()=>{ try{ let p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:8000})); document.getElementById('ubiTxt').value=`Jacona ${p.coords.latitude.toFixed(3)},${p.coords.longitude.toFixed(3)}`; guardarPrefs(); }catch{ alert('Activa GPS'); } }
