@@ -74,6 +74,7 @@ input[type=text]{width:100%;padding:10px;background:#222;border:1px solid #444;b
 </div>
 <input type="text" id="marcaTxt" placeholder="Botes Jacona" value="Botes Jacona" style="margin-bottom:6px">
 <input type="text" id="ubiTxt" placeholder="Jacona, Mich." value="Jacona, Mich." style="margin-bottom:6px">
+<p style="font-size:11px;margin:4px 0 2px">🔎 Tamaño del logo</p><input type="range" id="logoSz" min="8" max="40" value="18" style="width:100%;accent-color:#00c853;margin-bottom:6px">
 <div class="grid2">
 <label style="display:flex;gap:6px;background:#222;padding:7px;border-radius:8px;font-size:11px"><input type="checkbox" id="chkLogo" checked> Logo</label>
 <label style="display:flex;gap:6px;background:#222;padding:7px;border-radius:8px;font-size:11px"><input type="checkbox" id="chkMarca" checked> Nombre</label>
@@ -198,6 +199,7 @@ document.getElementById('zoomR').oninput=e=>{ zoomLevel=parseFloat(e.target.valu
 v.addEventListener('click', e=>{ let r=v.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height; let b=document.getElementById('focusBox'); b.style.left=e.clientX+'px'; b.style.top=e.clientY+'px'; b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),700); manualHasta=performance.now()+6000; let vw=v.videoWidth||1,vh=v.videoHeight||1,sc=Math.max(r.width/vw,r.height/vh),dw=vw*sc,dh=vh*sc; enfocarEn(((e.clientX-r.left)+(dw-r.width)/2)/dw,((e.clientY-r.top)+(dh-r.height)/2)/dh,true); });
 function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn','autoFocoOn'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
 function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn','autoFocoOn'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
+try{ let z=document.getElementById('logoSz'); z.value=localStorage.getItem('logoSz')||18; z.oninput=()=>{try{localStorage.setItem('logoSz',z.value)}catch{}}; }catch{}
 document.getElementById('logoInput').onchange=e=>{ let f=e.target.files[0]; if(!f) return; let rd=new FileReader(); rd.onload=ev=>{ logoDataUrl=ev.target.result; logoImg=new Image(); logoImg.src=logoDataUrl; document.getElementById('logoPrev').src=logoDataUrl; guardarPrefs(); }; rd.readAsDataURL(f); }
 window.borrarLogo=()=>{ logoImg=null; logoDataUrl=null; document.getElementById('logoPrev').src=''; localStorage.removeItem('logoDataUrl'); }
 window.ubicacionAuto=async()=>{ try{ let p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:8000})); document.getElementById('ubiTxt').value=`Jacona ${p.coords.latitude.toFixed(3)},${p.coords.longitude.toFixed(3)}`; guardarPrefs(); }catch{ alert('Activa GPS'); } }
@@ -214,7 +216,7 @@ function drawWatermark(ctx,w,h){
   let fechaTxt= showFecha? new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})+' '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : '';
   let lines=[]; if(showMarca&&marcaTxt) lines.push(marcaTxt); if(showUbi&&ubiTxt) lines.push('📍 '+ubiTxt); if(showFecha) lines.push(fechaTxt);
   let textW=0; lines.forEach(l=>{ let m=ctx.measureText(l).width; if(m>textW) textW=m; });
-  let logoW= showLogo? Math.round(h*0.10):0, logoH=logoW;
+  let logoW=0,logoH=0; if(showLogo){ let S=Math.min(w,h)*((parseFloat(document.getElementById('logoSz').value)||18)/100), k=S/Math.max(logoImg.naturalWidth||1,logoImg.naturalHeight||1); logoW=Math.round((logoImg.naturalWidth||S)*k); logoH=Math.round((logoImg.naturalHeight||S)*k); }
   let blockW= pad+logoW+(showLogo?12:0)+textW+pad, blockH=Math.max(logoH, lines.length*lineH+pad);
   let x= marcaPos=='bl'? pad : w-blockW-pad, y= h-blockH-pad-Math.round(h*0.05);
   ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.roundRect(x,y,blockW,blockH,14); ctx.fill();
