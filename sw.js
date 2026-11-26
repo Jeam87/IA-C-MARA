@@ -1,4 +1,4 @@
-const C='fotopro-v1',V='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/';
+const C='fotopro-v2',V='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/';
 const SHELL=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png'];
 const PRE=[V+'vision_bundle.mjs',V+'wasm/vision_wasm_internal.js',V+'wasm/vision_wasm_internal.wasm','https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(async c=>{await c.addAll(SHELL);await Promise.allSettled(PRE.map(u=>c.add(u)))}).then(()=>self.skipWaiting()))});
