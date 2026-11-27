@@ -62,7 +62,8 @@ input[type=text]{width:100%;padding:10px;background:#222;border:1px solid #444;b
 </div>
 <span class="label">📸 MODO PRO</span>
 <div style="background:#1e1e1e;padding:12px;border-radius:14px;border:1px solid #333;font-size:11px">
-<label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px"><input type="checkbox" id="proOn" checked> Ráfaga de 3 + la más nítida + realce</label>
+<label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px"><input type="checkbox" id="proOn" checked> Ráfaga (elige la más nítida) + realce</label>
+<p style="font-size:11px;margin:8px 0 2px">⚡ Velocidad</p><select id="velSel" style="width:100%;padding:8px;border-radius:10px;background:#222;color:#fff;border:1px solid #333"><option value="rapido">⚡ Rápido (1 foto)</option><option value="medio">⚖️ Equilibrado (2 fotos)</option><option value="calidad">💎 Calidad (3 fotos)</option></select>
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="hdr2On"> 🌗 HDR (3 exposiciones) • quédate quieto ~2 s</label>
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="lookOn" checked> 🎞️ Look cámara profesional (color, contraste, detalle)</label>
 <label style="display:flex;gap:8px;background:#00c85322;border:1px solid #00c853;padding:8px;border-radius:10px;margin-top:6px"><input type="checkbox" id="autoFocoOn" checked> 🎯 Enfocar y medir luz solo (cara o centro)</label>
@@ -200,6 +201,7 @@ v.addEventListener('click', e=>{ let r=v.getBoundingClientRect(), x=(e.clientX-r
 function guardarPrefs(){ localStorage.setItem('marcaTxt',document.getElementById('marcaTxt').value); localStorage.setItem('ubiTxt',document.getElementById('ubiTxt').value); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn','autoFocoOn'].forEach(id=>localStorage.setItem(id,document.getElementById(id).checked)); if(logoDataUrl) localStorage.setItem('logoDataUrl',logoDataUrl); }
 function cargarPrefs(){ let m=localStorage.getItem('colorMode'); if(m) window.setColorMode(m); let q=localStorage.getItem('qualityMode'); if(q) setQuality(q); else setQuality('ligera'); let pos=localStorage.getItem('pos'); if(pos) window.setPos(pos); else window.setPos('bl'); if(localStorage.getItem('marcaTxt')) document.getElementById('marcaTxt').value=localStorage.getItem('marcaTxt'); if(localStorage.getItem('ubiTxt')) document.getElementById('ubiTxt').value=localStorage.getItem('ubiTxt'); ['chkLogo','chkMarca','chkUbi','chkFecha','marcaOn','iaOn','proOn','hdr2On','lookOn','autoFocoOn'].forEach(id=>{ let v=localStorage.getItem(id); if(v!==null) document.getElementById(id).checked=(v==='true'); }); let ld=localStorage.getItem('logoDataUrl'); if(ld){ logoDataUrl=ld; logoImg=new Image(); logoImg.src=ld; document.getElementById('logoPrev').src=ld; } }
 try{ let z=document.getElementById('logoSz'); z.value=localStorage.getItem('logoSz')||18; z.oninput=()=>{try{localStorage.setItem('logoSz',z.value)}catch{}}; }catch{}
+try{ let sel=document.getElementById('velSel'); sel.value=localStorage.getItem('vel')||'medio'; sel.onchange=()=>{try{localStorage.setItem('vel',sel.value)}catch{}}; }catch{}
 document.getElementById('logoInput').onchange=e=>{ let f=e.target.files[0]; if(!f) return; let rd=new FileReader(); rd.onload=ev=>{ logoDataUrl=ev.target.result; logoImg=new Image(); logoImg.src=logoDataUrl; document.getElementById('logoPrev').src=logoDataUrl; guardarPrefs(); }; rd.readAsDataURL(f); }
 window.borrarLogo=()=>{ logoImg=null; logoDataUrl=null; document.getElementById('logoPrev').src=''; localStorage.removeItem('logoDataUrl'); }
 window.ubicacionAuto=async()=>{ try{ let p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:8000})); document.getElementById('ubiTxt').value=`Jacona ${p.coords.latitude.toFixed(3)},${p.coords.longitude.toFixed(3)}`; guardarPrefs(); }catch{ alert('Activa GPS'); } }
@@ -237,10 +239,11 @@ async function tomar(n){
   }
   return out;
 }
-function mejorar(c){
+function mejorar(c,ligero){
   let w=c.width,h=c.height,x=c.getContext('2d'),o=x.getImageData(0,0,w,h),d=o.data,look=document.getElementById('lookOn').checked;
-  const bl=r=>{let b=document.createElement('canvas');b.width=w;b.height=h;let bx=b.getContext('2d');bx.filter='blur('+r+'px)';bx.drawImage(c,0,0);bx.filter='none';return bx.getImageData(0,0,w,h).data};
-  let bd=bl(1.6), bL=look?bl(Math.max(12,w/120)):null, H=new Uint32Array(256), tot=0;
+  let b=document.createElement('canvas');b.width=w;b.height=h;let bx=b.getContext('2d');bx.filter='blur(1.6px)';bx.drawImage(c,0,0);bx.filter='none';
+  let bd=bx.getImageData(0,0,w,h).data,H=new Uint32Array(256),tot=0,lw=Math.ceil(w/4),bLs=null;
+  if(look&&!ligero){let lh=Math.ceil(h/4),sm=document.createElement('canvas');sm.width=lw;sm.height=lh;let sx=sm.getContext('2d');sx.filter='blur('+Math.max(3,w/480)+'px)';sx.drawImage(c,0,0,lw,lh);sx.filter='none';bLs=sx.getImageData(0,0,lw,lh).data}
   for(let i=0;i<d.length;i+=16){H[(.299*d[i]+.587*d[i+1]+.114*d[i+2])|0]++;tot++}
   let lo=0,hi=255,a=0;
   for(;lo<255&&a+H[lo]<tot*.005;lo++)a+=H[lo];
@@ -249,12 +252,12 @@ function mejorar(c){
   let k=255/(hi-lo),A=0.4,G=[1,1,1];
   if(look){let sm=[0,0,0];for(let i=0;i<d.length;i+=16){sm[0]+=d[i];sm[1]+=d[i+1];sm[2]+=d[i+2]}let m=(sm[0]+sm[1]+sm[2])/3;for(let j=0;j<3;j++)G[j]=Math.min(1.07,Math.max(.93,m/sm[j]))}
   let T=new Uint8Array(256);for(let i=0;i<256;i++){let t=i/255;T[i]=Math.round(255*(look?t-0.3*Math.sin(2*Math.PI*t)/(2*Math.PI):t))}
-  const px=(i,j)=>{let v=d[i+j],t=v+A*(v-bd[i+j]);if(bL)t+=.25*(v-bL[i+j]);t=(t*G[j]-lo)*k;return T[t<0?0:t>255?255:(t+.5)|0]};
-  for(let i=0;i<d.length;i+=4){
-    let r=px(i,0),g=px(i,1),b=px(i,2);
-    if(look){let l=.299*r+.587*g+.114*b;r=l+(r-l)*1.06;g=l+(g-l)*1.06;b=l+(b-l)*1.06}
-    d[i]=r;d[i+1]=g;d[i+2]=b;
-  }
+  const px=(i,j,q)=>{let v=d[i+j],t=v+A*(v-bd[i+j]);if(bLs)t+=.25*(v-bLs[q+j]);t=(t*G[j]-lo)*k;return T[t<0?0:t>255?255:(t+.5)|0]};
+  for(let y=0;y<h;y++){let rs=(y>>2)*lw;for(let xx=0;xx<w;xx++){
+    let i=(y*w+xx)*4,q=(rs+(xx>>2))*4,r=px(i,0,q),g=px(i,1,q),bb=px(i,2,q);
+    if(look){let l=.299*r+.587*g+.114*bb;r=l+(r-l)*1.06;g=l+(g-l)*1.06;bb=l+(bb-l)*1.06}
+    d[i]=r;d[i+1]=g;d[i+2]=bb;
+  }}
   x.putImageData(o,0,0);
 }
 function estado(t){document.getElementById('autoBadge').innerText=t;return new Promise(r=>setTimeout(r,30))}
@@ -296,15 +299,16 @@ window.foto=async()=>{
   let f=document.getElementById('flash'),ab=document.getElementById('autoBadge'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),90);
   ab.innerText='⏳ Procesando... no te muevas'; ab.style.display='block';
   try{
-    await new Promise(r=>setTimeout(r,250));
-    let pro=document.getElementById('proOn').checked, hdr2On=document.getElementById('hdr2On').checked, hb=hdr2On?await tomarHDR():null, sinHdr=hdr2On&&!hb, c, ctx, src=null, mejorN=0;
+    let vel=document.getElementById('velSel').value;
+    await new Promise(r=>setTimeout(r,vel=='rapido'?0:120));
+    let pro=document.getElementById('proOn').checked, hdr2On=document.getElementById('hdr2On').checked, hb=hdr2On?await tomarHDR():null, sinHdr=hdr2On&&!hb, c, ctx, src=null, mejorN=0, totalN=1;
     let hw=!!(track.getCapabilities&&track.getCapabilities().zoom), z=hw?1:zoomLevel;
     if(hb){ await estado('🔀 Fusionando...'); src=await fusionar(hb); }
-    if(!src){ if(hb){ sinHdr=true; hb=[hb[1]]; } else { let bs=await tomar(pro?3:1), best=bs[0], bn=-1; if(bs.length>1) for(let q=0;q<bs.length;q++){let n=nitidez(bs[q]); if(n>bn){bn=n;best=bs[q];mejorN=q+1}} hb=[best]; } src=hb[0]; }
+    if(!src){ if(hb){ sinHdr=true; hb=[hb[1]]; } else { let bs=await tomar(!pro||vel=='rapido'?1:vel=='medio'?2:3), sc=bs.length>1?bs.map(nitidez):[0]; if(vel=='medio'&&pro&&bs.length==2&&Math.min(...sc)/Math.max(...sc)<.85){ let b3=(await tomar(1))[0]; bs.push(b3); sc.push(nitidez(b3)); } let best=bs[0], bn=-1; for(let q=0;q<bs.length;q++){ if(sc[q]>bn){bn=sc[q];best=bs[q];mejorN=q+1} } totalN=bs.length; hb=[best]; } src=hb[0]; }
     let vw=hb[0].width, vh=hb[0].height, sw=vw/z, sh=vh/z;
     c=document.createElement('canvas'); c.width=vw; c.height=vh; ctx=c.getContext('2d');
     ctx.drawImage(src,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,vw,vh);
-    if(pro||document.getElementById('lookOn').checked){ await estado('✨ Realzando...'); mejorar(c); }
+    if(pro||document.getElementById('lookOn').checked){ await estado('✨ Realzando...'); mejorar(c,vel=='rapido'); }
     if(colorMode=='vivo'){ let id=ctx.getImageData(0,0,c.width,c.height), d=id.data; for(let i=0;i<d.length;i+=4){ let g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; d[i]=Math.min(255,g+(d[i]-g)*1.18); d[i+1]=Math.min(255,g+(d[i+1]-g)*1.08); d[i+2]=Math.min(255,g+(d[i+2]-g)*1.12); } ctx.putImageData(id,0,0); }
     drawWatermark(ctx,c.width,c.height);
     let q= qualityMode=='print'? 1.0 : 0.92;
@@ -313,7 +317,7 @@ window.foto=async()=>{
     document.getElementById('outImg').src=lastUrl;
     document.getElementById('resSize').innerText=`${(blob.size/1024/1024).toFixed(2)} MB • ${q==1?'100%':'92%'}`;
     document.getElementById('resDim').innerText=`${c.width}x${c.height} • ${(c.width*c.height/1e6).toFixed(1)}MP`;
-    document.getElementById('resInfo').innerText= hb.length>1? '🌗 HDR de 3 exposiciones + realce suave' : (sinHdr? '⚠️ Chrome no cambió la exposición en este celular: salió sin HDR' : (pro? '📸 Elegí la foto '+mejorN+' de 3 (la más nítida)' : 'Foto simple'));
+    document.getElementById('resInfo').innerText= hb.length>1? '🌗 HDR de 3 exposiciones + realce suave' : (sinHdr? '⚠️ Chrome no cambió la exposición en este celular: salió sin HDR' : (totalN>1? '📸 Elegí la foto '+mejorN+' de '+totalN+' (la más nítida)' : 'Foto única (modo rápido)'));
     document.getElementById('res').style.display='flex'; guardarPrefs();
   }catch(e){ alert('Error: '+e.message); }
   finally{ ab.style.display='none'; }
@@ -333,3 +337,4 @@ cargarPrefs(); window.setPos(localStorage.getItem('pos')||'bl');
 document.addEventListener('contextmenu',e=>e.preventDefault());
 </script>
 </body></html>
+ 
